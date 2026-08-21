@@ -3337,6 +3337,20 @@ client.promotion_codes.delete_promotion_code(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Aggregate revenue and commission totals (grouped by currency) plus commission, customer, and partner counts for the organization. Supports optional program_id and start_date/end_date filters.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>

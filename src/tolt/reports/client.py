@@ -33,6 +33,8 @@ class ReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ReportsOverviewResponse:
         """
+        Aggregate revenue and commission totals (grouped by currency) plus commission, customer, and partner counts for the organization. Supports optional program_id and start_date/end_date filters.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
@@ -88,6 +90,8 @@ class AsyncReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ReportsOverviewResponse:
         """
+        Aggregate revenue and commission totals (grouped by currency) plus commission, customer, and partner counts for the organization. Supports optional program_id and start_date/end_date filters.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
