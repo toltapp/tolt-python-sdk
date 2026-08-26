@@ -8,12 +8,35 @@ version = "0.1.0"
 description = "Python SDK for the Tolt Public API"
 readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "MIT" }
+license = { text = "Apache-2.0" }
+authors = [{ name = "Tolt" }]
+keywords = ["tolt", "affiliate", "referral", "sdk", "api"]
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
+]
 dependencies = [
   "httpx>=0.21.2",
   "pydantic>=1.9.2",
   "typing_extensions>=4.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/toltapp/tolt-python-sdk"
+Repository = "https://github.com/toltapp/tolt-python-sdk"
+Issues = "https://github.com/toltapp/tolt-python-sdk/issues"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/tolt"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+build_command = "pip install build && python -m build"
+allow_zero_version = true
+major_on_zero = false
+tag_format = "v{version}"
+
+[tool.semantic_release.branches.main]
+match = "main"

@@ -1,0 +1,23 @@
+name: Bootstrap publish
+
+# One-time first publish of tolt 0.1.0 to PyPI via trusted publishing (OIDC).
+# PyPI can mint a new project through OIDC, so no token is needed. Delete this
+# workflow once 0.1.0 is live; release.yml handles every version after that.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - run: python -m build
+      - uses: pypa/gh-action-pypi-publish@release/v1
