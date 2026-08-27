@@ -6,7 +6,6 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawCustomersClient, RawCustomersClient
-from .types.create_customer_request import CreateCustomerRequest
 from .types.create_customer_response import CreateCustomerResponse
 from .types.delete_customer_response import DeleteCustomerResponse
 from .types.get_customer_response import GetCustomerResponse
@@ -96,12 +95,36 @@ class CustomersClient:
         return _response.data
 
     def create_customer(
-        self, *, request: CreateCustomerRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        email: typing.Optional[str] = OMIT,
+        name: typing.Optional[str] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        status: typing.Optional[str] = OMIT,
+        subscription_id: typing.Optional[str] = OMIT,
+        click_id: typing.Optional[str] = OMIT,
+        link_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateCustomerResponse:
         """
         Parameters
         ----------
-        request : CreateCustomerRequest
+        email : typing.Optional[str]
+
+        name : typing.Optional[str]
+
+        customer_id : typing.Optional[str]
+
+        status : typing.Optional[str]
+
+        subscription_id : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
+
+        partner_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -118,11 +141,19 @@ class CustomersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.customers.create_customer(
-            request={"key": "value"},
-        )
+        client.customers.create_customer()
         """
-        _response = self._raw_client.create_customer(request=request, request_options=request_options)
+        _response = self._raw_client.create_customer(
+            email=email,
+            name=name,
+            customer_id=customer_id,
+            status=status,
+            subscription_id=subscription_id,
+            click_id=click_id,
+            link_id=link_id,
+            partner_id=partner_id,
+            request_options=request_options,
+        )
         return _response.data
 
     def get_customer(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomerResponse:
@@ -342,12 +373,36 @@ class AsyncCustomersClient:
         return _response.data
 
     async def create_customer(
-        self, *, request: CreateCustomerRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        email: typing.Optional[str] = OMIT,
+        name: typing.Optional[str] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        status: typing.Optional[str] = OMIT,
+        subscription_id: typing.Optional[str] = OMIT,
+        click_id: typing.Optional[str] = OMIT,
+        link_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateCustomerResponse:
         """
         Parameters
         ----------
-        request : CreateCustomerRequest
+        email : typing.Optional[str]
+
+        name : typing.Optional[str]
+
+        customer_id : typing.Optional[str]
+
+        status : typing.Optional[str]
+
+        subscription_id : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
+
+        partner_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -369,14 +424,22 @@ class AsyncCustomersClient:
 
 
         async def main() -> None:
-            await client.customers.create_customer(
-                request={"key": "value"},
-            )
+            await client.customers.create_customer()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_customer(request=request, request_options=request_options)
+        _response = await self._raw_client.create_customer(
+            email=email,
+            name=name,
+            customer_id=customer_id,
+            status=status,
+            subscription_id=subscription_id,
+            click_id=click_id,
+            link_id=link_id,
+            partner_id=partner_id,
+            request_options=request_options,
+        )
         return _response.data
 
     async def get_customer(

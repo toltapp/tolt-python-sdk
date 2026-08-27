@@ -14,7 +14,7 @@ class ReportsOverviewRevenueItem(UniversalBaseModel):
 
     amount: str = pydantic.Field()
     """
-    Integer amount in the smallest currency unit (cents), serialized as a string.
+    Integer amount in the smallest currency unit (cents), serialized as a string. Summed across the row's currencies; scope to a single-currency program with program_id, or use /reports/overview for the per-currency split.
     """
 
     if IS_PYDANTIC_V2:

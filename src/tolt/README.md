@@ -41,9 +41,7 @@ client = ToltApi(
     token="<token>",
 )
 
-client.partners.approve_partner(
-    id="id",
-)
+client.embed.create_embed_token()
 ```
 
 ## Environments
@@ -74,9 +72,7 @@ client = AsyncToltApi(
 
 
 async def main() -> None:
-    await client.partners.approve_partner(
-        id="id",
-    )
+    await client.embed.create_embed_token()
 
 
 asyncio.run(main())
@@ -91,7 +87,7 @@ will be thrown.
 from tolt.core.api_error import ApiError
 
 try:
-    client.partners.approve_partner(...)
+    client.embed.create_embed_token(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -108,7 +104,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from tolt import ToltApi
 
 client = ToltApi(...)
-response = client.partners.with_raw_response.approve_partner(...)
+response = client.embed.with_raw_response.create_embed_token(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -139,7 +135,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.partners.approve_partner(..., request_options={
+client.embed.create_embed_token(..., request_options={
     "max_retries": 1
 })
 ```
@@ -154,7 +150,7 @@ from tolt import ToltApi
 client = ToltApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.partners.approve_partner(..., request_options={
+client.embed.create_embed_token(..., request_options={
     "timeout": 1
 })
 ```

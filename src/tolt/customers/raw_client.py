@@ -11,12 +11,10 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
-from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.not_found_error import NotFoundError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.create_customer_request import CreateCustomerRequest
 from .types.create_customer_response import CreateCustomerResponse
 from .types.delete_customer_response import DeleteCustomerResponse
 from .types.get_customer_response import GetCustomerResponse
@@ -130,12 +128,36 @@ class RawCustomersClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_customer(
-        self, *, request: CreateCustomerRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        email: typing.Optional[str] = OMIT,
+        name: typing.Optional[str] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        status: typing.Optional[str] = OMIT,
+        subscription_id: typing.Optional[str] = OMIT,
+        click_id: typing.Optional[str] = OMIT,
+        link_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreateCustomerResponse]:
         """
         Parameters
         ----------
-        request : CreateCustomerRequest
+        email : typing.Optional[str]
+
+        name : typing.Optional[str]
+
+        customer_id : typing.Optional[str]
+
+        status : typing.Optional[str]
+
+        subscription_id : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
+
+        partner_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -148,9 +170,19 @@ class RawCustomersClient:
         _response = self._client_wrapper.httpx_client.request(
             "v2/customers",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=CreateCustomerRequest, direction="write"
-            ),
+            json={
+                "email": email,
+                "name": name,
+                "customerId": customer_id,
+                "status": status,
+                "subscriptionId": subscription_id,
+                "clickId": click_id,
+                "linkId": link_id,
+                "partnerId": partner_id,
+            },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -177,6 +209,17 @@ class RawCustomersClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -539,12 +582,36 @@ class AsyncRawCustomersClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_customer(
-        self, *, request: CreateCustomerRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        email: typing.Optional[str] = OMIT,
+        name: typing.Optional[str] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        status: typing.Optional[str] = OMIT,
+        subscription_id: typing.Optional[str] = OMIT,
+        click_id: typing.Optional[str] = OMIT,
+        link_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreateCustomerResponse]:
         """
         Parameters
         ----------
-        request : CreateCustomerRequest
+        email : typing.Optional[str]
+
+        name : typing.Optional[str]
+
+        customer_id : typing.Optional[str]
+
+        status : typing.Optional[str]
+
+        subscription_id : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
+
+        partner_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -557,9 +624,19 @@ class AsyncRawCustomersClient:
         _response = await self._client_wrapper.httpx_client.request(
             "v2/customers",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=CreateCustomerRequest, direction="write"
-            ),
+            json={
+                "email": email,
+                "name": name,
+                "customerId": customer_id,
+                "status": status,
+                "subscriptionId": subscription_id,
+                "clickId": click_id,
+                "linkId": link_id,
+                "partnerId": partner_id,
+            },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -586,6 +663,17 @@ class AsyncRawCustomersClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

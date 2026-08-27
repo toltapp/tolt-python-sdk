@@ -6,8 +6,30 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import ReportsOverviewResponse
-_dynamic_imports: typing.Dict[str, str] = {"ReportsOverviewResponse": ".types"}
+    from .types import (
+        ReportsCustomerStatsResponse,
+        ReportsLinksRequestOrder,
+        ReportsLinksRequestSort,
+        ReportsLinksResponse,
+        ReportsOverviewResponse,
+        ReportsPartnersRequestOrder,
+        ReportsPartnersRequestSort,
+        ReportsPartnersResponse,
+        ReportsTimeseriesRequestGranularity,
+        ReportsTimeseriesResponse,
+    )
+_dynamic_imports: typing.Dict[str, str] = {
+    "ReportsCustomerStatsResponse": ".types",
+    "ReportsLinksRequestOrder": ".types",
+    "ReportsLinksRequestSort": ".types",
+    "ReportsLinksResponse": ".types",
+    "ReportsOverviewResponse": ".types",
+    "ReportsPartnersRequestOrder": ".types",
+    "ReportsPartnersRequestSort": ".types",
+    "ReportsPartnersResponse": ".types",
+    "ReportsTimeseriesRequestGranularity": ".types",
+    "ReportsTimeseriesResponse": ".types",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +53,15 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ReportsOverviewResponse"]
+__all__ = [
+    "ReportsCustomerStatsResponse",
+    "ReportsLinksRequestOrder",
+    "ReportsLinksRequestSort",
+    "ReportsLinksResponse",
+    "ReportsOverviewResponse",
+    "ReportsPartnersRequestOrder",
+    "ReportsPartnersRequestSort",
+    "ReportsPartnersResponse",
+    "ReportsTimeseriesRequestGranularity",
+    "ReportsTimeseriesResponse",
+]

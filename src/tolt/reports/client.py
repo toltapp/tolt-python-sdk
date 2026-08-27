@@ -6,7 +6,16 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawReportsClient, RawReportsClient
+from .types.reports_customer_stats_response import ReportsCustomerStatsResponse
+from .types.reports_links_request_order import ReportsLinksRequestOrder
+from .types.reports_links_request_sort import ReportsLinksRequestSort
+from .types.reports_links_response import ReportsLinksResponse
 from .types.reports_overview_response import ReportsOverviewResponse
+from .types.reports_partners_request_order import ReportsPartnersRequestOrder
+from .types.reports_partners_request_sort import ReportsPartnersRequestSort
+from .types.reports_partners_response import ReportsPartnersResponse
+from .types.reports_timeseries_request_granularity import ReportsTimeseriesRequestGranularity
+from .types.reports_timeseries_response import ReportsTimeseriesResponse
 
 
 class ReportsClient:
@@ -33,8 +42,6 @@ class ReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ReportsOverviewResponse:
         """
-        Aggregate revenue and commission totals (grouped by currency) plus commission, customer, and partner counts for the organization. Supports optional program_id and start_date/end_date filters.
-
         Parameters
         ----------
         program_id : typing.Optional[str]
@@ -65,6 +72,207 @@ class ReportsClient:
         )
         return _response.data
 
+    def partners(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsPartnersRequestSort] = None,
+        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsPartnersResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsPartnersRequestSort]
+
+        order : typing.Optional[ReportsPartnersRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsPartnersResponse
+            A page of partner breakdown rows
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.reports.partners()
+        """
+        _response = self._raw_client.partners(
+            program_id=program_id,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            offset=offset,
+            sort=sort,
+            order=order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def links(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsLinksRequestSort] = None,
+        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsLinksResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsLinksRequestSort]
+
+        order : typing.Optional[ReportsLinksRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsLinksResponse
+            A page of link breakdown rows
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.reports.links()
+        """
+        _response = self._raw_client.links(
+            program_id=program_id,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            offset=offset,
+            sort=sort,
+            order=order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def timeseries(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsTimeseriesResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsTimeseriesResponse
+            One point per non-empty period
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.reports.timeseries()
+        """
+        _response = self._raw_client.timeseries(
+            program_id=program_id,
+            start_date=start_date,
+            end_date=end_date,
+            granularity=granularity,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def customer_stats(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsCustomerStatsResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsCustomerStatsResponse
+            Customer status counts for the organization
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.reports.customer_stats()
+        """
+        _response = self._raw_client.customer_stats(
+            program_id=program_id, start_date=start_date, end_date=end_date, request_options=request_options
+        )
+        return _response.data
+
 
 class AsyncReportsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -90,8 +298,6 @@ class AsyncReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ReportsOverviewResponse:
         """
-        Aggregate revenue and commission totals (grouped by currency) plus commission, customer, and partner counts for the organization. Supports optional program_id and start_date/end_date filters.
-
         Parameters
         ----------
         program_id : typing.Optional[str]
@@ -126,6 +332,239 @@ class AsyncReportsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.overview(
+            program_id=program_id, start_date=start_date, end_date=end_date, request_options=request_options
+        )
+        return _response.data
+
+    async def partners(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsPartnersRequestSort] = None,
+        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsPartnersResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsPartnersRequestSort]
+
+        order : typing.Optional[ReportsPartnersRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsPartnersResponse
+            A page of partner breakdown rows
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.reports.partners()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.partners(
+            program_id=program_id,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            offset=offset,
+            sort=sort,
+            order=order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def links(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsLinksRequestSort] = None,
+        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsLinksResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsLinksRequestSort]
+
+        order : typing.Optional[ReportsLinksRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsLinksResponse
+            A page of link breakdown rows
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.reports.links()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.links(
+            program_id=program_id,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            offset=offset,
+            sort=sort,
+            order=order,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def timeseries(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsTimeseriesResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsTimeseriesResponse
+            One point per non-empty period
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.reports.timeseries()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.timeseries(
+            program_id=program_id,
+            start_date=start_date,
+            end_date=end_date,
+            granularity=granularity,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def customer_stats(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ReportsCustomerStatsResponse:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ReportsCustomerStatsResponse
+            Customer status counts for the organization
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.reports.customer_stats()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.customer_stats(
             program_id=program_id, start_date=start_date, end_date=end_date, request_options=request_options
         )
         return _response.data
