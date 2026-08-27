@@ -23,11 +23,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Python Semantic Release
-        id: psr
-        uses: python-semantic-release/python-semantic-release@v9.21.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pip install "python-semantic-release==9.21.2" "GitPython==3.1.45"
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          semantic-release version --changelog --commit --tag --push --vcs-release
       - name: Publish to PyPI
-        if: steps.psr.outputs.released == 'true'
+        if: ${{ hashFiles('dist/**') != '' }}
         uses: pypa/gh-action-pypi-publish@release/v1
