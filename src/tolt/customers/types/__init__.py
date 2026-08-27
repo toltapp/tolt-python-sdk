@@ -6,7 +6,6 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_customer_request import CreateCustomerRequest
     from .create_customer_response import CreateCustomerResponse
     from .delete_customer_response import DeleteCustomerResponse
     from .get_customer_response import GetCustomerResponse
@@ -14,7 +13,6 @@ if typing.TYPE_CHECKING:
     from .list_customers_response import ListCustomersResponse
     from .update_customer_response import UpdateCustomerResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateCustomerRequest": ".create_customer_request",
     "CreateCustomerResponse": ".create_customer_response",
     "DeleteCustomerResponse": ".delete_customer_response",
     "GetCustomerResponse": ".get_customer_response",
@@ -46,7 +44,6 @@ def __dir__():
 
 
 __all__ = [
-    "CreateCustomerRequest",
     "CreateCustomerResponse",
     "DeleteCustomerResponse",
     "GetCustomerResponse",

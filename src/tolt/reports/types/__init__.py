@@ -6,8 +6,28 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .reports_customer_stats_response import ReportsCustomerStatsResponse
+    from .reports_links_request_order import ReportsLinksRequestOrder
+    from .reports_links_request_sort import ReportsLinksRequestSort
+    from .reports_links_response import ReportsLinksResponse
     from .reports_overview_response import ReportsOverviewResponse
-_dynamic_imports: typing.Dict[str, str] = {"ReportsOverviewResponse": ".reports_overview_response"}
+    from .reports_partners_request_order import ReportsPartnersRequestOrder
+    from .reports_partners_request_sort import ReportsPartnersRequestSort
+    from .reports_partners_response import ReportsPartnersResponse
+    from .reports_timeseries_request_granularity import ReportsTimeseriesRequestGranularity
+    from .reports_timeseries_response import ReportsTimeseriesResponse
+_dynamic_imports: typing.Dict[str, str] = {
+    "ReportsCustomerStatsResponse": ".reports_customer_stats_response",
+    "ReportsLinksRequestOrder": ".reports_links_request_order",
+    "ReportsLinksRequestSort": ".reports_links_request_sort",
+    "ReportsLinksResponse": ".reports_links_response",
+    "ReportsOverviewResponse": ".reports_overview_response",
+    "ReportsPartnersRequestOrder": ".reports_partners_request_order",
+    "ReportsPartnersRequestSort": ".reports_partners_request_sort",
+    "ReportsPartnersResponse": ".reports_partners_response",
+    "ReportsTimeseriesRequestGranularity": ".reports_timeseries_request_granularity",
+    "ReportsTimeseriesResponse": ".reports_timeseries_response",
+}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +51,15 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ReportsOverviewResponse"]
+__all__ = [
+    "ReportsCustomerStatsResponse",
+    "ReportsLinksRequestOrder",
+    "ReportsLinksRequestSort",
+    "ReportsLinksResponse",
+    "ReportsOverviewResponse",
+    "ReportsPartnersRequestOrder",
+    "ReportsPartnersRequestSort",
+    "ReportsPartnersResponse",
+    "ReportsTimeseriesRequestGranularity",
+    "ReportsTimeseriesResponse",
+]

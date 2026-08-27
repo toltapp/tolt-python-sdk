@@ -13,7 +13,16 @@ from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
+from .types.reports_customer_stats_response import ReportsCustomerStatsResponse
+from .types.reports_links_request_order import ReportsLinksRequestOrder
+from .types.reports_links_request_sort import ReportsLinksRequestSort
+from .types.reports_links_response import ReportsLinksResponse
 from .types.reports_overview_response import ReportsOverviewResponse
+from .types.reports_partners_request_order import ReportsPartnersRequestOrder
+from .types.reports_partners_request_sort import ReportsPartnersRequestSort
+from .types.reports_partners_response import ReportsPartnersResponse
+from .types.reports_timeseries_request_granularity import ReportsTimeseriesRequestGranularity
+from .types.reports_timeseries_response import ReportsTimeseriesResponse
 from pydantic import ValidationError
 
 
@@ -30,8 +39,6 @@ class RawReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ReportsOverviewResponse]:
         """
-        Aggregate revenue and commission totals (grouped by currency) plus commission, customer, and partner counts for the organization. Supports optional program_id and start_date/end_date filters.
-
         Parameters
         ----------
         program_id : typing.Optional[str]
@@ -99,6 +106,346 @@ class RawReportsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def partners(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsPartnersRequestSort] = None,
+        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ReportsPartnersResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsPartnersRequestSort]
+
+        order : typing.Optional[ReportsPartnersRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ReportsPartnersResponse]
+            A page of partner breakdown rows
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v2/reports/partners",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+                "limit": limit,
+                "offset": offset,
+                "sort": sort,
+                "order": order,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsPartnersResponse,
+                    parse_obj_as(
+                        type_=ReportsPartnersResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def links(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsLinksRequestSort] = None,
+        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ReportsLinksResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsLinksRequestSort]
+
+        order : typing.Optional[ReportsLinksRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ReportsLinksResponse]
+            A page of link breakdown rows
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v2/reports/links",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+                "limit": limit,
+                "offset": offset,
+                "sort": sort,
+                "order": order,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsLinksResponse,
+                    parse_obj_as(
+                        type_=ReportsLinksResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def timeseries(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ReportsTimeseriesResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ReportsTimeseriesResponse]
+            One point per non-empty period
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v2/reports/timeseries",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+                "granularity": granularity,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsTimeseriesResponse,
+                    parse_obj_as(
+                        type_=ReportsTimeseriesResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def customer_stats(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ReportsCustomerStatsResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ReportsCustomerStatsResponse]
+            Customer status counts for the organization
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v2/reports/customers",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsCustomerStatsResponse,
+                    parse_obj_as(
+                        type_=ReportsCustomerStatsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawReportsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -113,8 +460,6 @@ class AsyncRawReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ReportsOverviewResponse]:
         """
-        Aggregate revenue and commission totals (grouped by currency) plus commission, customer, and partner counts for the organization. Supports optional program_id and start_date/end_date filters.
-
         Parameters
         ----------
         program_id : typing.Optional[str]
@@ -147,6 +492,346 @@ class AsyncRawReportsClient:
                     ReportsOverviewResponse,
                     parse_obj_as(
                         type_=ReportsOverviewResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def partners(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsPartnersRequestSort] = None,
+        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ReportsPartnersResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsPartnersRequestSort]
+
+        order : typing.Optional[ReportsPartnersRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ReportsPartnersResponse]
+            A page of partner breakdown rows
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v2/reports/partners",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+                "limit": limit,
+                "offset": offset,
+                "sort": sort,
+                "order": order,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsPartnersResponse,
+                    parse_obj_as(
+                        type_=ReportsPartnersResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def links(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        limit: typing.Optional[int] = None,
+        offset: typing.Optional[int] = None,
+        sort: typing.Optional[ReportsLinksRequestSort] = None,
+        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ReportsLinksResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        limit : typing.Optional[int]
+
+        offset : typing.Optional[int]
+
+        sort : typing.Optional[ReportsLinksRequestSort]
+
+        order : typing.Optional[ReportsLinksRequestOrder]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ReportsLinksResponse]
+            A page of link breakdown rows
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v2/reports/links",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+                "limit": limit,
+                "offset": offset,
+                "sort": sort,
+                "order": order,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsLinksResponse,
+                    parse_obj_as(
+                        type_=ReportsLinksResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def timeseries(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ReportsTimeseriesResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ReportsTimeseriesResponse]
+            One point per non-empty period
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v2/reports/timeseries",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+                "granularity": granularity,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsTimeseriesResponse,
+                    parse_obj_as(
+                        type_=ReportsTimeseriesResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def customer_stats(
+        self,
+        *,
+        program_id: typing.Optional[str] = None,
+        start_date: typing.Optional[dt.date] = None,
+        end_date: typing.Optional[dt.date] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ReportsCustomerStatsResponse]:
+        """
+        Parameters
+        ----------
+        program_id : typing.Optional[str]
+
+        start_date : typing.Optional[dt.date]
+
+        end_date : typing.Optional[dt.date]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ReportsCustomerStatsResponse]
+            Customer status counts for the organization
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v2/reports/customers",
+            method="GET",
+            params={
+                "program_id": program_id,
+                "start_date": str(start_date) if start_date is not None else None,
+                "end_date": str(end_date) if end_date is not None else None,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ReportsCustomerStatsResponse,
+                    parse_obj_as(
+                        type_=ReportsCustomerStatsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

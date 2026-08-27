@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
     from .clicks.client import AsyncClicksClient, ClicksClient
     from .commissions.client import AsyncCommissionsClient, CommissionsClient
     from .customers.client import AsyncCustomersClient, CustomersClient
+    from .embed.client import AsyncEmbedClient, EmbedClient
     from .flows.client import AsyncFlowsClient, FlowsClient
     from .groups.client import AsyncGroupsClient, GroupsClient
     from .links.client import AsyncLinksClient, LinksClient
@@ -107,6 +108,7 @@ class ToltApi:
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
         )
+        self._embed: typing.Optional[EmbedClient] = None
         self._groups: typing.Optional[GroupsClient] = None
         self._flows: typing.Optional[FlowsClient] = None
         self._clicks: typing.Optional[ClicksClient] = None
@@ -118,6 +120,14 @@ class ToltApi:
         self._links: typing.Optional[LinksClient] = None
         self._promotion_codes: typing.Optional[PromotionCodesClient] = None
         self._reports: typing.Optional[ReportsClient] = None
+
+    @property
+    def embed(self):
+        if self._embed is None:
+            from .embed.client import EmbedClient  # noqa: E402
+
+            self._embed = EmbedClient(client_wrapper=self._client_wrapper)
+        return self._embed
 
     @property
     def groups(self):
@@ -313,6 +323,7 @@ class AsyncToltApi:
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
         )
+        self._embed: typing.Optional[AsyncEmbedClient] = None
         self._groups: typing.Optional[AsyncGroupsClient] = None
         self._flows: typing.Optional[AsyncFlowsClient] = None
         self._clicks: typing.Optional[AsyncClicksClient] = None
@@ -324,6 +335,14 @@ class AsyncToltApi:
         self._links: typing.Optional[AsyncLinksClient] = None
         self._promotion_codes: typing.Optional[AsyncPromotionCodesClient] = None
         self._reports: typing.Optional[AsyncReportsClient] = None
+
+    @property
+    def embed(self):
+        if self._embed is None:
+            from .embed.client import AsyncEmbedClient  # noqa: E402
+
+            self._embed = AsyncEmbedClient(client_wrapper=self._client_wrapper)
+        return self._embed
 
     @property
     def groups(self):
