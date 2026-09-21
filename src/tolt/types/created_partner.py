@@ -27,6 +27,8 @@ class CreatedPartner(UniversalBaseModel):
     completed_onboarding: typing.Optional[bool] = None
     created_at: dt.datetime
     updated_at: dt.datetime
+    rejected_at: typing.Optional[dt.datetime] = None
+    suspended_at: typing.Optional[dt.datetime] = None
     link: Link
 
     if IS_PYDANTIC_V2:

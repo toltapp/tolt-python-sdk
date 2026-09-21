@@ -4,13 +4,13 @@ import typing
 
 import pydantic
 from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ...types.partner import Partner
+from ...types.partner_details import PartnerDetails
 
 
 class ListPartnersResponse(UniversalBaseModel):
     success: bool
     message: str
-    data: typing.List[Partner]
+    data: typing.List[PartnerDetails]
     has_more: bool
     next_cursor: typing.Optional[str] = pydantic.Field(default=None)
     """
