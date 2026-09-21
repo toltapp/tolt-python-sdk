@@ -3,13 +3,11 @@
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class ReportsLinkRow(UniversalBaseModel):
-    link_id: typing_extensions.Annotated[str, FieldMetadata(alias="linkId"), pydantic.Field(alias="linkId")]
+    link_id: str
     param: typing.Optional[str] = None
     value: typing.Optional[str] = None
     clicks: float
@@ -24,9 +22,7 @@ class ReportsLinkRow(UniversalBaseModel):
     Integer amount in the smallest currency unit (cents), serialized as a string. Summed across the row's currencies; scope to a single-currency program with program_id, or use /reports/overview for the per-currency split.
     """
 
-    conversion_rate: typing_extensions.Annotated[
-        float, FieldMetadata(alias="conversionRate"), pydantic.Field(alias="conversionRate")
-    ]
+    conversion_rate: float
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

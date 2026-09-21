@@ -6,6 +6,7 @@ from json.decoder import JSONDecodeError
 
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
@@ -13,12 +14,14 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..errors.not_found_error import NotFoundError
+from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
 from .types.create_customer_response import CreateCustomerResponse
 from .types.delete_customer_response import DeleteCustomerResponse
 from .types.get_customer_response import GetCustomerResponse
 from .types.list_customers_request_order import ListCustomersRequestOrder
+from .types.list_customers_request_sort import ListCustomersRequestSort
 from .types.list_customers_response import ListCustomersResponse
 from .types.update_customer_response import UpdateCustomerResponse
 from pydantic import ValidationError
@@ -36,7 +39,13 @@ class RawCustomersClient:
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCustomersRequestOrder] = None,
+        sort: typing.Optional[ListCustomersRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -51,7 +60,26 @@ class RawCustomersClient:
 
         order : typing.Optional[ListCustomersRequestOrder]
 
+        sort : typing.Optional[ListCustomersRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -77,7 +105,13 @@ class RawCustomersClient:
             params={
                 "limit": limit,
                 "order": order,
+                "sort": sort,
                 "starting_after": starting_after,
+                "ending_before": ending_before,
+                "created_after": serialize_datetime(created_after) if created_after is not None else None,
+                "created_before": serialize_datetime(created_before) if created_before is not None else None,
+                "updated_after": serialize_datetime(updated_after) if updated_after is not None else None,
+                "updated_before": serialize_datetime(updated_before) if updated_before is not None else None,
                 "program_id": program_id,
                 "partner_id": partner_id,
                 "customer_id": customer_id,
@@ -109,6 +143,17 @@ class RawCustomersClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -173,12 +218,12 @@ class RawCustomersClient:
             json={
                 "email": email,
                 "name": name,
-                "customerId": customer_id,
+                "customer_id": customer_id,
                 "status": status,
-                "subscriptionId": subscription_id,
-                "clickId": click_id,
-                "linkId": link_id,
-                "partnerId": partner_id,
+                "subscription_id": subscription_id,
+                "click_id": click_id,
+                "link_id": link_id,
+                "partner_id": partner_id,
             },
             headers={
                 "content-type": "application/json",
@@ -218,8 +263,8 @@ class RawCustomersClient:
                         ),
                     ),
                 )
-            if _response.status_code == 404:
-                raise NotFoundError(
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -291,6 +336,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -353,12 +409,12 @@ class RawCustomersClient:
                 "email": email,
                 "name": name,
                 "status": status,
-                "customerId": customer_id,
-                "subscriptionId": subscription_id,
-                "clickId": click_id,
-                "linkId": link_id,
-                "leadAt": lead_at,
-                "activeAt": active_at,
+                "customer_id": customer_id,
+                "subscription_id": subscription_id,
+                "click_id": click_id,
+                "link_id": link_id,
+                "lead_at": lead_at,
+                "active_at": active_at,
             },
             headers={
                 "content-type": "application/json",
@@ -400,6 +456,17 @@ class RawCustomersClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -471,6 +538,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -490,7 +568,13 @@ class AsyncRawCustomersClient:
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCustomersRequestOrder] = None,
+        sort: typing.Optional[ListCustomersRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -505,7 +589,26 @@ class AsyncRawCustomersClient:
 
         order : typing.Optional[ListCustomersRequestOrder]
 
+        sort : typing.Optional[ListCustomersRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -531,7 +634,13 @@ class AsyncRawCustomersClient:
             params={
                 "limit": limit,
                 "order": order,
+                "sort": sort,
                 "starting_after": starting_after,
+                "ending_before": ending_before,
+                "created_after": serialize_datetime(created_after) if created_after is not None else None,
+                "created_before": serialize_datetime(created_before) if created_before is not None else None,
+                "updated_after": serialize_datetime(updated_after) if updated_after is not None else None,
+                "updated_before": serialize_datetime(updated_before) if updated_before is not None else None,
                 "program_id": program_id,
                 "partner_id": partner_id,
                 "customer_id": customer_id,
@@ -563,6 +672,17 @@ class AsyncRawCustomersClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -627,12 +747,12 @@ class AsyncRawCustomersClient:
             json={
                 "email": email,
                 "name": name,
-                "customerId": customer_id,
+                "customer_id": customer_id,
                 "status": status,
-                "subscriptionId": subscription_id,
-                "clickId": click_id,
-                "linkId": link_id,
-                "partnerId": partner_id,
+                "subscription_id": subscription_id,
+                "click_id": click_id,
+                "link_id": link_id,
+                "partner_id": partner_id,
             },
             headers={
                 "content-type": "application/json",
@@ -672,8 +792,8 @@ class AsyncRawCustomersClient:
                         ),
                     ),
                 )
-            if _response.status_code == 404:
-                raise NotFoundError(
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -745,6 +865,17 @@ class AsyncRawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -807,12 +938,12 @@ class AsyncRawCustomersClient:
                 "email": email,
                 "name": name,
                 "status": status,
-                "customerId": customer_id,
-                "subscriptionId": subscription_id,
-                "clickId": click_id,
-                "linkId": link_id,
-                "leadAt": lead_at,
-                "activeAt": active_at,
+                "customer_id": customer_id,
+                "subscription_id": subscription_id,
+                "click_id": click_id,
+                "link_id": link_id,
+                "lead_at": lead_at,
+                "active_at": active_at,
             },
             headers={
                 "content-type": "application/json",
@@ -854,6 +985,17 @@ class AsyncRawCustomersClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -916,6 +1058,17 @@ class AsyncRawCustomersClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

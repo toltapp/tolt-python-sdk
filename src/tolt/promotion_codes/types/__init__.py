@@ -10,6 +10,7 @@ if typing.TYPE_CHECKING:
     from .delete_promotion_code_response import DeletePromotionCodeResponse
     from .get_promotion_code_response import GetPromotionCodeResponse
     from .list_promotion_codes_request_order import ListPromotionCodesRequestOrder
+    from .list_promotion_codes_request_sort import ListPromotionCodesRequestSort
     from .list_promotion_codes_response import ListPromotionCodesResponse
     from .update_promotion_code_response import UpdatePromotionCodeResponse
 _dynamic_imports: typing.Dict[str, str] = {
@@ -17,6 +18,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeletePromotionCodeResponse": ".delete_promotion_code_response",
     "GetPromotionCodeResponse": ".get_promotion_code_response",
     "ListPromotionCodesRequestOrder": ".list_promotion_codes_request_order",
+    "ListPromotionCodesRequestSort": ".list_promotion_codes_request_sort",
     "ListPromotionCodesResponse": ".list_promotion_codes_response",
     "UpdatePromotionCodeResponse": ".update_promotion_code_response",
 }
@@ -48,6 +50,7 @@ __all__ = [
     "DeletePromotionCodeResponse",
     "GetPromotionCodeResponse",
     "ListPromotionCodesRequestOrder",
+    "ListPromotionCodesRequestSort",
     "ListPromotionCodesResponse",
     "UpdatePromotionCodeResponse",
 ]

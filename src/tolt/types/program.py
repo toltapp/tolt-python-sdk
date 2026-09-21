@@ -4,41 +4,23 @@ import datetime as dt
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class Program(UniversalBaseModel):
     id: str
     name: typing.Optional[str] = None
-    product_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="productName"), pydantic.Field(alias="productName")
-    ] = None
+    product_name: typing.Optional[str] = None
     type: typing.Optional[str] = None
     status: typing.Optional[str] = None
-    currency_code: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="currencyCode"), pydantic.Field(alias="currencyCode")
-    ] = None
-    cookie_duration: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="cookieDuration"), pydantic.Field(alias="cookieDuration")
-    ] = None
-    payout_term: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="payoutTerm"), pydantic.Field(alias="payoutTerm")
-    ] = None
-    minimum_payout: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="minimumPayout"), pydantic.Field(alias="minimumPayout")
-    ] = None
-    website_url: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="websiteUrl"), pydantic.Field(alias="websiteUrl")
-    ] = None
+    currency_code: typing.Optional[str] = None
+    cookie_duration: typing.Optional[float] = None
+    payout_term: typing.Optional[str] = None
+    minimum_payout: typing.Optional[float] = None
+    website_url: typing.Optional[str] = None
     subdomain: typing.Optional[str] = None
-    created_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
-    ]
-    updated_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
-    ]
+    created_at: dt.datetime
+    updated_at: dt.datetime
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

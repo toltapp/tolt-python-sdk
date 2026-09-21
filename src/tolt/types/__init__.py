@@ -6,11 +6,17 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .bulk_result import BulkResult
+    from .bulk_result_results_item import BulkResultResultsItem
+    from .bulk_result_results_item_status import BulkResultResultsItemStatus
     from .click import Click
     from .commission import Commission
+    from .created_partner import CreatedPartner
     from .customer import Customer
     from .embed_token import EmbedToken
     from .error import Error
+    from .error_code import ErrorCode
+    from .error_errors_item import ErrorErrorsItem
     from .flow import Flow
     from .group import Group
     from .link import Link
@@ -27,11 +33,17 @@ if typing.TYPE_CHECKING:
     from .rerun_flows_result import RerunFlowsResult
     from .transaction import Transaction
 _dynamic_imports: typing.Dict[str, str] = {
+    "BulkResult": ".bulk_result",
+    "BulkResultResultsItem": ".bulk_result_results_item",
+    "BulkResultResultsItemStatus": ".bulk_result_results_item_status",
     "Click": ".click",
     "Commission": ".commission",
+    "CreatedPartner": ".created_partner",
     "Customer": ".customer",
     "EmbedToken": ".embed_token",
     "Error": ".error",
+    "ErrorCode": ".error_code",
+    "ErrorErrorsItem": ".error_errors_item",
     "Flow": ".flow",
     "Group": ".group",
     "Link": ".link",
@@ -72,11 +84,17 @@ def __dir__():
 
 
 __all__ = [
+    "BulkResult",
+    "BulkResultResultsItem",
+    "BulkResultResultsItemStatus",
     "Click",
     "Commission",
+    "CreatedPartner",
     "Customer",
     "EmbedToken",
     "Error",
+    "ErrorCode",
+    "ErrorErrorsItem",
     "Flow",
     "Group",
     "Link",

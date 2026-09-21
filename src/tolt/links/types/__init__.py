@@ -10,6 +10,7 @@ if typing.TYPE_CHECKING:
     from .delete_link_response import DeleteLinkResponse
     from .get_link_response import GetLinkResponse
     from .list_links_request_order import ListLinksRequestOrder
+    from .list_links_request_sort import ListLinksRequestSort
     from .list_links_response import ListLinksResponse
     from .update_link_response import UpdateLinkResponse
 _dynamic_imports: typing.Dict[str, str] = {
@@ -17,6 +18,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeleteLinkResponse": ".delete_link_response",
     "GetLinkResponse": ".get_link_response",
     "ListLinksRequestOrder": ".list_links_request_order",
+    "ListLinksRequestSort": ".list_links_request_sort",
     "ListLinksResponse": ".list_links_response",
     "UpdateLinkResponse": ".update_link_response",
 }
@@ -48,6 +50,7 @@ __all__ = [
     "DeleteLinkResponse",
     "GetLinkResponse",
     "ListLinksRequestOrder",
+    "ListLinksRequestSort",
     "ListLinksResponse",
     "UpdateLinkResponse",
 ]

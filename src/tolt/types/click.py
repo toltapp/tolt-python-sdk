@@ -4,9 +4,7 @@ import datetime as dt
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class Click(UniversalBaseModel):
@@ -17,21 +15,11 @@ class Click(UniversalBaseModel):
     browser: typing.Optional[str] = None
     country: typing.Optional[str] = None
     state: typing.Optional[str] = None
-    link_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="linkId"), pydantic.Field(alias="linkId")
-    ] = None
-    program_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="programId"), pydantic.Field(alias="programId")
-    ] = None
-    partner_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="partnerId"), pydantic.Field(alias="partnerId")
-    ] = None
-    created_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
-    ]
-    updated_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
-    ]
+    link_id: typing.Optional[str] = None
+    program_id: typing.Optional[str] = None
+    partner_id: typing.Optional[str] = None
+    created_at: dt.datetime
+    updated_at: dt.datetime
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

@@ -3,9 +3,7 @@
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 from .reports_overview_commissions_item import ReportsOverviewCommissionsItem
 from .reports_overview_revenue_item import ReportsOverviewRevenueItem
 
@@ -21,21 +19,13 @@ class ReportsOverview(UniversalBaseModel):
     Approved and paid commission totals, one entry per currency.
     """
 
-    commission_count: typing_extensions.Annotated[
-        float,
-        FieldMetadata(alias="commissionCount"),
-        pydantic.Field(alias="commissionCount", description="Number of approved and paid commissions."),
-    ]
+    commission_count: float = pydantic.Field()
     """
     Number of approved and paid commissions.
     """
 
-    customer_count: typing_extensions.Annotated[
-        float, FieldMetadata(alias="customerCount"), pydantic.Field(alias="customerCount")
-    ]
-    partner_count: typing_extensions.Annotated[
-        float, FieldMetadata(alias="partnerCount"), pydantic.Field(alias="partnerCount")
-    ]
+    customer_count: float
+    partner_count: float
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

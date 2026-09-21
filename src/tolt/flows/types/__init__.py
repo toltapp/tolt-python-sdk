@@ -9,11 +9,13 @@ if typing.TYPE_CHECKING:
     from .get_flow_response import GetFlowResponse
     from .list_flows_request_active import ListFlowsRequestActive
     from .list_flows_request_order import ListFlowsRequestOrder
+    from .list_flows_request_sort import ListFlowsRequestSort
     from .list_flows_response import ListFlowsResponse
 _dynamic_imports: typing.Dict[str, str] = {
     "GetFlowResponse": ".get_flow_response",
     "ListFlowsRequestActive": ".list_flows_request_active",
     "ListFlowsRequestOrder": ".list_flows_request_order",
+    "ListFlowsRequestSort": ".list_flows_request_sort",
     "ListFlowsResponse": ".list_flows_response",
 }
 
@@ -39,4 +41,10 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["GetFlowResponse", "ListFlowsRequestActive", "ListFlowsRequestOrder", "ListFlowsResponse"]
+__all__ = [
+    "GetFlowResponse",
+    "ListFlowsRequestActive",
+    "ListFlowsRequestOrder",
+    "ListFlowsRequestSort",
+    "ListFlowsResponse",
+]

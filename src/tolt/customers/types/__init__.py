@@ -10,6 +10,7 @@ if typing.TYPE_CHECKING:
     from .delete_customer_response import DeleteCustomerResponse
     from .get_customer_response import GetCustomerResponse
     from .list_customers_request_order import ListCustomersRequestOrder
+    from .list_customers_request_sort import ListCustomersRequestSort
     from .list_customers_response import ListCustomersResponse
     from .update_customer_response import UpdateCustomerResponse
 _dynamic_imports: typing.Dict[str, str] = {
@@ -17,6 +18,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeleteCustomerResponse": ".delete_customer_response",
     "GetCustomerResponse": ".get_customer_response",
     "ListCustomersRequestOrder": ".list_customers_request_order",
+    "ListCustomersRequestSort": ".list_customers_request_sort",
     "ListCustomersResponse": ".list_customers_response",
     "UpdateCustomerResponse": ".update_customer_response",
 }
@@ -48,6 +50,7 @@ __all__ = [
     "DeleteCustomerResponse",
     "GetCustomerResponse",
     "ListCustomersRequestOrder",
+    "ListCustomersRequestSort",
     "ListCustomersResponse",
     "UpdateCustomerResponse",
 ]

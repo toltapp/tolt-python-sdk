@@ -4,9 +4,7 @@ import datetime as dt
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class Commission(UniversalBaseModel):
@@ -25,45 +23,19 @@ class Commission(UniversalBaseModel):
     status: typing.Optional[str] = None
     type: typing.Optional[str] = None
     source: typing.Optional[str] = None
-    partner_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="partnerId"), pydantic.Field(alias="partnerId")
-    ] = None
-    customer_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="customerId"), pydantic.Field(alias="customerId")
-    ] = None
-    program_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="programId"), pydantic.Field(alias="programId")
-    ] = None
-    transaction_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="transactionId"), pydantic.Field(alias="transactionId")
-    ] = None
-    payout_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="payoutId"), pydantic.Field(alias="payoutId")
-    ] = None
-    charge_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="chargeId"), pydantic.Field(alias="chargeId")
-    ] = None
-    charge_status: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="chargeStatus"), pydantic.Field(alias="chargeStatus")
-    ] = None
-    is_ad_click: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="isAdClick"), pydantic.Field(alias="isAdClick")
-    ] = None
-    is_self_referral: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="isSelfReferral"), pydantic.Field(alias="isSelfReferral")
-    ] = None
-    approval_type: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="approvalType"), pydantic.Field(alias="approvalType")
-    ] = None
-    scheduled_approval_date: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="scheduledApprovalDate"), pydantic.Field(alias="scheduledApprovalDate")
-    ]
-    created_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
-    ]
-    updated_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
-    ]
+    partner_id: typing.Optional[str] = None
+    customer_id: typing.Optional[str] = None
+    program_id: typing.Optional[str] = None
+    transaction_id: typing.Optional[str] = None
+    payout_id: typing.Optional[str] = None
+    charge_id: typing.Optional[str] = None
+    charge_status: typing.Optional[str] = None
+    is_ad_click: typing.Optional[bool] = None
+    is_self_referral: typing.Optional[bool] = None
+    approval_type: typing.Optional[str] = None
+    scheduled_approval_date: dt.datetime
+    created_at: dt.datetime
+    updated_at: dt.datetime
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

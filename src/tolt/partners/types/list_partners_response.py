@@ -12,6 +12,15 @@ class ListPartnersResponse(UniversalBaseModel):
     message: str
     data: typing.List[Partner]
     has_more: bool
+    next_cursor: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Opaque cursor marking the last item on this page. Pass it as starting_after to continue. Null when the page is empty.
+    """
+
+    prev_cursor: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Opaque cursor marking the first item on this page. Pass it as ending_before to page backward. Null when the page is empty.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

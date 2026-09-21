@@ -10,6 +10,7 @@ from .types.create_customer_response import CreateCustomerResponse
 from .types.delete_customer_response import DeleteCustomerResponse
 from .types.get_customer_response import GetCustomerResponse
 from .types.list_customers_request_order import ListCustomersRequestOrder
+from .types.list_customers_request_sort import ListCustomersRequestSort
 from .types.list_customers_response import ListCustomersResponse
 from .types.update_customer_response import UpdateCustomerResponse
 
@@ -37,7 +38,13 @@ class CustomersClient:
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCustomersRequestOrder] = None,
+        sort: typing.Optional[ListCustomersRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -52,7 +59,26 @@ class CustomersClient:
 
         order : typing.Optional[ListCustomersRequestOrder]
 
+        sort : typing.Optional[ListCustomersRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -84,7 +110,13 @@ class CustomersClient:
         _response = self._raw_client.list_customers(
             limit=limit,
             order=order,
+            sort=sort,
             starting_after=starting_after,
+            ending_before=ending_before,
+            created_after=created_after,
+            created_before=created_before,
+            updated_after=updated_after,
+            updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
             customer_id=customer_id,
@@ -307,7 +339,13 @@ class AsyncCustomersClient:
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCustomersRequestOrder] = None,
+        sort: typing.Optional[ListCustomersRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -322,7 +360,26 @@ class AsyncCustomersClient:
 
         order : typing.Optional[ListCustomersRequestOrder]
 
+        sort : typing.Optional[ListCustomersRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -362,7 +419,13 @@ class AsyncCustomersClient:
         _response = await self._raw_client.list_customers(
             limit=limit,
             order=order,
+            sort=sort,
             starting_after=starting_after,
+            ending_before=ending_before,
+            created_after=created_after,
+            created_before=created_before,
+            updated_after=updated_after,
+            updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
             customer_id=customer_id,

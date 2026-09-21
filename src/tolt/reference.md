@@ -133,7 +133,55 @@ client.groups.list_groups()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListGroupsRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -290,7 +338,55 @@ client.flows.list_flows()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListFlowsRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -418,9 +514,23 @@ client.flows.get_flow(
 </details>
 
 ## Clicks
-<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">list_clicks</a>(...) -> ListClicksResponse</code></summary>
+<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">create_click</a>(...) -> CreateClickResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Records a click on a partner's link from your own server, for visits the browser script cannot see. Identify the source by link_id, by partner_id with an optional link_id, or by the link's param and value; the partner and program are resolved from it. Pass the returned id as click_id when you create the customer.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -439,7 +549,9 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.clicks.list_clicks()
+client.clicks.create_click(
+    request={"key": "value"},
+)
 
 ```
 </dd>
@@ -455,71 +567,7 @@ client.clicks.list_clicks()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**order:** `typing.Optional[ListClicksRequestOrder]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**starting_after:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**program_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**partner_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**link_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**country:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**device:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**browser:** `typing.Optional[str]` 
+**request:** `CreateClickRequest` 
     
 </dd>
 </dl>
@@ -599,6 +647,166 @@ client.clicks.get_click(
 </details>
 
 ## Partners
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">bulk_approve_partners</a>(...) -> BulkApprovePartnersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Approves up to 100 partners. Each id is processed on its own and the response reports the outcome per id, so one refused partner does not fail the request.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.partners.bulk_approve_partners(
+    ids=[
+        "part_9fQ2xLL",
+        "part_3RtV9k"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">bulk_reject_partners</a>(...) -> BulkRejectPartnersResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Rejects up to 100 partners with an optional shared rejection note. Each id is processed on its own and the response reports the outcome per id.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.partners.bulk_reject_partners(
+    ids=[
+        "part_9fQ2xLL",
+        "part_3RtV9k"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rejection_note:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.partners.<a href="src/tolt/partners/client.py">list_partners</a>(...) -> ListPartnersResponse</code></summary>
 <dl>
 <dd>
@@ -652,7 +860,55 @@ client.partners.list_partners()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListPartnersRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -685,6 +941,160 @@ client.partners.list_partners()
 <dd>
 
 **search:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">create_partner</a>(...) -> CreatePartnerResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.partners.create_partner(
+    email="sam@acme.com",
+    program_id="prg_YRsbPDAK",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**email:** `str` — Unique within the program, compared case-insensitively.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**program_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**first_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**last_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**company_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country_code:** `typing.Optional[str]` — Two-letter ISO country code.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**website_url:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**group_id:** `typing.Optional[str]` — Group in the program. Defaults to the program's default group.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[CreatePartnerRequestStatus]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**link:** `typing.Optional[CreatePartnerRequestLink]` — The referral link created with the partner. Defaults to a slug of the name or email.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify_partner:** `typing.Optional[bool]` — Send the partner the program's welcome email. Only goes out when the program's welcome email is enabled and the partner is active.
     
 </dd>
 </dl>
@@ -744,6 +1154,135 @@ client.partners.get_partner(
 <dd>
 
 **id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">update_partner</a>(...) -> UpdatePartnerResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.partners.update_partner(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**email:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**first_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**last_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**company_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country_code:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**website_url:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**group_id:** `typing.Optional[str]` 
     
 </dd>
 </dl>
@@ -1010,7 +1549,55 @@ client.programs.list_programs()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListProgramsRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -1151,7 +1738,55 @@ client.customers.list_customers()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListCustomersRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -1574,6 +2209,158 @@ client.customers.delete_customer(
 </details>
 
 ## Commissions
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">bulk_approve_commissions</a>(...) -> BulkApproveCommissionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.commissions.bulk_approve_commissions(
+    ids=[
+        "part_9fQ2xLL",
+        "part_3RtV9k"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">bulk_decline_commissions</a>(...) -> BulkDeclineCommissionsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.commissions.bulk_decline_commissions(
+    ids=[
+        "part_9fQ2xLL",
+        "part_3RtV9k"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">list_commissions</a>(...) -> ListCommissionsResponse</code></summary>
 <dl>
 <dd>
@@ -1627,7 +2414,55 @@ client.commissions.list_commissions()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListCommissionsRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -2167,7 +3002,55 @@ client.transactions.list_transactions()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListTransactionsRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -2250,7 +3133,7 @@ client = ToltApi(
 
 client.transactions.create_transaction(
     amount=1,
-    customer_id="customerId",
+    customer_id="customer_id",
 )
 
 ```
@@ -2762,7 +3645,55 @@ client.links.list_links()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListLinksRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -2829,7 +3760,7 @@ client = ToltApi(
 
 client.links.create_link(
     value="value",
-    partner_id="partnerId",
+    partner_id="partner_id",
 )
 
 ```
@@ -3129,7 +4060,55 @@ client.promotion_codes.list_promotion_codes()
 <dl>
 <dd>
 
-**starting_after:** `typing.Optional[str]` 
+**sort:** `typing.Optional[ListPromotionCodesRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
     
 </dd>
 </dl>
@@ -3204,7 +4183,7 @@ client = ToltApi(
 
 client.promotion_codes.create_promotion_code(
     code="code",
-    partner_id="partnerId",
+    partner_id="partner_id",
 )
 
 ```

@@ -4,44 +4,22 @@ import datetime as dt
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class Group(UniversalBaseModel):
     id: str
     name: typing.Optional[str] = None
     description: typing.Optional[str] = None
-    program_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="programId"), pydantic.Field(alias="programId")
-    ] = None
-    is_default: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="isDefault"), pydantic.Field(alias="isDefault")
-    ] = None
-    public_key: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="publicKey"), pydantic.Field(alias="publicKey")
-    ] = None
-    website_url: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="websiteUrl"), pydantic.Field(alias="websiteUrl")
-    ] = None
-    is_private: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="isPrivate"), pydantic.Field(alias="isPrivate")
-    ] = None
-    allow_manual_lead_submission: typing_extensions.Annotated[
-        typing.Optional[bool],
-        FieldMetadata(alias="allowManualLeadSubmission"),
-        pydantic.Field(alias="allowManualLeadSubmission"),
-    ] = None
-    minimum_payout: typing_extensions.Annotated[
-        typing.Optional[float], FieldMetadata(alias="minimumPayout"), pydantic.Field(alias="minimumPayout")
-    ] = None
-    created_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
-    ]
-    updated_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
-    ]
+    program_id: typing.Optional[str] = None
+    is_default: typing.Optional[bool] = None
+    public_key: typing.Optional[str] = None
+    website_url: typing.Optional[str] = None
+    is_private: typing.Optional[bool] = None
+    allow_manual_lead_submission: typing.Optional[bool] = None
+    minimum_payout: typing.Optional[float] = None
+    created_at: dt.datetime
+    updated_at: dt.datetime
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

@@ -5,9 +5,12 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawClicksClient, RawClicksClient
+from .types.create_click_request import CreateClickRequest
+from .types.create_click_response import CreateClickResponse
 from .types.get_click_response import GetClickResponse
-from .types.list_clicks_request_order import ListClicksRequestOrder
-from .types.list_clicks_response import ListClicksResponse
+
+# this is used as the default value for optional parameters
+OMIT = typing.cast(typing.Any, ...)
 
 
 class ClicksClient:
@@ -25,48 +28,23 @@ class ClicksClient:
         """
         return self._raw_client
 
-    def list_clicks(
-        self,
-        *,
-        limit: typing.Optional[int] = None,
-        order: typing.Optional[ListClicksRequestOrder] = None,
-        starting_after: typing.Optional[str] = None,
-        program_id: typing.Optional[str] = None,
-        partner_id: typing.Optional[str] = None,
-        link_id: typing.Optional[str] = None,
-        country: typing.Optional[str] = None,
-        device: typing.Optional[str] = None,
-        browser: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListClicksResponse:
+    def create_click(
+        self, *, request: CreateClickRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> CreateClickResponse:
         """
+        Records a click on a partner's link from your own server, for visits the browser script cannot see. Identify the source by link_id, by partner_id with an optional link_id, or by the link's param and value; the partner and program are resolved from it. Pass the returned id as click_id when you create the customer.
+
         Parameters
         ----------
-        limit : typing.Optional[int]
-
-        order : typing.Optional[ListClicksRequestOrder]
-
-        starting_after : typing.Optional[str]
-
-        program_id : typing.Optional[str]
-
-        partner_id : typing.Optional[str]
-
-        link_id : typing.Optional[str]
-
-        country : typing.Optional[str]
-
-        device : typing.Optional[str]
-
-        browser : typing.Optional[str]
+        request : CreateClickRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ListClicksResponse
-            A page of clicks
+        CreateClickResponse
+            The created click
 
         Examples
         --------
@@ -75,20 +53,11 @@ class ClicksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.clicks.list_clicks()
-        """
-        _response = self._raw_client.list_clicks(
-            limit=limit,
-            order=order,
-            starting_after=starting_after,
-            program_id=program_id,
-            partner_id=partner_id,
-            link_id=link_id,
-            country=country,
-            device=device,
-            browser=browser,
-            request_options=request_options,
+        client.clicks.create_click(
+            request={"key": "value"},
         )
+        """
+        _response = self._raw_client.create_click(request=request, request_options=request_options)
         return _response.data
 
     def get_click(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClickResponse:
@@ -135,48 +104,23 @@ class AsyncClicksClient:
         """
         return self._raw_client
 
-    async def list_clicks(
-        self,
-        *,
-        limit: typing.Optional[int] = None,
-        order: typing.Optional[ListClicksRequestOrder] = None,
-        starting_after: typing.Optional[str] = None,
-        program_id: typing.Optional[str] = None,
-        partner_id: typing.Optional[str] = None,
-        link_id: typing.Optional[str] = None,
-        country: typing.Optional[str] = None,
-        device: typing.Optional[str] = None,
-        browser: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListClicksResponse:
+    async def create_click(
+        self, *, request: CreateClickRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> CreateClickResponse:
         """
+        Records a click on a partner's link from your own server, for visits the browser script cannot see. Identify the source by link_id, by partner_id with an optional link_id, or by the link's param and value; the partner and program are resolved from it. Pass the returned id as click_id when you create the customer.
+
         Parameters
         ----------
-        limit : typing.Optional[int]
-
-        order : typing.Optional[ListClicksRequestOrder]
-
-        starting_after : typing.Optional[str]
-
-        program_id : typing.Optional[str]
-
-        partner_id : typing.Optional[str]
-
-        link_id : typing.Optional[str]
-
-        country : typing.Optional[str]
-
-        device : typing.Optional[str]
-
-        browser : typing.Optional[str]
+        request : CreateClickRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ListClicksResponse
-            A page of clicks
+        CreateClickResponse
+            The created click
 
         Examples
         --------
@@ -190,23 +134,14 @@ class AsyncClicksClient:
 
 
         async def main() -> None:
-            await client.clicks.list_clicks()
+            await client.clicks.create_click(
+                request={"key": "value"},
+            )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_clicks(
-            limit=limit,
-            order=order,
-            starting_after=starting_after,
-            program_id=program_id,
-            partner_id=partner_id,
-            link_id=link_id,
-            country=country,
-            device=device,
-            browser=browser,
-            request_options=request_options,
-        )
+        _response = await self._raw_client.create_click(request=request, request_options=request_options)
         return _response.data
 
     async def get_click(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClickResponse:
