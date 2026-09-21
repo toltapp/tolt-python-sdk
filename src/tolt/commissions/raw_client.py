@@ -6,6 +6,7 @@ from json.decoder import JSONDecodeError
 
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
@@ -15,15 +16,19 @@ from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.not_found_error import NotFoundError
+from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
 from .types.approve_commission_response import ApproveCommissionResponse
+from .types.bulk_approve_commissions_response import BulkApproveCommissionsResponse
+from .types.bulk_decline_commissions_response import BulkDeclineCommissionsResponse
 from .types.create_commission_request import CreateCommissionRequest
 from .types.create_commission_response import CreateCommissionResponse
 from .types.decline_commission_response import DeclineCommissionResponse
 from .types.delete_commission_response import DeleteCommissionResponse
 from .types.get_commission_response import GetCommissionResponse
 from .types.list_commissions_request_order import ListCommissionsRequestOrder
+from .types.list_commissions_request_sort import ListCommissionsRequestSort
 from .types.list_commissions_response import ListCommissionsResponse
 from .types.update_commission_response import UpdateCommissionResponse
 from pydantic import ValidationError
@@ -36,12 +41,184 @@ class RawCommissionsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
+    def bulk_approve_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[BulkApproveCommissionsResponse]:
+        """
+        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[BulkApproveCommissionsResponse]
+            Per-id results
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v2/commissions/bulk/approve",
+            method="POST",
+            json={
+                "ids": ids,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    BulkApproveCommissionsResponse,
+                    parse_obj_as(
+                        type_=BulkApproveCommissionsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def bulk_decline_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[BulkDeclineCommissionsResponse]:
+        """
+        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[BulkDeclineCommissionsResponse]
+            Per-id results
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v2/commissions/bulk/decline",
+            method="POST",
+            json={
+                "ids": ids,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    BulkDeclineCommissionsResponse,
+                    parse_obj_as(
+                        type_=BulkDeclineCommissionsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
     def list_commissions(
         self,
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCommissionsRequestOrder] = None,
+        sort: typing.Optional[ListCommissionsRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -58,7 +235,26 @@ class RawCommissionsClient:
 
         order : typing.Optional[ListCommissionsRequestOrder]
 
+        sort : typing.Optional[ListCommissionsRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -88,7 +284,13 @@ class RawCommissionsClient:
             params={
                 "limit": limit,
                 "order": order,
+                "sort": sort,
                 "starting_after": starting_after,
+                "ending_before": ending_before,
+                "created_after": serialize_datetime(created_after) if created_after is not None else None,
+                "created_before": serialize_datetime(created_before) if created_before is not None else None,
+                "updated_after": serialize_datetime(updated_after) if updated_after is not None else None,
+                "updated_before": serialize_datetime(updated_before) if updated_before is not None else None,
                 "program_id": program_id,
                 "partner_id": partner_id,
                 "customer_id": customer_id,
@@ -122,6 +324,17 @@ class RawCommissionsClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -208,6 +421,17 @@ class RawCommissionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -261,6 +485,17 @@ class RawCommissionsClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -329,9 +564,9 @@ class RawCommissionsClient:
                 "revenue": revenue,
                 "status": status,
                 "source": source,
-                "chargeId": charge_id,
-                "transactionId": transaction_id,
-                "createdAt": created_at,
+                "charge_id": charge_id,
+                "transaction_id": transaction_id,
+                "created_at": created_at,
             },
             headers={
                 "content-type": "application/json",
@@ -384,6 +619,17 @@ class RawCommissionsClient:
                 )
             if _response.status_code == 409:
                 raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -477,6 +723,17 @@ class RawCommissionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -552,6 +809,17 @@ class RawCommissionsClient:
                 )
             if _response.status_code == 409:
                 raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -645,6 +913,17 @@ class RawCommissionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -659,12 +938,184 @@ class AsyncRawCommissionsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
+    async def bulk_approve_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[BulkApproveCommissionsResponse]:
+        """
+        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[BulkApproveCommissionsResponse]
+            Per-id results
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v2/commissions/bulk/approve",
+            method="POST",
+            json={
+                "ids": ids,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    BulkApproveCommissionsResponse,
+                    parse_obj_as(
+                        type_=BulkApproveCommissionsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def bulk_decline_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[BulkDeclineCommissionsResponse]:
+        """
+        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[BulkDeclineCommissionsResponse]
+            Per-id results
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v2/commissions/bulk/decline",
+            method="POST",
+            json={
+                "ids": ids,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    BulkDeclineCommissionsResponse,
+                    parse_obj_as(
+                        type_=BulkDeclineCommissionsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
     async def list_commissions(
         self,
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCommissionsRequestOrder] = None,
+        sort: typing.Optional[ListCommissionsRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -681,7 +1132,26 @@ class AsyncRawCommissionsClient:
 
         order : typing.Optional[ListCommissionsRequestOrder]
 
+        sort : typing.Optional[ListCommissionsRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -711,7 +1181,13 @@ class AsyncRawCommissionsClient:
             params={
                 "limit": limit,
                 "order": order,
+                "sort": sort,
                 "starting_after": starting_after,
+                "ending_before": ending_before,
+                "created_after": serialize_datetime(created_after) if created_after is not None else None,
+                "created_before": serialize_datetime(created_before) if created_before is not None else None,
+                "updated_after": serialize_datetime(updated_after) if updated_after is not None else None,
+                "updated_before": serialize_datetime(updated_before) if updated_before is not None else None,
                 "program_id": program_id,
                 "partner_id": partner_id,
                 "customer_id": customer_id,
@@ -745,6 +1221,17 @@ class AsyncRawCommissionsClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -831,6 +1318,17 @@ class AsyncRawCommissionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -884,6 +1382,17 @@ class AsyncRawCommissionsClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -952,9 +1461,9 @@ class AsyncRawCommissionsClient:
                 "revenue": revenue,
                 "status": status,
                 "source": source,
-                "chargeId": charge_id,
-                "transactionId": transaction_id,
-                "createdAt": created_at,
+                "charge_id": charge_id,
+                "transaction_id": transaction_id,
+                "created_at": created_at,
             },
             headers={
                 "content-type": "application/json",
@@ -1007,6 +1516,17 @@ class AsyncRawCommissionsClient:
                 )
             if _response.status_code == 409:
                 raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1100,6 +1620,17 @@ class AsyncRawCommissionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1184,6 +1715,17 @@ class AsyncRawCommissionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1259,6 +1801,17 @@ class AsyncRawCommissionsClient:
                 )
             if _response.status_code == 409:
                 raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

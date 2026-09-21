@@ -4,49 +4,27 @@ import datetime as dt
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class Customer(UniversalBaseModel):
     id: str
-    customer_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="customerId"), pydantic.Field(alias="customerId")
-    ] = None
+    customer_id: typing.Optional[str] = None
     identifier: typing.Optional[str] = None
     email: typing.Optional[str] = None
     name: typing.Optional[str] = None
     status: typing.Optional[str] = None
     plan: typing.Optional[str] = None
-    subscription_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="subscriptionId"), pydantic.Field(alias="subscriptionId")
-    ] = None
-    partner_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="partnerId"), pydantic.Field(alias="partnerId")
-    ] = None
-    program_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="programId"), pydantic.Field(alias="programId")
-    ] = None
-    link_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="linkId"), pydantic.Field(alias="linkId")
-    ] = None
-    promotion_code_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="promotionCodeId"), pydantic.Field(alias="promotionCodeId")
-    ] = None
-    click_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="clickId"), pydantic.Field(alias="clickId")
-    ] = None
-    lead_at: typing_extensions.Annotated[dt.datetime, FieldMetadata(alias="leadAt"), pydantic.Field(alias="leadAt")]
-    active_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="activeAt"), pydantic.Field(alias="activeAt")
-    ]
-    created_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
-    ]
-    updated_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
-    ]
+    subscription_id: typing.Optional[str] = None
+    partner_id: typing.Optional[str] = None
+    program_id: typing.Optional[str] = None
+    link_id: typing.Optional[str] = None
+    promotion_code_id: typing.Optional[str] = None
+    click_id: typing.Optional[str] = None
+    lead_at: dt.datetime
+    active_at: dt.datetime
+    created_at: dt.datetime
+    updated_at: dt.datetime
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

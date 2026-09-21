@@ -6,11 +6,18 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import GetFlowResponse, ListFlowsRequestActive, ListFlowsRequestOrder, ListFlowsResponse
+    from .types import (
+        GetFlowResponse,
+        ListFlowsRequestActive,
+        ListFlowsRequestOrder,
+        ListFlowsRequestSort,
+        ListFlowsResponse,
+    )
 _dynamic_imports: typing.Dict[str, str] = {
     "GetFlowResponse": ".types",
     "ListFlowsRequestActive": ".types",
     "ListFlowsRequestOrder": ".types",
+    "ListFlowsRequestSort": ".types",
     "ListFlowsResponse": ".types",
 }
 
@@ -36,4 +43,10 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["GetFlowResponse", "ListFlowsRequestActive", "ListFlowsRequestOrder", "ListFlowsResponse"]
+__all__ = [
+    "GetFlowResponse",
+    "ListFlowsRequestActive",
+    "ListFlowsRequestOrder",
+    "ListFlowsRequestSort",
+    "ListFlowsResponse",
+]

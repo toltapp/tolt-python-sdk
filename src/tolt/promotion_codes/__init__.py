@@ -11,6 +11,7 @@ if typing.TYPE_CHECKING:
         DeletePromotionCodeResponse,
         GetPromotionCodeResponse,
         ListPromotionCodesRequestOrder,
+        ListPromotionCodesRequestSort,
         ListPromotionCodesResponse,
         UpdatePromotionCodeResponse,
     )
@@ -19,6 +20,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeletePromotionCodeResponse": ".types",
     "GetPromotionCodeResponse": ".types",
     "ListPromotionCodesRequestOrder": ".types",
+    "ListPromotionCodesRequestSort": ".types",
     "ListPromotionCodesResponse": ".types",
     "UpdatePromotionCodeResponse": ".types",
 }
@@ -50,6 +52,7 @@ __all__ = [
     "DeletePromotionCodeResponse",
     "GetPromotionCodeResponse",
     "ListPromotionCodesRequestOrder",
+    "ListPromotionCodesRequestSort",
     "ListPromotionCodesResponse",
     "UpdatePromotionCodeResponse",
 ]

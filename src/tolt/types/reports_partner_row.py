@@ -3,19 +3,13 @@
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class ReportsPartnerRow(UniversalBaseModel):
-    partner_id: typing_extensions.Annotated[str, FieldMetadata(alias="partnerId"), pydantic.Field(alias="partnerId")]
-    first_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="firstName"), pydantic.Field(alias="firstName")
-    ] = None
-    last_name: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="lastName"), pydantic.Field(alias="lastName")
-    ] = None
+    partner_id: str
+    first_name: typing.Optional[str] = None
+    last_name: typing.Optional[str] = None
     email: typing.Optional[str] = None
     clicks: float
     customers: float = pydantic.Field()
@@ -33,11 +27,7 @@ class ReportsPartnerRow(UniversalBaseModel):
     Integer amount in the smallest currency unit (cents), serialized as a string. Summed across the row's currencies; scope to a single-currency program with program_id, or use /reports/overview for the per-currency split.
     """
 
-    conversion_rate: typing_extensions.Annotated[
-        float,
-        FieldMetadata(alias="conversionRate"),
-        pydantic.Field(alias="conversionRate", description="Customers / clicks as a percentage."),
-    ]
+    conversion_rate: float = pydantic.Field()
     """
     Customers / clicks as a percentage.
     """

@@ -4,14 +4,13 @@ import typing
 
 import pydantic
 from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ...types.click import Click
+from ...types.bulk_result import BulkResult
 
 
-class ListClicksResponse(UniversalBaseModel):
+class BulkApproveCommissionsResponse(UniversalBaseModel):
     success: bool
     message: str
-    data: typing.List[Click]
-    has_more: bool
+    data: BulkResult
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

@@ -4,11 +4,27 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .error_code import ErrorCode
+from .error_errors_item import ErrorErrorsItem
 
 
 class Error(UniversalBaseModel):
     success: bool
-    message: str
+    message: str = pydantic.Field()
+    """
+    Human-readable explanation. May change; branch on code instead.
+    """
+
+    code: ErrorCode = pydantic.Field()
+    """
+    Stable machine-readable error code.
+    """
+
+    doc_url: str
+    errors: typing.Optional[typing.List[ErrorErrorsItem]] = pydantic.Field(default=None)
+    """
+    One entry per offending field. Present on validation_error and invalid_reference.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

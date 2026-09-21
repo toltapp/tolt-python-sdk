@@ -7,12 +7,15 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawCommissionsClient, RawCommissionsClient
 from .types.approve_commission_response import ApproveCommissionResponse
+from .types.bulk_approve_commissions_response import BulkApproveCommissionsResponse
+from .types.bulk_decline_commissions_response import BulkDeclineCommissionsResponse
 from .types.create_commission_request import CreateCommissionRequest
 from .types.create_commission_response import CreateCommissionResponse
 from .types.decline_commission_response import DeclineCommissionResponse
 from .types.delete_commission_response import DeleteCommissionResponse
 from .types.get_commission_response import GetCommissionResponse
 from .types.list_commissions_request_order import ListCommissionsRequestOrder
+from .types.list_commissions_request_sort import ListCommissionsRequestSort
 from .types.list_commissions_response import ListCommissionsResponse
 from .types.update_commission_response import UpdateCommissionResponse
 
@@ -35,12 +38,84 @@ class CommissionsClient:
         """
         return self._raw_client
 
+    def bulk_approve_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> BulkApproveCommissionsResponse:
+        """
+        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        BulkApproveCommissionsResponse
+            Per-id results
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.commissions.bulk_approve_commissions(
+            ids=["part_9fQ2xLL", "part_3RtV9k"],
+        )
+        """
+        _response = self._raw_client.bulk_approve_commissions(ids=ids, request_options=request_options)
+        return _response.data
+
+    def bulk_decline_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> BulkDeclineCommissionsResponse:
+        """
+        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        BulkDeclineCommissionsResponse
+            Per-id results
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.commissions.bulk_decline_commissions(
+            ids=["part_9fQ2xLL", "part_3RtV9k"],
+        )
+        """
+        _response = self._raw_client.bulk_decline_commissions(ids=ids, request_options=request_options)
+        return _response.data
+
     def list_commissions(
         self,
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCommissionsRequestOrder] = None,
+        sort: typing.Optional[ListCommissionsRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -57,7 +132,26 @@ class CommissionsClient:
 
         order : typing.Optional[ListCommissionsRequestOrder]
 
+        sort : typing.Optional[ListCommissionsRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -93,7 +187,13 @@ class CommissionsClient:
         _response = self._raw_client.list_commissions(
             limit=limit,
             order=order,
+            sort=sort,
             starting_after=starting_after,
+            ending_before=ending_before,
+            created_after=created_after,
+            created_before=created_before,
+            updated_after=updated_after,
+            updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
             customer_id=customer_id,
@@ -337,12 +437,100 @@ class AsyncCommissionsClient:
         """
         return self._raw_client
 
+    async def bulk_approve_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> BulkApproveCommissionsResponse:
+        """
+        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        BulkApproveCommissionsResponse
+            Per-id results
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.commissions.bulk_approve_commissions(
+                ids=["part_9fQ2xLL", "part_3RtV9k"],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.bulk_approve_commissions(ids=ids, request_options=request_options)
+        return _response.data
+
+    async def bulk_decline_commissions(
+        self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> BulkDeclineCommissionsResponse:
+        """
+        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+
+        Parameters
+        ----------
+        ids : typing.Sequence[str]
+            Up to 100 ids. Duplicates are processed once.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        BulkDeclineCommissionsResponse
+            Per-id results
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.commissions.bulk_decline_commissions(
+                ids=["part_9fQ2xLL", "part_3RtV9k"],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.bulk_decline_commissions(ids=ids, request_options=request_options)
+        return _response.data
+
     async def list_commissions(
         self,
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListCommissionsRequestOrder] = None,
+        sort: typing.Optional[ListCommissionsRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -359,7 +547,26 @@ class AsyncCommissionsClient:
 
         order : typing.Optional[ListCommissionsRequestOrder]
 
+        sort : typing.Optional[ListCommissionsRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -403,7 +610,13 @@ class AsyncCommissionsClient:
         _response = await self._raw_client.list_commissions(
             limit=limit,
             order=order,
+            sort=sort,
             starting_after=starting_after,
+            ending_before=ending_before,
+            created_after=created_after,
+            created_before=created_before,
+            updated_after=updated_after,
+            updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
             customer_id=customer_id,

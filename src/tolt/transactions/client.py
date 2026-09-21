@@ -10,6 +10,7 @@ from .types.create_transaction_response import CreateTransactionResponse
 from .types.delete_transaction_response import DeleteTransactionResponse
 from .types.get_transaction_response import GetTransactionResponse
 from .types.list_transactions_request_order import ListTransactionsRequestOrder
+from .types.list_transactions_request_sort import ListTransactionsRequestSort
 from .types.list_transactions_response import ListTransactionsResponse
 from .types.refund_transaction_response import RefundTransactionResponse
 from .types.rerun_transaction_flows_response import RerunTransactionFlowsResponse
@@ -39,7 +40,13 @@ class TransactionsClient:
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListTransactionsRequestOrder] = None,
+        sort: typing.Optional[ListTransactionsRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -54,7 +61,26 @@ class TransactionsClient:
 
         order : typing.Optional[ListTransactionsRequestOrder]
 
+        sort : typing.Optional[ListTransactionsRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -86,7 +112,13 @@ class TransactionsClient:
         _response = self._raw_client.list_transactions(
             limit=limit,
             order=order,
+            sort=sort,
             starting_after=starting_after,
+            ending_before=ending_before,
+            created_after=created_after,
+            created_before=created_before,
+            updated_after=updated_after,
+            updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
             customer_id=customer_id,
@@ -143,7 +175,7 @@ class TransactionsClient:
         )
         client.transactions.create_transaction(
             amount=1,
-            customer_id="customerId",
+            customer_id="customer_id",
         )
         """
         _response = self._raw_client.create_transaction(
@@ -370,7 +402,13 @@ class AsyncTransactionsClient:
         *,
         limit: typing.Optional[int] = None,
         order: typing.Optional[ListTransactionsRequestOrder] = None,
+        sort: typing.Optional[ListTransactionsRequestSort] = None,
         starting_after: typing.Optional[str] = None,
+        ending_before: typing.Optional[str] = None,
+        created_after: typing.Optional[dt.datetime] = None,
+        created_before: typing.Optional[dt.datetime] = None,
+        updated_after: typing.Optional[dt.datetime] = None,
+        updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
@@ -385,7 +423,26 @@ class AsyncTransactionsClient:
 
         order : typing.Optional[ListTransactionsRequestOrder]
 
+        sort : typing.Optional[ListTransactionsRequestSort]
+            Column the list is ordered and paged by.
+
         starting_after : typing.Optional[str]
+            Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+
+        ending_before : typing.Optional[str]
+            Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+
+        created_after : typing.Optional[dt.datetime]
+            Only items created at or after this ISO 8601 time.
+
+        created_before : typing.Optional[dt.datetime]
+            Only items created before this ISO 8601 time.
+
+        updated_after : typing.Optional[dt.datetime]
+            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+
+        updated_before : typing.Optional[dt.datetime]
+            Only items updated before this ISO 8601 time.
 
         program_id : typing.Optional[str]
 
@@ -425,7 +482,13 @@ class AsyncTransactionsClient:
         _response = await self._raw_client.list_transactions(
             limit=limit,
             order=order,
+            sort=sort,
             starting_after=starting_after,
+            ending_before=ending_before,
+            created_after=created_after,
+            created_before=created_before,
+            updated_after=updated_after,
+            updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
             customer_id=customer_id,
@@ -487,7 +550,7 @@ class AsyncTransactionsClient:
         async def main() -> None:
             await client.transactions.create_transaction(
                 amount=1,
-                customer_id="customerId",
+                customer_id="customer_id",
             )
 
 

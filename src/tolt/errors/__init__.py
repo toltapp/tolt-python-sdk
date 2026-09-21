@@ -9,11 +9,13 @@ if typing.TYPE_CHECKING:
     from .bad_request_error import BadRequestError
     from .conflict_error import ConflictError
     from .not_found_error import NotFoundError
+    from .too_many_requests_error import TooManyRequestsError
     from .unauthorized_error import UnauthorizedError
 _dynamic_imports: typing.Dict[str, str] = {
     "BadRequestError": ".bad_request_error",
     "ConflictError": ".conflict_error",
     "NotFoundError": ".not_found_error",
+    "TooManyRequestsError": ".too_many_requests_error",
     "UnauthorizedError": ".unauthorized_error",
 }
 
@@ -39,4 +41,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["BadRequestError", "ConflictError", "NotFoundError", "UnauthorizedError"]
+__all__ = ["BadRequestError", "ConflictError", "NotFoundError", "TooManyRequestsError", "UnauthorizedError"]

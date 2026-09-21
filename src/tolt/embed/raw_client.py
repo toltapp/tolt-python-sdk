@@ -12,6 +12,7 @@ from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.not_found_error import NotFoundError
+from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
 from .types.create_embed_token_request_partner import CreateEmbedTokenRequestPartner
@@ -54,7 +55,7 @@ class RawEmbedClient:
             "v2/embed-tokens",
             method="POST",
             json={
-                "partnerId": partner_id,
+                "partner_id": partner_id,
                 "partner": convert_and_respect_annotation_metadata(
                     object_=partner, annotation=CreateEmbedTokenRequestPartner, direction="write"
                 ),
@@ -108,6 +109,17 @@ class RawEmbedClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -150,7 +162,7 @@ class AsyncRawEmbedClient:
             "v2/embed-tokens",
             method="POST",
             json={
-                "partnerId": partner_id,
+                "partner_id": partner_id,
                 "partner": convert_and_respect_annotation_metadata(
                     object_=partner, annotation=CreateEmbedTokenRequestPartner, direction="write"
                 ),
@@ -195,6 +207,17 @@ class AsyncRawEmbedClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

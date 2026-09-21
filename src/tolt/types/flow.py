@@ -4,9 +4,7 @@ import datetime as dt
 import typing
 
 import pydantic
-import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class Flow(UniversalBaseModel):
@@ -14,34 +12,18 @@ class Flow(UniversalBaseModel):
     name: typing.Optional[str] = None
     description: typing.Optional[str] = None
     event: typing.Optional[str] = None
-    action_type: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="actionType"), pydantic.Field(alias="actionType")
-    ] = None
+    action_type: typing.Optional[str] = None
     action: typing.Optional[typing.Any] = None
     conditions: typing.Optional[typing.Any] = None
-    program_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="programId"), pydantic.Field(alias="programId")
-    ] = None
-    group_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="groupId"), pydantic.Field(alias="groupId")
-    ] = None
-    campaign_id: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="campaignId"), pydantic.Field(alias="campaignId")
-    ] = None
+    program_id: typing.Optional[str] = None
+    group_id: typing.Optional[str] = None
+    campaign_id: typing.Optional[str] = None
     active: typing.Optional[bool] = None
-    partner_overrides: typing_extensions.Annotated[
-        typing.Optional[typing.Any], FieldMetadata(alias="partnerOverrides"), pydantic.Field(alias="partnerOverrides")
-    ] = None
-    link_overrides: typing_extensions.Annotated[
-        typing.Optional[typing.Any], FieldMetadata(alias="linkOverrides"), pydantic.Field(alias="linkOverrides")
-    ] = None
+    partner_overrides: typing.Optional[typing.Any] = None
+    link_overrides: typing.Optional[typing.Any] = None
     options: typing.Optional[typing.Any] = None
-    created_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
-    ]
-    updated_at: typing_extensions.Annotated[
-        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
-    ]
+    created_at: dt.datetime
+    updated_at: dt.datetime
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

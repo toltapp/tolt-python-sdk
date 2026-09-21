@@ -10,85 +10,58 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.not_found_error import NotFoundError
+from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
+from .types.create_click_request import CreateClickRequest
+from .types.create_click_response import CreateClickResponse
 from .types.get_click_response import GetClickResponse
-from .types.list_clicks_request_order import ListClicksRequestOrder
-from .types.list_clicks_response import ListClicksResponse
 from pydantic import ValidationError
+
+# this is used as the default value for optional parameters
+OMIT = typing.cast(typing.Any, ...)
 
 
 class RawClicksClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_clicks(
-        self,
-        *,
-        limit: typing.Optional[int] = None,
-        order: typing.Optional[ListClicksRequestOrder] = None,
-        starting_after: typing.Optional[str] = None,
-        program_id: typing.Optional[str] = None,
-        partner_id: typing.Optional[str] = None,
-        link_id: typing.Optional[str] = None,
-        country: typing.Optional[str] = None,
-        device: typing.Optional[str] = None,
-        browser: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListClicksResponse]:
+    def create_click(
+        self, *, request: CreateClickRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[CreateClickResponse]:
         """
+        Records a click on a partner's link from your own server, for visits the browser script cannot see. Identify the source by link_id, by partner_id with an optional link_id, or by the link's param and value; the partner and program are resolved from it. Pass the returned id as click_id when you create the customer.
+
         Parameters
         ----------
-        limit : typing.Optional[int]
-
-        order : typing.Optional[ListClicksRequestOrder]
-
-        starting_after : typing.Optional[str]
-
-        program_id : typing.Optional[str]
-
-        partner_id : typing.Optional[str]
-
-        link_id : typing.Optional[str]
-
-        country : typing.Optional[str]
-
-        device : typing.Optional[str]
-
-        browser : typing.Optional[str]
+        request : CreateClickRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[ListClicksResponse]
-            A page of clicks
+        HttpResponse[CreateClickResponse]
+            The created click
         """
         _response = self._client_wrapper.httpx_client.request(
             "v2/clicks",
-            method="GET",
-            params={
-                "limit": limit,
-                "order": order,
-                "starting_after": starting_after,
-                "program_id": program_id,
-                "partner_id": partner_id,
-                "link_id": link_id,
-                "country": country,
-                "device": device,
-                "browser": browser,
-            },
+            method="POST",
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=CreateClickRequest, direction="write"
+            ),
             request_options=request_options,
+            omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ListClicksResponse,
+                    CreateClickResponse,
                     parse_obj_as(
-                        type_=ListClicksResponse,  # type: ignore
+                        type_=CreateClickResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -106,6 +79,17 @@ class RawClicksClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -177,6 +161,17 @@ class RawClicksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -191,71 +186,39 @@ class AsyncRawClicksClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_clicks(
-        self,
-        *,
-        limit: typing.Optional[int] = None,
-        order: typing.Optional[ListClicksRequestOrder] = None,
-        starting_after: typing.Optional[str] = None,
-        program_id: typing.Optional[str] = None,
-        partner_id: typing.Optional[str] = None,
-        link_id: typing.Optional[str] = None,
-        country: typing.Optional[str] = None,
-        device: typing.Optional[str] = None,
-        browser: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListClicksResponse]:
+    async def create_click(
+        self, *, request: CreateClickRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[CreateClickResponse]:
         """
+        Records a click on a partner's link from your own server, for visits the browser script cannot see. Identify the source by link_id, by partner_id with an optional link_id, or by the link's param and value; the partner and program are resolved from it. Pass the returned id as click_id when you create the customer.
+
         Parameters
         ----------
-        limit : typing.Optional[int]
-
-        order : typing.Optional[ListClicksRequestOrder]
-
-        starting_after : typing.Optional[str]
-
-        program_id : typing.Optional[str]
-
-        partner_id : typing.Optional[str]
-
-        link_id : typing.Optional[str]
-
-        country : typing.Optional[str]
-
-        device : typing.Optional[str]
-
-        browser : typing.Optional[str]
+        request : CreateClickRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[ListClicksResponse]
-            A page of clicks
+        AsyncHttpResponse[CreateClickResponse]
+            The created click
         """
         _response = await self._client_wrapper.httpx_client.request(
             "v2/clicks",
-            method="GET",
-            params={
-                "limit": limit,
-                "order": order,
-                "starting_after": starting_after,
-                "program_id": program_id,
-                "partner_id": partner_id,
-                "link_id": link_id,
-                "country": country,
-                "device": device,
-                "browser": browser,
-            },
+            method="POST",
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=CreateClickRequest, direction="write"
+            ),
             request_options=request_options,
+            omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ListClicksResponse,
+                    CreateClickResponse,
                     parse_obj_as(
-                        type_=ListClicksResponse,  # type: ignore
+                        type_=CreateClickResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -273,6 +236,17 @@ class AsyncRawClicksClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -335,6 +309,17 @@ class AsyncRawClicksClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

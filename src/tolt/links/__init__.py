@@ -11,6 +11,7 @@ if typing.TYPE_CHECKING:
         DeleteLinkResponse,
         GetLinkResponse,
         ListLinksRequestOrder,
+        ListLinksRequestSort,
         ListLinksResponse,
         UpdateLinkResponse,
     )
@@ -19,6 +20,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeleteLinkResponse": ".types",
     "GetLinkResponse": ".types",
     "ListLinksRequestOrder": ".types",
+    "ListLinksRequestSort": ".types",
     "ListLinksResponse": ".types",
     "UpdateLinkResponse": ".types",
 }
@@ -50,6 +52,7 @@ __all__ = [
     "DeleteLinkResponse",
     "GetLinkResponse",
     "ListLinksRequestOrder",
+    "ListLinksRequestSort",
     "ListLinksResponse",
     "UpdateLinkResponse",
 ]
