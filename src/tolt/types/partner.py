@@ -26,6 +26,8 @@ class Partner(UniversalBaseModel):
     completed_onboarding: typing.Optional[bool] = None
     created_at: dt.datetime
     updated_at: dt.datetime
+    rejected_at: typing.Optional[dt.datetime] = None
+    suspended_at: typing.Optional[dt.datetime] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

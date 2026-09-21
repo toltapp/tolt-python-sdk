@@ -21,6 +21,8 @@ if typing.TYPE_CHECKING:
     from .group import Group
     from .link import Link
     from .partner import Partner
+    from .partner_details import PartnerDetails
+    from .partner_details_custom_fields_item import PartnerDetailsCustomFieldsItem
     from .program import Program
     from .promotion_code import PromotionCode
     from .reports_customer_stats import ReportsCustomerStats
@@ -48,6 +50,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Group": ".group",
     "Link": ".link",
     "Partner": ".partner",
+    "PartnerDetails": ".partner_details",
+    "PartnerDetailsCustomFieldsItem": ".partner_details_custom_fields_item",
     "Program": ".program",
     "PromotionCode": ".promotion_code",
     "ReportsCustomerStats": ".reports_customer_stats",
@@ -99,6 +103,8 @@ __all__ = [
     "Group",
     "Link",
     "Partner",
+    "PartnerDetails",
+    "PartnerDetailsCustomFieldsItem",
     "Program",
     "PromotionCode",
     "ReportsCustomerStats",
