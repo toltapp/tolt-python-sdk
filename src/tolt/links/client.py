@@ -47,6 +47,8 @@ class LinksClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
+        param: typing.Optional[str] = None,
+        value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListLinksResponse:
@@ -82,6 +84,10 @@ class LinksClient:
 
         partner_id : typing.Optional[str]
 
+        param : typing.Optional[str]
+
+        value : typing.Optional[str]
+
         search : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
@@ -113,6 +119,8 @@ class LinksClient:
             updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
+            param=param,
+            value=value,
             search=search,
             request_options=request_options,
         )
@@ -285,6 +293,8 @@ class AsyncLinksClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
+        param: typing.Optional[str] = None,
+        value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListLinksResponse:
@@ -319,6 +329,10 @@ class AsyncLinksClient:
         program_id : typing.Optional[str]
 
         partner_id : typing.Optional[str]
+
+        param : typing.Optional[str]
+
+        value : typing.Optional[str]
 
         search : typing.Optional[str]
 
@@ -359,6 +373,8 @@ class AsyncLinksClient:
             updated_before=updated_before,
             program_id=program_id,
             partner_id=partner_id,
+            param=param,
+            value=value,
             search=search,
             request_options=request_options,
         )
