@@ -48,6 +48,8 @@ class RawLinksClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
+        param: typing.Optional[str] = None,
+        value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListLinksResponse]:
@@ -83,6 +85,10 @@ class RawLinksClient:
 
         partner_id : typing.Optional[str]
 
+        param : typing.Optional[str]
+
+        value : typing.Optional[str]
+
         search : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
@@ -108,6 +114,8 @@ class RawLinksClient:
                 "updated_before": serialize_datetime(updated_before) if updated_before is not None else None,
                 "program_id": program_id,
                 "partner_id": partner_id,
+                "param": param,
+                "value": value,
                 "search": search,
             },
             request_options=request_options,
@@ -521,6 +529,8 @@ class AsyncRawLinksClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
+        param: typing.Optional[str] = None,
+        value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListLinksResponse]:
@@ -556,6 +566,10 @@ class AsyncRawLinksClient:
 
         partner_id : typing.Optional[str]
 
+        param : typing.Optional[str]
+
+        value : typing.Optional[str]
+
         search : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
@@ -581,6 +595,8 @@ class AsyncRawLinksClient:
                 "updated_before": serialize_datetime(updated_before) if updated_before is not None else None,
                 "program_id": program_id,
                 "partner_id": partner_id,
+                "param": param,
+                "value": value,
                 "search": search,
             },
             request_options=request_options,
