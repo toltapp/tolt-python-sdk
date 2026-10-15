@@ -6,16 +6,16 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawReportsClient, RawReportsClient
-from .types.reports_customer_stats_response import ReportsCustomerStatsResponse
-from .types.reports_links_request_order import ReportsLinksRequestOrder
-from .types.reports_links_request_sort import ReportsLinksRequestSort
-from .types.reports_links_response import ReportsLinksResponse
-from .types.reports_overview_response import ReportsOverviewResponse
-from .types.reports_partners_request_order import ReportsPartnersRequestOrder
-from .types.reports_partners_request_sort import ReportsPartnersRequestSort
-from .types.reports_partners_response import ReportsPartnersResponse
-from .types.reports_timeseries_request_granularity import ReportsTimeseriesRequestGranularity
-from .types.reports_timeseries_response import ReportsTimeseriesResponse
+from .types.customer_stats_reports_response import CustomerStatsReportsResponse
+from .types.links_reports_request_order import LinksReportsRequestOrder
+from .types.links_reports_request_sort import LinksReportsRequestSort
+from .types.links_reports_response import LinksReportsResponse
+from .types.overview_reports_response import OverviewReportsResponse
+from .types.partners_reports_request_order import PartnersReportsRequestOrder
+from .types.partners_reports_request_sort import PartnersReportsRequestSort
+from .types.partners_reports_response import PartnersReportsResponse
+from .types.timeseries_reports_request_granularity import TimeseriesReportsRequestGranularity
+from .types.timeseries_reports_response import TimeseriesReportsResponse
 
 
 class ReportsClient:
@@ -40,7 +40,7 @@ class ReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsOverviewResponse:
+    ) -> OverviewReportsResponse:
         """
         Parameters
         ----------
@@ -55,7 +55,7 @@ class ReportsClient:
 
         Returns
         -------
-        ReportsOverviewResponse
+        OverviewReportsResponse
             Aggregate totals for the organization
 
         Examples
@@ -78,12 +78,13 @@ class ReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsPartnersRequestSort] = None,
-        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        sort: typing.Optional[PartnersReportsRequestSort] = None,
+        order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsPartnersResponse:
+    ) -> PartnersReportsResponse:
         """
         Parameters
         ----------
@@ -93,20 +94,22 @@ class ReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsPartnersRequestSort]
+        sort : typing.Optional[PartnersReportsRequestSort]
 
-        order : typing.Optional[ReportsPartnersRequestOrder]
+        order : typing.Optional[PartnersReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ReportsPartnersResponse
+        PartnersReportsResponse
             A page of partner breakdown rows
 
         Examples
@@ -122,6 +125,7 @@ class ReportsClient:
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
+            currency=currency,
             limit=limit,
             offset=offset,
             sort=sort,
@@ -136,12 +140,13 @@ class ReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsLinksRequestSort] = None,
-        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        sort: typing.Optional[LinksReportsRequestSort] = None,
+        order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsLinksResponse:
+    ) -> LinksReportsResponse:
         """
         Parameters
         ----------
@@ -151,20 +156,22 @@ class ReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsLinksRequestSort]
+        sort : typing.Optional[LinksReportsRequestSort]
 
-        order : typing.Optional[ReportsLinksRequestOrder]
+        order : typing.Optional[LinksReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ReportsLinksResponse
+        LinksReportsResponse
             A page of link breakdown rows
 
         Examples
@@ -180,6 +187,7 @@ class ReportsClient:
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
+            currency=currency,
             limit=limit,
             offset=offset,
             sort=sort,
@@ -194,9 +202,10 @@ class ReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
-        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
+        currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsTimeseriesResponse:
+    ) -> TimeseriesReportsResponse:
         """
         Parameters
         ----------
@@ -206,14 +215,16 @@ class ReportsClient:
 
         end_date : typing.Optional[dt.date]
 
-        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+        granularity : typing.Optional[TimeseriesReportsRequestGranularity]
+
+        currency : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ReportsTimeseriesResponse
+        TimeseriesReportsResponse
             One point per non-empty period
 
         Examples
@@ -230,6 +241,7 @@ class ReportsClient:
             start_date=start_date,
             end_date=end_date,
             granularity=granularity,
+            currency=currency,
             request_options=request_options,
         )
         return _response.data
@@ -241,7 +253,7 @@ class ReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsCustomerStatsResponse:
+    ) -> CustomerStatsReportsResponse:
         """
         Parameters
         ----------
@@ -256,7 +268,7 @@ class ReportsClient:
 
         Returns
         -------
-        ReportsCustomerStatsResponse
+        CustomerStatsReportsResponse
             Customer status counts for the organization
 
         Examples
@@ -296,7 +308,7 @@ class AsyncReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsOverviewResponse:
+    ) -> OverviewReportsResponse:
         """
         Parameters
         ----------
@@ -311,7 +323,7 @@ class AsyncReportsClient:
 
         Returns
         -------
-        ReportsOverviewResponse
+        OverviewReportsResponse
             Aggregate totals for the organization
 
         Examples
@@ -342,12 +354,13 @@ class AsyncReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsPartnersRequestSort] = None,
-        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        sort: typing.Optional[PartnersReportsRequestSort] = None,
+        order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsPartnersResponse:
+    ) -> PartnersReportsResponse:
         """
         Parameters
         ----------
@@ -357,20 +370,22 @@ class AsyncReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsPartnersRequestSort]
+        sort : typing.Optional[PartnersReportsRequestSort]
 
-        order : typing.Optional[ReportsPartnersRequestOrder]
+        order : typing.Optional[PartnersReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ReportsPartnersResponse
+        PartnersReportsResponse
             A page of partner breakdown rows
 
         Examples
@@ -394,6 +409,7 @@ class AsyncReportsClient:
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
+            currency=currency,
             limit=limit,
             offset=offset,
             sort=sort,
@@ -408,12 +424,13 @@ class AsyncReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsLinksRequestSort] = None,
-        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        sort: typing.Optional[LinksReportsRequestSort] = None,
+        order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsLinksResponse:
+    ) -> LinksReportsResponse:
         """
         Parameters
         ----------
@@ -423,20 +440,22 @@ class AsyncReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsLinksRequestSort]
+        sort : typing.Optional[LinksReportsRequestSort]
 
-        order : typing.Optional[ReportsLinksRequestOrder]
+        order : typing.Optional[LinksReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ReportsLinksResponse
+        LinksReportsResponse
             A page of link breakdown rows
 
         Examples
@@ -460,6 +479,7 @@ class AsyncReportsClient:
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
+            currency=currency,
             limit=limit,
             offset=offset,
             sort=sort,
@@ -474,9 +494,10 @@ class AsyncReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
-        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
+        currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsTimeseriesResponse:
+    ) -> TimeseriesReportsResponse:
         """
         Parameters
         ----------
@@ -486,14 +507,16 @@ class AsyncReportsClient:
 
         end_date : typing.Optional[dt.date]
 
-        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+        granularity : typing.Optional[TimeseriesReportsRequestGranularity]
+
+        currency : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        ReportsTimeseriesResponse
+        TimeseriesReportsResponse
             One point per non-empty period
 
         Examples
@@ -518,6 +541,7 @@ class AsyncReportsClient:
             start_date=start_date,
             end_date=end_date,
             granularity=granularity,
+            currency=currency,
             request_options=request_options,
         )
         return _response.data
@@ -529,7 +553,7 @@ class AsyncReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ReportsCustomerStatsResponse:
+    ) -> CustomerStatsReportsResponse:
         """
         Parameters
         ----------
@@ -544,7 +568,7 @@ class AsyncReportsClient:
 
         Returns
         -------
-        ReportsCustomerStatsResponse
+        CustomerStatsReportsResponse
             Customer status counts for the organization
 
         Examples

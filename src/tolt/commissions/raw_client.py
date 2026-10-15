@@ -19,18 +19,18 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.approve_commission_response import ApproveCommissionResponse
+from .types.approve_commissions_response import ApproveCommissionsResponse
 from .types.bulk_approve_commissions_response import BulkApproveCommissionsResponse
 from .types.bulk_decline_commissions_response import BulkDeclineCommissionsResponse
-from .types.create_commission_request import CreateCommissionRequest
-from .types.create_commission_response import CreateCommissionResponse
-from .types.decline_commission_response import DeclineCommissionResponse
-from .types.delete_commission_response import DeleteCommissionResponse
-from .types.get_commission_response import GetCommissionResponse
+from .types.create_commissions_request import CreateCommissionsRequest
+from .types.create_commissions_response import CreateCommissionsResponse
+from .types.decline_commissions_response import DeclineCommissionsResponse
+from .types.delete_commissions_response import DeleteCommissionsResponse
+from .types.get_commissions_response import GetCommissionsResponse
 from .types.list_commissions_request_order import ListCommissionsRequestOrder
 from .types.list_commissions_request_sort import ListCommissionsRequestSort
 from .types.list_commissions_response import ListCommissionsResponse
-from .types.update_commission_response import UpdateCommissionResponse
+from .types.update_commissions_response import UpdateCommissionsResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -41,11 +41,11 @@ class RawCommissionsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def bulk_approve_commissions(
+    def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[BulkApproveCommissionsResponse]:
         """
-        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Approves up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -124,11 +124,11 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def bulk_decline_commissions(
+    def bulk_decline(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[BulkDeclineCommissionsResponse]:
         """
-        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Declines up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -207,7 +207,7 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def list_commissions(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -353,27 +353,29 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_commission(
-        self, *, request: CreateCommissionRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[CreateCommissionResponse]:
+    def create(
+        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[CreateCommissionsResponse]:
         """
+        Supports historical created_at values. Status defaults to approved when omitted.
+
         Parameters
         ----------
-        request : CreateCommissionRequest
+        request : CreateCommissionsRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[CreateCommissionResponse]
+        HttpResponse[CreateCommissionsResponse]
             The created commission
         """
         _response = self._client_wrapper.httpx_client.request(
             "v2/commissions",
             method="POST",
             json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=CreateCommissionRequest, direction="write"
+                object_=request, annotation=CreateCommissionsRequest, direction="write"
             ),
             request_options=request_options,
             omit=OMIT,
@@ -381,9 +383,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCommissionResponse,
+                    CreateCommissionsResponse,
                     parse_obj_as(
-                        type_=CreateCommissionResponse,  # type: ignore
+                        type_=CreateCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -441,9 +443,9 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_commission(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetCommissionResponse]:
+    ) -> HttpResponse[GetCommissionsResponse]:
         """
         Parameters
         ----------
@@ -454,7 +456,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[GetCommissionResponse]
+        HttpResponse[GetCommissionsResponse]
             The requested commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -465,9 +467,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCommissionResponse,
+                    GetCommissionsResponse,
                     parse_obj_as(
-                        type_=GetCommissionResponse,  # type: ignore
+                        type_=GetCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -514,7 +516,7 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def update_commission(
+    def update(
         self,
         id: str,
         *,
@@ -526,8 +528,10 @@ class RawCommissionsClient:
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateCommissionResponse]:
+    ) -> HttpResponse[UpdateCommissionsResponse]:
         """
+        Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
+
         Parameters
         ----------
         id : str
@@ -553,7 +557,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[UpdateCommissionResponse]
+        HttpResponse[UpdateCommissionsResponse]
             The updated commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -577,9 +581,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCommissionResponse,
+                    UpdateCommissionsResponse,
                     parse_obj_as(
-                        type_=UpdateCommissionResponse,  # type: ignore
+                        type_=UpdateCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -648,9 +652,9 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete_commission(
+    def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteCommissionResponse]:
+    ) -> HttpResponse[DeleteCommissionsResponse]:
         """
         Parameters
         ----------
@@ -661,7 +665,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[DeleteCommissionResponse]
+        HttpResponse[DeleteCommissionsResponse]
             The deleted commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -672,9 +676,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCommissionResponse,
+                    DeleteCommissionsResponse,
                     parse_obj_as(
-                        type_=DeleteCommissionResponse,  # type: ignore
+                        type_=DeleteCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -743,9 +747,9 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def approve_commission(
+    def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[ApproveCommissionResponse]:
+    ) -> HttpResponse[ApproveCommissionsResponse]:
         """
         Parameters
         ----------
@@ -756,7 +760,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[ApproveCommissionResponse]
+        HttpResponse[ApproveCommissionsResponse]
             The approved commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -767,9 +771,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApproveCommissionResponse,
+                    ApproveCommissionsResponse,
                     parse_obj_as(
-                        type_=ApproveCommissionResponse,  # type: ignore
+                        type_=ApproveCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -838,9 +842,9 @@ class RawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def decline_commission(
+    def decline(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeclineCommissionResponse]:
+    ) -> HttpResponse[DeclineCommissionsResponse]:
         """
         Parameters
         ----------
@@ -851,7 +855,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[DeclineCommissionResponse]
+        HttpResponse[DeclineCommissionsResponse]
             The declined commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -862,9 +866,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeclineCommissionResponse,
+                    DeclineCommissionsResponse,
                     parse_obj_as(
-                        type_=DeclineCommissionResponse,  # type: ignore
+                        type_=DeclineCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -938,11 +942,11 @@ class AsyncRawCommissionsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def bulk_approve_commissions(
+    async def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[BulkApproveCommissionsResponse]:
         """
-        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Approves up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -1021,11 +1025,11 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def bulk_decline_commissions(
+    async def bulk_decline(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[BulkDeclineCommissionsResponse]:
         """
-        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Declines up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -1104,7 +1108,7 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def list_commissions(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -1250,27 +1254,29 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_commission(
-        self, *, request: CreateCommissionRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[CreateCommissionResponse]:
+    async def create(
+        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[CreateCommissionsResponse]:
         """
+        Supports historical created_at values. Status defaults to approved when omitted.
+
         Parameters
         ----------
-        request : CreateCommissionRequest
+        request : CreateCommissionsRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[CreateCommissionResponse]
+        AsyncHttpResponse[CreateCommissionsResponse]
             The created commission
         """
         _response = await self._client_wrapper.httpx_client.request(
             "v2/commissions",
             method="POST",
             json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=CreateCommissionRequest, direction="write"
+                object_=request, annotation=CreateCommissionsRequest, direction="write"
             ),
             request_options=request_options,
             omit=OMIT,
@@ -1278,9 +1284,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCommissionResponse,
+                    CreateCommissionsResponse,
                     parse_obj_as(
-                        type_=CreateCommissionResponse,  # type: ignore
+                        type_=CreateCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1338,9 +1344,9 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_commission(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetCommissionResponse]:
+    ) -> AsyncHttpResponse[GetCommissionsResponse]:
         """
         Parameters
         ----------
@@ -1351,7 +1357,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetCommissionResponse]
+        AsyncHttpResponse[GetCommissionsResponse]
             The requested commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1362,9 +1368,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCommissionResponse,
+                    GetCommissionsResponse,
                     parse_obj_as(
-                        type_=GetCommissionResponse,  # type: ignore
+                        type_=GetCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1411,7 +1417,7 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def update_commission(
+    async def update(
         self,
         id: str,
         *,
@@ -1423,8 +1429,10 @@ class AsyncRawCommissionsClient:
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateCommissionResponse]:
+    ) -> AsyncHttpResponse[UpdateCommissionsResponse]:
         """
+        Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
+
         Parameters
         ----------
         id : str
@@ -1450,7 +1458,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateCommissionResponse]
+        AsyncHttpResponse[UpdateCommissionsResponse]
             The updated commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1474,9 +1482,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCommissionResponse,
+                    UpdateCommissionsResponse,
                     parse_obj_as(
-                        type_=UpdateCommissionResponse,  # type: ignore
+                        type_=UpdateCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1545,9 +1553,9 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def delete_commission(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteCommissionResponse]:
+    ) -> AsyncHttpResponse[DeleteCommissionsResponse]:
         """
         Parameters
         ----------
@@ -1558,7 +1566,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteCommissionResponse]
+        AsyncHttpResponse[DeleteCommissionsResponse]
             The deleted commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1569,9 +1577,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCommissionResponse,
+                    DeleteCommissionsResponse,
                     parse_obj_as(
-                        type_=DeleteCommissionResponse,  # type: ignore
+                        type_=DeleteCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1640,9 +1648,9 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def approve_commission(
+    async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[ApproveCommissionResponse]:
+    ) -> AsyncHttpResponse[ApproveCommissionsResponse]:
         """
         Parameters
         ----------
@@ -1653,7 +1661,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ApproveCommissionResponse]
+        AsyncHttpResponse[ApproveCommissionsResponse]
             The approved commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1664,9 +1672,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApproveCommissionResponse,
+                    ApproveCommissionsResponse,
                     parse_obj_as(
-                        type_=ApproveCommissionResponse,  # type: ignore
+                        type_=ApproveCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1735,9 +1743,9 @@ class AsyncRawCommissionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def decline_commission(
+    async def decline(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeclineCommissionResponse]:
+    ) -> AsyncHttpResponse[DeclineCommissionsResponse]:
         """
         Parameters
         ----------
@@ -1748,7 +1756,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeclineCommissionResponse]
+        AsyncHttpResponse[DeclineCommissionsResponse]
             The declined commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1759,9 +1767,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeclineCommissionResponse,
+                    DeclineCommissionsResponse,
                     parse_obj_as(
-                        type_=DeclineCommissionResponse,  # type: ignore
+                        type_=DeclineCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

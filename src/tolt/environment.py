@@ -4,4 +4,4 @@ import enum
 
 
 class ToltApiEnvironment(enum.Enum):
-    PRODUCTION = "https://platform.tolt.com"
+    PRODUCTION = "https://platform.tolt.dev"

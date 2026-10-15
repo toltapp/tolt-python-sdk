@@ -17,13 +17,14 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.create_link_response import CreateLinkResponse
-from .types.delete_link_response import DeleteLinkResponse
-from .types.get_link_response import GetLinkResponse
+from .types.create_links_response import CreateLinksResponse
+from .types.delete_links_response import DeleteLinksResponse
+from .types.get_by_param_value_links_response import GetByParamValueLinksResponse
+from .types.get_links_response import GetLinksResponse
 from .types.list_links_request_order import ListLinksRequestOrder
 from .types.list_links_request_sort import ListLinksRequestSort
 from .types.list_links_response import ListLinksResponse
-from .types.update_link_response import UpdateLinkResponse
+from .types.update_links_response import UpdateLinksResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -34,7 +35,7 @@ class RawLinksClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_links(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -54,6 +55,8 @@ class RawLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListLinksResponse]:
         """
+        Lists ordinary links. Campaign-managed links are excluded.
+
         Parameters
         ----------
         limit : typing.Optional[int]
@@ -172,14 +175,14 @@ class RawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_link(
+    def create(
         self,
         *,
         value: str,
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreateLinkResponse]:
+    ) -> HttpResponse[CreateLinksResponse]:
         """
         Parameters
         ----------
@@ -194,7 +197,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[CreateLinkResponse]
+        HttpResponse[CreateLinksResponse]
             The created link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -214,9 +217,9 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateLinkResponse,
+                    CreateLinksResponse,
                     parse_obj_as(
-                        type_=CreateLinkResponse,  # type: ignore
+                        type_=CreateLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -263,10 +266,105 @@ class RawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_link(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetLinkResponse]:
+    def get_by_param_value(
+        self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[GetByParamValueLinksResponse]:
         """
+        Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
+
+        Parameters
+        ----------
+        param : str
+
+        value : str
+            Matched case-insensitively.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[GetByParamValueLinksResponse]
+            The matching link
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "v2/links/by-param-value",
+            method="GET",
+            params={
+                "param": param,
+                "value": value,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetByParamValueLinksResponse,
+                    parse_obj_as(
+                        type_=GetByParamValueLinksResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def get(
+        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[GetLinksResponse]:
+        """
+        Gets an ordinary or campaign-managed link by ID.
+
         Parameters
         ----------
         id : str
@@ -276,7 +374,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[GetLinkResponse]
+        HttpResponse[GetLinksResponse]
             The requested link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -287,9 +385,9 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetLinkResponse,
+                    GetLinksResponse,
                     parse_obj_as(
-                        type_=GetLinkResponse,  # type: ignore
+                        type_=GetLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -336,15 +434,17 @@ class RawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def update_link(
+    def update(
         self,
         id: str,
         *,
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateLinkResponse]:
+    ) -> HttpResponse[UpdateLinksResponse]:
         """
+        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -358,7 +458,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[UpdateLinkResponse]
+        HttpResponse[UpdateLinksResponse]
             The updated link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -377,9 +477,9 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateLinkResponse,
+                    UpdateLinksResponse,
                     parse_obj_as(
-                        type_=UpdateLinkResponse,  # type: ignore
+                        type_=UpdateLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -437,10 +537,12 @@ class RawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete_link(
+    def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteLinkResponse]:
+    ) -> HttpResponse[DeleteLinksResponse]:
         """
+        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -450,7 +552,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[DeleteLinkResponse]
+        HttpResponse[DeleteLinksResponse]
             The deleted link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -461,13 +563,24 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteLinkResponse,
+                    DeleteLinksResponse,
                     parse_obj_as(
-                        type_=DeleteLinkResponse,  # type: ignore
+                        type_=DeleteLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -515,7 +628,7 @@ class AsyncRawLinksClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_links(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -535,6 +648,8 @@ class AsyncRawLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListLinksResponse]:
         """
+        Lists ordinary links. Campaign-managed links are excluded.
+
         Parameters
         ----------
         limit : typing.Optional[int]
@@ -653,14 +768,14 @@ class AsyncRawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_link(
+    async def create(
         self,
         *,
         value: str,
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreateLinkResponse]:
+    ) -> AsyncHttpResponse[CreateLinksResponse]:
         """
         Parameters
         ----------
@@ -675,7 +790,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreateLinkResponse]
+        AsyncHttpResponse[CreateLinksResponse]
             The created link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -695,9 +810,9 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateLinkResponse,
+                    CreateLinksResponse,
                     parse_obj_as(
-                        type_=CreateLinkResponse,  # type: ignore
+                        type_=CreateLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -744,10 +859,105 @@ class AsyncRawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_link(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetLinkResponse]:
+    async def get_by_param_value(
+        self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[GetByParamValueLinksResponse]:
         """
+        Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
+
+        Parameters
+        ----------
+        param : str
+
+        value : str
+            Matched case-insensitively.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[GetByParamValueLinksResponse]
+            The matching link
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "v2/links/by-param-value",
+            method="GET",
+            params={
+                "param": param,
+                "value": value,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    GetByParamValueLinksResponse,
+                    parse_obj_as(
+                        type_=GetByParamValueLinksResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def get(
+        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[GetLinksResponse]:
+        """
+        Gets an ordinary or campaign-managed link by ID.
+
         Parameters
         ----------
         id : str
@@ -757,7 +967,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetLinkResponse]
+        AsyncHttpResponse[GetLinksResponse]
             The requested link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -768,9 +978,9 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetLinkResponse,
+                    GetLinksResponse,
                     parse_obj_as(
-                        type_=GetLinkResponse,  # type: ignore
+                        type_=GetLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -817,15 +1027,17 @@ class AsyncRawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def update_link(
+    async def update(
         self,
         id: str,
         *,
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateLinkResponse]:
+    ) -> AsyncHttpResponse[UpdateLinksResponse]:
         """
+        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -839,7 +1051,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateLinkResponse]
+        AsyncHttpResponse[UpdateLinksResponse]
             The updated link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -858,9 +1070,9 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateLinkResponse,
+                    UpdateLinksResponse,
                     parse_obj_as(
-                        type_=UpdateLinkResponse,  # type: ignore
+                        type_=UpdateLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -918,10 +1130,12 @@ class AsyncRawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def delete_link(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteLinkResponse]:
+    ) -> AsyncHttpResponse[DeleteLinksResponse]:
         """
+        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -931,7 +1145,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteLinkResponse]
+        AsyncHttpResponse[DeleteLinksResponse]
             The deleted link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -942,13 +1156,24 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteLinkResponse,
+                    DeleteLinksResponse,
                     parse_obj_as(
-                        type_=DeleteLinkResponse,  # type: ignore
+                        type_=DeleteLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

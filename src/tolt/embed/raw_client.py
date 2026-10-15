@@ -15,8 +15,8 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.create_embed_token_request_partner import CreateEmbedTokenRequestPartner
-from .types.create_embed_token_response import CreateEmbedTokenResponse
+from .types.create_token_embed_request_partner import CreateTokenEmbedRequestPartner
+from .types.create_token_embed_response import CreateTokenEmbedResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -27,13 +27,13 @@ class RawEmbedClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def create_embed_token(
+    def create_token(
         self,
         *,
         partner_id: typing.Optional[str] = OMIT,
-        partner: typing.Optional[CreateEmbedTokenRequestPartner] = OMIT,
+        partner: typing.Optional[CreateTokenEmbedRequestPartner] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreateEmbedTokenResponse]:
+    ) -> HttpResponse[CreateTokenEmbedResponse]:
         """
         Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
 
@@ -41,14 +41,14 @@ class RawEmbedClient:
         ----------
         partner_id : typing.Optional[str]
 
-        partner : typing.Optional[CreateEmbedTokenRequestPartner]
+        partner : typing.Optional[CreateTokenEmbedRequestPartner]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[CreateEmbedTokenResponse]
+        HttpResponse[CreateTokenEmbedResponse]
             The embed token
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -57,7 +57,7 @@ class RawEmbedClient:
             json={
                 "partner_id": partner_id,
                 "partner": convert_and_respect_annotation_metadata(
-                    object_=partner, annotation=CreateEmbedTokenRequestPartner, direction="write"
+                    object_=partner, annotation=CreateTokenEmbedRequestPartner, direction="write"
                 ),
             },
             headers={
@@ -69,9 +69,9 @@ class RawEmbedClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateEmbedTokenResponse,
+                    CreateTokenEmbedResponse,
                     parse_obj_as(
-                        type_=CreateEmbedTokenResponse,  # type: ignore
+                        type_=CreateTokenEmbedResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -134,13 +134,13 @@ class AsyncRawEmbedClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def create_embed_token(
+    async def create_token(
         self,
         *,
         partner_id: typing.Optional[str] = OMIT,
-        partner: typing.Optional[CreateEmbedTokenRequestPartner] = OMIT,
+        partner: typing.Optional[CreateTokenEmbedRequestPartner] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreateEmbedTokenResponse]:
+    ) -> AsyncHttpResponse[CreateTokenEmbedResponse]:
         """
         Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
 
@@ -148,14 +148,14 @@ class AsyncRawEmbedClient:
         ----------
         partner_id : typing.Optional[str]
 
-        partner : typing.Optional[CreateEmbedTokenRequestPartner]
+        partner : typing.Optional[CreateTokenEmbedRequestPartner]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[CreateEmbedTokenResponse]
+        AsyncHttpResponse[CreateTokenEmbedResponse]
             The embed token
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -164,7 +164,7 @@ class AsyncRawEmbedClient:
             json={
                 "partner_id": partner_id,
                 "partner": convert_and_respect_annotation_metadata(
-                    object_=partner, annotation=CreateEmbedTokenRequestPartner, direction="write"
+                    object_=partner, annotation=CreateTokenEmbedRequestPartner, direction="write"
                 ),
             },
             headers={
@@ -176,9 +176,9 @@ class AsyncRawEmbedClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateEmbedTokenResponse,
+                    CreateTokenEmbedResponse,
                     parse_obj_as(
-                        type_=CreateEmbedTokenResponse,  # type: ignore
+                        type_=CreateTokenEmbedResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

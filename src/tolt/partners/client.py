@@ -6,20 +6,20 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawPartnersClient, RawPartnersClient
-from .types.approve_partner_response import ApprovePartnerResponse
+from .types.approve_partners_response import ApprovePartnersResponse
 from .types.bulk_approve_partners_response import BulkApprovePartnersResponse
 from .types.bulk_reject_partners_response import BulkRejectPartnersResponse
-from .types.create_partner_request_link import CreatePartnerRequestLink
-from .types.create_partner_request_status import CreatePartnerRequestStatus
-from .types.create_partner_response import CreatePartnerResponse
-from .types.get_partner_response import GetPartnerResponse
+from .types.create_partners_request_link import CreatePartnersRequestLink
+from .types.create_partners_request_status import CreatePartnersRequestStatus
+from .types.create_partners_response import CreatePartnersResponse
+from .types.get_partners_response import GetPartnersResponse
 from .types.list_partners_request_order import ListPartnersRequestOrder
 from .types.list_partners_request_sort import ListPartnersRequestSort
 from .types.list_partners_request_status import ListPartnersRequestStatus
 from .types.list_partners_response import ListPartnersResponse
-from .types.reject_partner_response import RejectPartnerResponse
-from .types.suspend_partner_response import SuspendPartnerResponse
-from .types.update_partner_response import UpdatePartnerResponse
+from .types.reject_partners_response import RejectPartnersResponse
+from .types.suspend_partners_response import SuspendPartnersResponse
+from .types.update_partners_response import UpdatePartnersResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -40,7 +40,7 @@ class PartnersClient:
         """
         return self._raw_client
 
-    def bulk_approve_partners(
+    def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> BulkApprovePartnersResponse:
         """
@@ -66,14 +66,14 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.bulk_approve_partners(
+        client.partners.bulk_approve(
             ids=["part_9fQ2xLL", "part_3RtV9k"],
         )
         """
-        _response = self._raw_client.bulk_approve_partners(ids=ids, request_options=request_options)
+        _response = self._raw_client.bulk_approve(ids=ids, request_options=request_options)
         return _response.data
 
-    def bulk_reject_partners(
+    def bulk_reject(
         self,
         *,
         ids: typing.Sequence[str],
@@ -105,16 +105,16 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.bulk_reject_partners(
+        client.partners.bulk_reject(
             ids=["part_9fQ2xLL", "part_3RtV9k"],
         )
         """
-        _response = self._raw_client.bulk_reject_partners(
+        _response = self._raw_client.bulk_reject(
             ids=ids, rejection_note=rejection_note, request_options=request_options
         )
         return _response.data
 
-    def list_partners(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -183,9 +183,9 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.list_partners()
+        client.partners.list()
         """
-        _response = self._raw_client.list_partners(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -203,22 +203,24 @@ class PartnersClient:
         )
         return _response.data
 
-    def create_partner(
+    def create(
         self,
         *,
         email: str,
         program_id: str,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePartnerResponse:
+    ) -> CreatePartnersResponse:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -233,6 +235,9 @@ class PartnersClient:
 
         last_name : typing.Optional[str]
 
+        display_name : typing.Optional[str]
+            Overrides the name shown for the partner; defaults to the first and last name.
+
         company_name : typing.Optional[str]
 
         country_code : typing.Optional[str]
@@ -240,12 +245,15 @@ class PartnersClient:
 
         website_url : typing.Optional[str]
 
+        created_at : typing.Optional[dt.datetime]
+            Backdate the partner's creation time. Defaults to now.
+
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnerRequestStatus]
+        status : typing.Optional[CreatePartnersRequestStatus]
 
-        link : typing.Optional[CreatePartnerRequestLink]
+        link : typing.Optional[CreatePartnersRequestLink]
             The referral link created with the partner. Defaults to a slug of the name or email.
 
         notify_partner : typing.Optional[bool]
@@ -256,7 +264,7 @@ class PartnersClient:
 
         Returns
         -------
-        CreatePartnerResponse
+        CreatePartnersResponse
             The created partner with its referral link
 
         Examples
@@ -266,19 +274,21 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.create_partner(
+        client.partners.create(
             email="sam@acme.com",
             program_id="prg_YRsbPDAK",
         )
         """
-        _response = self._raw_client.create_partner(
+        _response = self._raw_client.create(
             email=email,
             program_id=program_id,
             first_name=first_name,
             last_name=last_name,
+            display_name=display_name,
             company_name=company_name,
             country_code=country_code,
             website_url=website_url,
+            created_at=created_at,
             group_id=group_id,
             status=status,
             link=link,
@@ -287,7 +297,7 @@ class PartnersClient:
         )
         return _response.data
 
-    def get_partner(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnerResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnersResponse:
         """
         Parameters
         ----------
@@ -298,7 +308,7 @@ class PartnersClient:
 
         Returns
         -------
-        GetPartnerResponse
+        GetPartnersResponse
             The requested partner
 
         Examples
@@ -308,14 +318,14 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.get_partner(
+        client.partners.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_partner(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    def update_partner(
+    def update(
         self,
         id: str,
         *,
@@ -327,7 +337,7 @@ class PartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePartnerResponse:
+    ) -> UpdatePartnersResponse:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -354,7 +364,7 @@ class PartnersClient:
 
         Returns
         -------
-        UpdatePartnerResponse
+        UpdatePartnersResponse
             The updated partner
 
         Examples
@@ -364,11 +374,11 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.update_partner(
+        client.partners.update(
             id="id",
         )
         """
-        _response = self._raw_client.update_partner(
+        _response = self._raw_client.update(
             id,
             email=email,
             first_name=first_name,
@@ -381,9 +391,7 @@ class PartnersClient:
         )
         return _response.data
 
-    def approve_partner(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ApprovePartnerResponse:
+    def approve(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ApprovePartnersResponse:
         """
         Parameters
         ----------
@@ -394,7 +402,7 @@ class PartnersClient:
 
         Returns
         -------
-        ApprovePartnerResponse
+        ApprovePartnersResponse
             The approved partner
 
         Examples
@@ -404,20 +412,20 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.approve_partner(
+        client.partners.approve(
             id="id",
         )
         """
-        _response = self._raw_client.approve_partner(id, request_options=request_options)
+        _response = self._raw_client.approve(id, request_options=request_options)
         return _response.data
 
-    def reject_partner(
+    def reject(
         self,
         id: str,
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> RejectPartnerResponse:
+    ) -> RejectPartnersResponse:
         """
         Parameters
         ----------
@@ -430,7 +438,7 @@ class PartnersClient:
 
         Returns
         -------
-        RejectPartnerResponse
+        RejectPartnersResponse
             The rejected partner
 
         Examples
@@ -440,20 +448,20 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.reject_partner(
+        client.partners.reject(
             id="id",
         )
         """
-        _response = self._raw_client.reject_partner(id, rejection_note=rejection_note, request_options=request_options)
+        _response = self._raw_client.reject(id, rejection_note=rejection_note, request_options=request_options)
         return _response.data
 
-    def suspend_partner(
+    def suspend(
         self,
         id: str,
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> SuspendPartnerResponse:
+    ) -> SuspendPartnersResponse:
         """
         Parameters
         ----------
@@ -466,7 +474,7 @@ class PartnersClient:
 
         Returns
         -------
-        SuspendPartnerResponse
+        SuspendPartnersResponse
             The suspended partner
 
         Examples
@@ -476,13 +484,11 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.suspend_partner(
+        client.partners.suspend(
             id="id",
         )
         """
-        _response = self._raw_client.suspend_partner(
-            id, suspension_reason=suspension_reason, request_options=request_options
-        )
+        _response = self._raw_client.suspend(id, suspension_reason=suspension_reason, request_options=request_options)
         return _response.data
 
 
@@ -501,7 +507,7 @@ class AsyncPartnersClient:
         """
         return self._raw_client
 
-    async def bulk_approve_partners(
+    async def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> BulkApprovePartnersResponse:
         """
@@ -532,17 +538,17 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.bulk_approve_partners(
+            await client.partners.bulk_approve(
                 ids=["part_9fQ2xLL", "part_3RtV9k"],
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.bulk_approve_partners(ids=ids, request_options=request_options)
+        _response = await self._raw_client.bulk_approve(ids=ids, request_options=request_options)
         return _response.data
 
-    async def bulk_reject_partners(
+    async def bulk_reject(
         self,
         *,
         ids: typing.Sequence[str],
@@ -579,19 +585,19 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.bulk_reject_partners(
+            await client.partners.bulk_reject(
                 ids=["part_9fQ2xLL", "part_3RtV9k"],
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.bulk_reject_partners(
+        _response = await self._raw_client.bulk_reject(
             ids=ids, rejection_note=rejection_note, request_options=request_options
         )
         return _response.data
 
-    async def list_partners(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -665,12 +671,12 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.list_partners()
+            await client.partners.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_partners(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -688,22 +694,24 @@ class AsyncPartnersClient:
         )
         return _response.data
 
-    async def create_partner(
+    async def create(
         self,
         *,
         email: str,
         program_id: str,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePartnerResponse:
+    ) -> CreatePartnersResponse:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -718,6 +726,9 @@ class AsyncPartnersClient:
 
         last_name : typing.Optional[str]
 
+        display_name : typing.Optional[str]
+            Overrides the name shown for the partner; defaults to the first and last name.
+
         company_name : typing.Optional[str]
 
         country_code : typing.Optional[str]
@@ -725,12 +736,15 @@ class AsyncPartnersClient:
 
         website_url : typing.Optional[str]
 
+        created_at : typing.Optional[dt.datetime]
+            Backdate the partner's creation time. Defaults to now.
+
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnerRequestStatus]
+        status : typing.Optional[CreatePartnersRequestStatus]
 
-        link : typing.Optional[CreatePartnerRequestLink]
+        link : typing.Optional[CreatePartnersRequestLink]
             The referral link created with the partner. Defaults to a slug of the name or email.
 
         notify_partner : typing.Optional[bool]
@@ -741,7 +755,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        CreatePartnerResponse
+        CreatePartnersResponse
             The created partner with its referral link
 
         Examples
@@ -756,7 +770,7 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.create_partner(
+            await client.partners.create(
                 email="sam@acme.com",
                 program_id="prg_YRsbPDAK",
             )
@@ -764,14 +778,16 @@ class AsyncPartnersClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_partner(
+        _response = await self._raw_client.create(
             email=email,
             program_id=program_id,
             first_name=first_name,
             last_name=last_name,
+            display_name=display_name,
             company_name=company_name,
             country_code=country_code,
             website_url=website_url,
+            created_at=created_at,
             group_id=group_id,
             status=status,
             link=link,
@@ -780,9 +796,7 @@ class AsyncPartnersClient:
         )
         return _response.data
 
-    async def get_partner(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetPartnerResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnersResponse:
         """
         Parameters
         ----------
@@ -793,7 +807,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        GetPartnerResponse
+        GetPartnersResponse
             The requested partner
 
         Examples
@@ -808,17 +822,17 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.get_partner(
+            await client.partners.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_partner(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    async def update_partner(
+    async def update(
         self,
         id: str,
         *,
@@ -830,7 +844,7 @@ class AsyncPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePartnerResponse:
+    ) -> UpdatePartnersResponse:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -857,7 +871,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        UpdatePartnerResponse
+        UpdatePartnersResponse
             The updated partner
 
         Examples
@@ -872,14 +886,14 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.update_partner(
+            await client.partners.update(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update_partner(
+        _response = await self._raw_client.update(
             id,
             email=email,
             first_name=first_name,
@@ -892,9 +906,9 @@ class AsyncPartnersClient:
         )
         return _response.data
 
-    async def approve_partner(
+    async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ApprovePartnerResponse:
+    ) -> ApprovePartnersResponse:
         """
         Parameters
         ----------
@@ -905,7 +919,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        ApprovePartnerResponse
+        ApprovePartnersResponse
             The approved partner
 
         Examples
@@ -920,23 +934,23 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.approve_partner(
+            await client.partners.approve(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.approve_partner(id, request_options=request_options)
+        _response = await self._raw_client.approve(id, request_options=request_options)
         return _response.data
 
-    async def reject_partner(
+    async def reject(
         self,
         id: str,
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> RejectPartnerResponse:
+    ) -> RejectPartnersResponse:
         """
         Parameters
         ----------
@@ -949,7 +963,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        RejectPartnerResponse
+        RejectPartnersResponse
             The rejected partner
 
         Examples
@@ -964,25 +978,23 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.reject_partner(
+            await client.partners.reject(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.reject_partner(
-            id, rejection_note=rejection_note, request_options=request_options
-        )
+        _response = await self._raw_client.reject(id, rejection_note=rejection_note, request_options=request_options)
         return _response.data
 
-    async def suspend_partner(
+    async def suspend(
         self,
         id: str,
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> SuspendPartnerResponse:
+    ) -> SuspendPartnersResponse:
         """
         Parameters
         ----------
@@ -995,7 +1007,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        SuspendPartnerResponse
+        SuspendPartnersResponse
             The suspended partner
 
         Examples
@@ -1010,14 +1022,14 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.suspend_partner(
+            await client.partners.suspend(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.suspend_partner(
+        _response = await self._raw_client.suspend(
             id, suspension_reason=suspension_reason, request_options=request_options
         )
         return _response.data

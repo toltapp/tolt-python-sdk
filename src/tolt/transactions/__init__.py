@@ -7,26 +7,26 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        CreateTransactionResponse,
-        DeleteTransactionResponse,
-        GetTransactionResponse,
+        CreateTransactionsResponse,
+        DeleteTransactionsResponse,
+        GetTransactionsResponse,
         ListTransactionsRequestOrder,
         ListTransactionsRequestSort,
         ListTransactionsResponse,
-        RefundTransactionResponse,
-        RerunTransactionFlowsResponse,
-        UpdateTransactionResponse,
+        RefundTransactionsResponse,
+        RerunFlowsTransactionsResponse,
+        UpdateTransactionsResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateTransactionResponse": ".types",
-    "DeleteTransactionResponse": ".types",
-    "GetTransactionResponse": ".types",
+    "CreateTransactionsResponse": ".types",
+    "DeleteTransactionsResponse": ".types",
+    "GetTransactionsResponse": ".types",
     "ListTransactionsRequestOrder": ".types",
     "ListTransactionsRequestSort": ".types",
     "ListTransactionsResponse": ".types",
-    "RefundTransactionResponse": ".types",
-    "RerunTransactionFlowsResponse": ".types",
-    "UpdateTransactionResponse": ".types",
+    "RefundTransactionsResponse": ".types",
+    "RerunFlowsTransactionsResponse": ".types",
+    "UpdateTransactionsResponse": ".types",
 }
 
 
@@ -52,13 +52,13 @@ def __dir__():
 
 
 __all__ = [
-    "CreateTransactionResponse",
-    "DeleteTransactionResponse",
-    "GetTransactionResponse",
+    "CreateTransactionsResponse",
+    "DeleteTransactionsResponse",
+    "GetTransactionsResponse",
     "ListTransactionsRequestOrder",
     "ListTransactionsRequestSort",
     "ListTransactionsResponse",
-    "RefundTransactionResponse",
-    "RerunTransactionFlowsResponse",
-    "UpdateTransactionResponse",
+    "RefundTransactionsResponse",
+    "RerunFlowsTransactionsResponse",
+    "UpdateTransactionsResponse",
 ]

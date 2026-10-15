@@ -19,20 +19,20 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.approve_partner_response import ApprovePartnerResponse
+from .types.approve_partners_response import ApprovePartnersResponse
 from .types.bulk_approve_partners_response import BulkApprovePartnersResponse
 from .types.bulk_reject_partners_response import BulkRejectPartnersResponse
-from .types.create_partner_request_link import CreatePartnerRequestLink
-from .types.create_partner_request_status import CreatePartnerRequestStatus
-from .types.create_partner_response import CreatePartnerResponse
-from .types.get_partner_response import GetPartnerResponse
+from .types.create_partners_request_link import CreatePartnersRequestLink
+from .types.create_partners_request_status import CreatePartnersRequestStatus
+from .types.create_partners_response import CreatePartnersResponse
+from .types.get_partners_response import GetPartnersResponse
 from .types.list_partners_request_order import ListPartnersRequestOrder
 from .types.list_partners_request_sort import ListPartnersRequestSort
 from .types.list_partners_request_status import ListPartnersRequestStatus
 from .types.list_partners_response import ListPartnersResponse
-from .types.reject_partner_response import RejectPartnerResponse
-from .types.suspend_partner_response import SuspendPartnerResponse
-from .types.update_partner_response import UpdatePartnerResponse
+from .types.reject_partners_response import RejectPartnersResponse
+from .types.suspend_partners_response import SuspendPartnersResponse
+from .types.update_partners_response import UpdatePartnersResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -43,7 +43,7 @@ class RawPartnersClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def bulk_approve_partners(
+    def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[BulkApprovePartnersResponse]:
         """
@@ -126,7 +126,7 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def bulk_reject_partners(
+    def bulk_reject(
         self,
         *,
         ids: typing.Sequence[str],
@@ -216,7 +216,7 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def list_partners(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -350,22 +350,24 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_partner(
+    def create(
         self,
         *,
         email: str,
         program_id: str,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreatePartnerResponse]:
+    ) -> HttpResponse[CreatePartnersResponse]:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -380,6 +382,9 @@ class RawPartnersClient:
 
         last_name : typing.Optional[str]
 
+        display_name : typing.Optional[str]
+            Overrides the name shown for the partner; defaults to the first and last name.
+
         company_name : typing.Optional[str]
 
         country_code : typing.Optional[str]
@@ -387,12 +392,15 @@ class RawPartnersClient:
 
         website_url : typing.Optional[str]
 
+        created_at : typing.Optional[dt.datetime]
+            Backdate the partner's creation time. Defaults to now.
+
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnerRequestStatus]
+        status : typing.Optional[CreatePartnersRequestStatus]
 
-        link : typing.Optional[CreatePartnerRequestLink]
+        link : typing.Optional[CreatePartnersRequestLink]
             The referral link created with the partner. Defaults to a slug of the name or email.
 
         notify_partner : typing.Optional[bool]
@@ -403,7 +411,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[CreatePartnerResponse]
+        HttpResponse[CreatePartnersResponse]
             The created partner with its referral link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -414,13 +422,15 @@ class RawPartnersClient:
                 "program_id": program_id,
                 "first_name": first_name,
                 "last_name": last_name,
+                "display_name": display_name,
                 "company_name": company_name,
                 "country_code": country_code,
                 "website_url": website_url,
+                "created_at": created_at,
                 "group_id": group_id,
                 "status": status,
                 "link": convert_and_respect_annotation_metadata(
-                    object_=link, annotation=CreatePartnerRequestLink, direction="write"
+                    object_=link, annotation=CreatePartnersRequestLink, direction="write"
                 ),
                 "notify_partner": notify_partner,
             },
@@ -433,9 +443,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePartnerResponse,
+                    CreatePartnersResponse,
                     parse_obj_as(
-                        type_=CreatePartnerResponse,  # type: ignore
+                        type_=CreatePartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -493,9 +503,9 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_partner(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetPartnerResponse]:
+    ) -> HttpResponse[GetPartnersResponse]:
         """
         Parameters
         ----------
@@ -506,7 +516,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[GetPartnerResponse]
+        HttpResponse[GetPartnersResponse]
             The requested partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -517,9 +527,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPartnerResponse,
+                    GetPartnersResponse,
                     parse_obj_as(
-                        type_=GetPartnerResponse,  # type: ignore
+                        type_=GetPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -566,7 +576,7 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def update_partner(
+    def update(
         self,
         id: str,
         *,
@@ -578,7 +588,7 @@ class RawPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdatePartnerResponse]:
+    ) -> HttpResponse[UpdatePartnersResponse]:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -605,7 +615,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[UpdatePartnerResponse]
+        HttpResponse[UpdatePartnersResponse]
             The updated partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -629,9 +639,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePartnerResponse,
+                    UpdatePartnersResponse,
                     parse_obj_as(
-                        type_=UpdatePartnerResponse,  # type: ignore
+                        type_=UpdatePartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -700,9 +710,9 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def approve_partner(
+    def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[ApprovePartnerResponse]:
+    ) -> HttpResponse[ApprovePartnersResponse]:
         """
         Parameters
         ----------
@@ -713,7 +723,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[ApprovePartnerResponse]
+        HttpResponse[ApprovePartnersResponse]
             The approved partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -724,9 +734,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApprovePartnerResponse,
+                    ApprovePartnersResponse,
                     parse_obj_as(
-                        type_=ApprovePartnerResponse,  # type: ignore
+                        type_=ApprovePartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -773,13 +783,13 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def reject_partner(
+    def reject(
         self,
         id: str,
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[RejectPartnerResponse]:
+    ) -> HttpResponse[RejectPartnersResponse]:
         """
         Parameters
         ----------
@@ -792,7 +802,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[RejectPartnerResponse]
+        HttpResponse[RejectPartnersResponse]
             The rejected partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -810,9 +820,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RejectPartnerResponse,
+                    RejectPartnersResponse,
                     parse_obj_as(
-                        type_=RejectPartnerResponse,  # type: ignore
+                        type_=RejectPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -870,13 +880,13 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def suspend_partner(
+    def suspend(
         self,
         id: str,
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[SuspendPartnerResponse]:
+    ) -> HttpResponse[SuspendPartnersResponse]:
         """
         Parameters
         ----------
@@ -889,7 +899,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[SuspendPartnerResponse]
+        HttpResponse[SuspendPartnersResponse]
             The suspended partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -907,9 +917,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    SuspendPartnerResponse,
+                    SuspendPartnersResponse,
                     parse_obj_as(
-                        type_=SuspendPartnerResponse,  # type: ignore
+                        type_=SuspendPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -972,7 +982,7 @@ class AsyncRawPartnersClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def bulk_approve_partners(
+    async def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[BulkApprovePartnersResponse]:
         """
@@ -1055,7 +1065,7 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def bulk_reject_partners(
+    async def bulk_reject(
         self,
         *,
         ids: typing.Sequence[str],
@@ -1145,7 +1155,7 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def list_partners(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -1279,22 +1289,24 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_partner(
+    async def create(
         self,
         *,
         email: str,
         program_id: str,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
+        display_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreatePartnerResponse]:
+    ) -> AsyncHttpResponse[CreatePartnersResponse]:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -1309,6 +1321,9 @@ class AsyncRawPartnersClient:
 
         last_name : typing.Optional[str]
 
+        display_name : typing.Optional[str]
+            Overrides the name shown for the partner; defaults to the first and last name.
+
         company_name : typing.Optional[str]
 
         country_code : typing.Optional[str]
@@ -1316,12 +1331,15 @@ class AsyncRawPartnersClient:
 
         website_url : typing.Optional[str]
 
+        created_at : typing.Optional[dt.datetime]
+            Backdate the partner's creation time. Defaults to now.
+
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnerRequestStatus]
+        status : typing.Optional[CreatePartnersRequestStatus]
 
-        link : typing.Optional[CreatePartnerRequestLink]
+        link : typing.Optional[CreatePartnersRequestLink]
             The referral link created with the partner. Defaults to a slug of the name or email.
 
         notify_partner : typing.Optional[bool]
@@ -1332,7 +1350,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreatePartnerResponse]
+        AsyncHttpResponse[CreatePartnersResponse]
             The created partner with its referral link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1343,13 +1361,15 @@ class AsyncRawPartnersClient:
                 "program_id": program_id,
                 "first_name": first_name,
                 "last_name": last_name,
+                "display_name": display_name,
                 "company_name": company_name,
                 "country_code": country_code,
                 "website_url": website_url,
+                "created_at": created_at,
                 "group_id": group_id,
                 "status": status,
                 "link": convert_and_respect_annotation_metadata(
-                    object_=link, annotation=CreatePartnerRequestLink, direction="write"
+                    object_=link, annotation=CreatePartnersRequestLink, direction="write"
                 ),
                 "notify_partner": notify_partner,
             },
@@ -1362,9 +1382,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePartnerResponse,
+                    CreatePartnersResponse,
                     parse_obj_as(
-                        type_=CreatePartnerResponse,  # type: ignore
+                        type_=CreatePartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1422,9 +1442,9 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_partner(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetPartnerResponse]:
+    ) -> AsyncHttpResponse[GetPartnersResponse]:
         """
         Parameters
         ----------
@@ -1435,7 +1455,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetPartnerResponse]
+        AsyncHttpResponse[GetPartnersResponse]
             The requested partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1446,9 +1466,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPartnerResponse,
+                    GetPartnersResponse,
                     parse_obj_as(
-                        type_=GetPartnerResponse,  # type: ignore
+                        type_=GetPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1495,7 +1515,7 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def update_partner(
+    async def update(
         self,
         id: str,
         *,
@@ -1507,7 +1527,7 @@ class AsyncRawPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdatePartnerResponse]:
+    ) -> AsyncHttpResponse[UpdatePartnersResponse]:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -1534,7 +1554,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdatePartnerResponse]
+        AsyncHttpResponse[UpdatePartnersResponse]
             The updated partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1558,9 +1578,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePartnerResponse,
+                    UpdatePartnersResponse,
                     parse_obj_as(
-                        type_=UpdatePartnerResponse,  # type: ignore
+                        type_=UpdatePartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1629,9 +1649,9 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def approve_partner(
+    async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[ApprovePartnerResponse]:
+    ) -> AsyncHttpResponse[ApprovePartnersResponse]:
         """
         Parameters
         ----------
@@ -1642,7 +1662,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[ApprovePartnerResponse]
+        AsyncHttpResponse[ApprovePartnersResponse]
             The approved partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1653,9 +1673,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApprovePartnerResponse,
+                    ApprovePartnersResponse,
                     parse_obj_as(
-                        type_=ApprovePartnerResponse,  # type: ignore
+                        type_=ApprovePartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1702,13 +1722,13 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def reject_partner(
+    async def reject(
         self,
         id: str,
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[RejectPartnerResponse]:
+    ) -> AsyncHttpResponse[RejectPartnersResponse]:
         """
         Parameters
         ----------
@@ -1721,7 +1741,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[RejectPartnerResponse]
+        AsyncHttpResponse[RejectPartnersResponse]
             The rejected partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1739,9 +1759,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RejectPartnerResponse,
+                    RejectPartnersResponse,
                     parse_obj_as(
-                        type_=RejectPartnerResponse,  # type: ignore
+                        type_=RejectPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1799,13 +1819,13 @@ class AsyncRawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def suspend_partner(
+    async def suspend(
         self,
         id: str,
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[SuspendPartnerResponse]:
+    ) -> AsyncHttpResponse[SuspendPartnersResponse]:
         """
         Parameters
         ----------
@@ -1818,7 +1838,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[SuspendPartnerResponse]
+        AsyncHttpResponse[SuspendPartnersResponse]
             The suspended partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1836,9 +1856,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    SuspendPartnerResponse,
+                    SuspendPartnersResponse,
                     parse_obj_as(
-                        type_=SuspendPartnerResponse,  # type: ignore
+                        type_=SuspendPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

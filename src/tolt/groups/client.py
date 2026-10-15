@@ -6,7 +6,7 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawGroupsClient, RawGroupsClient
-from .types.get_group_response import GetGroupResponse
+from .types.get_groups_response import GetGroupsResponse
 from .types.list_groups_request_default import ListGroupsRequestDefault
 from .types.list_groups_request_order import ListGroupsRequestOrder
 from .types.list_groups_request_sort import ListGroupsRequestSort
@@ -28,7 +28,7 @@ class GroupsClient:
         """
         return self._raw_client
 
-    def list_groups(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -94,9 +94,9 @@ class GroupsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.groups.list_groups()
+        client.groups.list()
         """
-        _response = self._raw_client.list_groups(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -113,7 +113,7 @@ class GroupsClient:
         )
         return _response.data
 
-    def get_group(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupsResponse:
         """
         Parameters
         ----------
@@ -124,7 +124,7 @@ class GroupsClient:
 
         Returns
         -------
-        GetGroupResponse
+        GetGroupsResponse
             The requested group
 
         Examples
@@ -134,11 +134,11 @@ class GroupsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.groups.get_group(
+        client.groups.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_group(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
 
@@ -157,7 +157,7 @@ class AsyncGroupsClient:
         """
         return self._raw_client
 
-    async def list_groups(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -228,12 +228,12 @@ class AsyncGroupsClient:
 
 
         async def main() -> None:
-            await client.groups.list_groups()
+            await client.groups.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_groups(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -250,7 +250,7 @@ class AsyncGroupsClient:
         )
         return _response.data
 
-    async def get_group(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupsResponse:
         """
         Parameters
         ----------
@@ -261,7 +261,7 @@ class AsyncGroupsClient:
 
         Returns
         -------
-        GetGroupResponse
+        GetGroupsResponse
             The requested group
 
         Examples
@@ -276,12 +276,12 @@ class AsyncGroupsClient:
 
 
         async def main() -> None:
-            await client.groups.get_group(
+            await client.groups.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_group(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data

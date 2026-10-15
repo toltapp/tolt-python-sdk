@@ -6,15 +6,15 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawTransactionsClient, RawTransactionsClient
-from .types.create_transaction_response import CreateTransactionResponse
-from .types.delete_transaction_response import DeleteTransactionResponse
-from .types.get_transaction_response import GetTransactionResponse
+from .types.create_transactions_response import CreateTransactionsResponse
+from .types.delete_transactions_response import DeleteTransactionsResponse
+from .types.get_transactions_response import GetTransactionsResponse
 from .types.list_transactions_request_order import ListTransactionsRequestOrder
 from .types.list_transactions_request_sort import ListTransactionsRequestSort
 from .types.list_transactions_response import ListTransactionsResponse
-from .types.refund_transaction_response import RefundTransactionResponse
-from .types.rerun_transaction_flows_response import RerunTransactionFlowsResponse
-from .types.update_transaction_response import UpdateTransactionResponse
+from .types.refund_transactions_response import RefundTransactionsResponse
+from .types.rerun_flows_transactions_response import RerunFlowsTransactionsResponse
+from .types.update_transactions_response import UpdateTransactionsResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -35,7 +35,7 @@ class TransactionsClient:
         """
         return self._raw_client
 
-    def list_transactions(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -107,9 +107,9 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.list_transactions()
+        client.transactions.list()
         """
-        _response = self._raw_client.list_transactions(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -128,25 +128,36 @@ class TransactionsClient:
         )
         return _response.data
 
-    def create_transaction(
+    def create(
         self,
         *,
         amount: int,
         customer_id: str,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateTransactionResponse:
+    ) -> CreateTransactionsResponse:
         """
+        Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
+
         Parameters
         ----------
         amount : int
             Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
 
         customer_id : str
+
+        created_at : typing.Optional[dt.datetime]
+
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
 
         billing_type : typing.Optional[str]
 
@@ -163,7 +174,7 @@ class TransactionsClient:
 
         Returns
         -------
-        CreateTransactionResponse
+        CreateTransactionsResponse
             The created transaction
 
         Examples
@@ -173,14 +184,17 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.create_transaction(
+        client.transactions.create(
             amount=1,
             customer_id="customer_id",
         )
         """
-        _response = self._raw_client.create_transaction(
+        _response = self._raw_client.create(
             amount=amount,
             customer_id=customer_id,
+            created_at=created_at,
+            product_id=product_id,
+            product_name=product_name,
             billing_type=billing_type,
             charge_id=charge_id,
             click_id=click_id,
@@ -190,9 +204,7 @@ class TransactionsClient:
         )
         return _response.data
 
-    def get_transaction(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetTransactionResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionsResponse:
         """
         Parameters
         ----------
@@ -203,7 +215,7 @@ class TransactionsClient:
 
         Returns
         -------
-        GetTransactionResponse
+        GetTransactionsResponse
             The requested transaction
 
         Examples
@@ -213,14 +225,14 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.get_transaction(
+        client.transactions.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_transaction(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    def update_transaction(
+    def update(
         self,
         id: str,
         *,
@@ -230,10 +242,12 @@ class TransactionsClient:
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateTransactionResponse:
+    ) -> UpdateTransactionsResponse:
         """
         Parameters
         ----------
@@ -252,6 +266,10 @@ class TransactionsClient:
 
         click_id : typing.Optional[str]
 
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
+
         interval : typing.Optional[str]
 
         created_at : typing.Optional[dt.datetime]
@@ -261,7 +279,7 @@ class TransactionsClient:
 
         Returns
         -------
-        UpdateTransactionResponse
+        UpdateTransactionsResponse
             The updated transaction
 
         Examples
@@ -271,11 +289,11 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.update_transaction(
+        client.transactions.update(
             id="id",
         )
         """
-        _response = self._raw_client.update_transaction(
+        _response = self._raw_client.update(
             id,
             amount=amount,
             status=status,
@@ -283,15 +301,15 @@ class TransactionsClient:
             billing_type=billing_type,
             charge_id=charge_id,
             click_id=click_id,
+            product_id=product_id,
+            product_name=product_name,
             interval=interval,
             created_at=created_at,
             request_options=request_options,
         )
         return _response.data
 
-    def delete_transaction(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteTransactionResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteTransactionsResponse:
         """
         Parameters
         ----------
@@ -302,7 +320,7 @@ class TransactionsClient:
 
         Returns
         -------
-        DeleteTransactionResponse
+        DeleteTransactionsResponse
             The deleted transaction
 
         Examples
@@ -312,17 +330,17 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.delete_transaction(
+        client.transactions.delete(
             id="id",
         )
         """
-        _response = self._raw_client.delete_transaction(id, request_options=request_options)
+        _response = self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
-    def refund_transaction(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RefundTransactionResponse:
+    def refund(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> RefundTransactionsResponse:
         """
+        Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
+
         Parameters
         ----------
         id : str
@@ -332,7 +350,7 @@ class TransactionsClient:
 
         Returns
         -------
-        RefundTransactionResponse
+        RefundTransactionsResponse
             The refunded transaction
 
         Examples
@@ -342,16 +360,16 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.refund_transaction(
+        client.transactions.refund(
             id="id",
         )
         """
-        _response = self._raw_client.refund_transaction(id, request_options=request_options)
+        _response = self._raw_client.refund(id, request_options=request_options)
         return _response.data
 
-    def rerun_transaction_flows(
+    def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RerunTransactionFlowsResponse:
+    ) -> RerunFlowsTransactionsResponse:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -364,7 +382,7 @@ class TransactionsClient:
 
         Returns
         -------
-        RerunTransactionFlowsResponse
+        RerunFlowsTransactionsResponse
             Flow reprocessing queued
 
         Examples
@@ -374,11 +392,11 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.rerun_transaction_flows(
+        client.transactions.rerun_flows(
             id="id",
         )
         """
-        _response = self._raw_client.rerun_transaction_flows(id, request_options=request_options)
+        _response = self._raw_client.rerun_flows(id, request_options=request_options)
         return _response.data
 
 
@@ -397,7 +415,7 @@ class AsyncTransactionsClient:
         """
         return self._raw_client
 
-    async def list_transactions(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -474,12 +492,12 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.list_transactions()
+            await client.transactions.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_transactions(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -498,25 +516,36 @@ class AsyncTransactionsClient:
         )
         return _response.data
 
-    async def create_transaction(
+    async def create(
         self,
         *,
         amount: int,
         customer_id: str,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateTransactionResponse:
+    ) -> CreateTransactionsResponse:
         """
+        Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
+
         Parameters
         ----------
         amount : int
             Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
 
         customer_id : str
+
+        created_at : typing.Optional[dt.datetime]
+
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
 
         billing_type : typing.Optional[str]
 
@@ -533,7 +562,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        CreateTransactionResponse
+        CreateTransactionsResponse
             The created transaction
 
         Examples
@@ -548,7 +577,7 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.create_transaction(
+            await client.transactions.create(
                 amount=1,
                 customer_id="customer_id",
             )
@@ -556,9 +585,12 @@ class AsyncTransactionsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_transaction(
+        _response = await self._raw_client.create(
             amount=amount,
             customer_id=customer_id,
+            created_at=created_at,
+            product_id=product_id,
+            product_name=product_name,
             billing_type=billing_type,
             charge_id=charge_id,
             click_id=click_id,
@@ -568,9 +600,7 @@ class AsyncTransactionsClient:
         )
         return _response.data
 
-    async def get_transaction(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetTransactionResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionsResponse:
         """
         Parameters
         ----------
@@ -581,7 +611,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        GetTransactionResponse
+        GetTransactionsResponse
             The requested transaction
 
         Examples
@@ -596,17 +626,17 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.get_transaction(
+            await client.transactions.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_transaction(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    async def update_transaction(
+    async def update(
         self,
         id: str,
         *,
@@ -616,10 +646,12 @@ class AsyncTransactionsClient:
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateTransactionResponse:
+    ) -> UpdateTransactionsResponse:
         """
         Parameters
         ----------
@@ -638,6 +670,10 @@ class AsyncTransactionsClient:
 
         click_id : typing.Optional[str]
 
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
+
         interval : typing.Optional[str]
 
         created_at : typing.Optional[dt.datetime]
@@ -647,7 +683,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        UpdateTransactionResponse
+        UpdateTransactionsResponse
             The updated transaction
 
         Examples
@@ -662,14 +698,14 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.update_transaction(
+            await client.transactions.update(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update_transaction(
+        _response = await self._raw_client.update(
             id,
             amount=amount,
             status=status,
@@ -677,15 +713,17 @@ class AsyncTransactionsClient:
             billing_type=billing_type,
             charge_id=charge_id,
             click_id=click_id,
+            product_id=product_id,
+            product_name=product_name,
             interval=interval,
             created_at=created_at,
             request_options=request_options,
         )
         return _response.data
 
-    async def delete_transaction(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteTransactionResponse:
+    ) -> DeleteTransactionsResponse:
         """
         Parameters
         ----------
@@ -696,7 +734,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        DeleteTransactionResponse
+        DeleteTransactionsResponse
             The deleted transaction
 
         Examples
@@ -711,20 +749,22 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.delete_transaction(
+            await client.transactions.delete(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete_transaction(id, request_options=request_options)
+        _response = await self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
-    async def refund_transaction(
+    async def refund(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RefundTransactionResponse:
+    ) -> RefundTransactionsResponse:
         """
+        Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
+
         Parameters
         ----------
         id : str
@@ -734,7 +774,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        RefundTransactionResponse
+        RefundTransactionsResponse
             The refunded transaction
 
         Examples
@@ -749,19 +789,19 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.refund_transaction(
+            await client.transactions.refund(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.refund_transaction(id, request_options=request_options)
+        _response = await self._raw_client.refund(id, request_options=request_options)
         return _response.data
 
-    async def rerun_transaction_flows(
+    async def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RerunTransactionFlowsResponse:
+    ) -> RerunFlowsTransactionsResponse:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -774,7 +814,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        RerunTransactionFlowsResponse
+        RerunFlowsTransactionsResponse
             Flow reprocessing queued
 
         Examples
@@ -789,12 +829,12 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.rerun_transaction_flows(
+            await client.transactions.rerun_flows(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.rerun_transaction_flows(id, request_options=request_options)
+        _response = await self._raw_client.rerun_flows(id, request_options=request_options)
         return _response.data

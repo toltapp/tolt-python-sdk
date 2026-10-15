@@ -7,22 +7,28 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        CreateCustomerResponse,
-        DeleteCustomerResponse,
-        GetCustomerResponse,
+        CreateCustomersRequestStatus,
+        CreateCustomersResponse,
+        DeleteCustomersResponse,
+        GetCustomersResponse,
         ListCustomersRequestOrder,
         ListCustomersRequestSort,
+        ListCustomersRequestStatus,
         ListCustomersResponse,
-        UpdateCustomerResponse,
+        UpdateCustomersRequestStatus,
+        UpdateCustomersResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateCustomerResponse": ".types",
-    "DeleteCustomerResponse": ".types",
-    "GetCustomerResponse": ".types",
+    "CreateCustomersRequestStatus": ".types",
+    "CreateCustomersResponse": ".types",
+    "DeleteCustomersResponse": ".types",
+    "GetCustomersResponse": ".types",
     "ListCustomersRequestOrder": ".types",
     "ListCustomersRequestSort": ".types",
+    "ListCustomersRequestStatus": ".types",
     "ListCustomersResponse": ".types",
-    "UpdateCustomerResponse": ".types",
+    "UpdateCustomersRequestStatus": ".types",
+    "UpdateCustomersResponse": ".types",
 }
 
 
@@ -48,11 +54,14 @@ def __dir__():
 
 
 __all__ = [
-    "CreateCustomerResponse",
-    "DeleteCustomerResponse",
-    "GetCustomerResponse",
+    "CreateCustomersRequestStatus",
+    "CreateCustomersResponse",
+    "DeleteCustomersResponse",
+    "GetCustomersResponse",
     "ListCustomersRequestOrder",
     "ListCustomersRequestSort",
+    "ListCustomersRequestStatus",
     "ListCustomersResponse",
-    "UpdateCustomerResponse",
+    "UpdateCustomersRequestStatus",
+    "UpdateCustomersResponse",
 ]

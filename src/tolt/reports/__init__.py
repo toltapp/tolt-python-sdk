@@ -7,28 +7,28 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        ReportsCustomerStatsResponse,
-        ReportsLinksRequestOrder,
-        ReportsLinksRequestSort,
-        ReportsLinksResponse,
-        ReportsOverviewResponse,
-        ReportsPartnersRequestOrder,
-        ReportsPartnersRequestSort,
-        ReportsPartnersResponse,
-        ReportsTimeseriesRequestGranularity,
-        ReportsTimeseriesResponse,
+        CustomerStatsReportsResponse,
+        LinksReportsRequestOrder,
+        LinksReportsRequestSort,
+        LinksReportsResponse,
+        OverviewReportsResponse,
+        PartnersReportsRequestOrder,
+        PartnersReportsRequestSort,
+        PartnersReportsResponse,
+        TimeseriesReportsRequestGranularity,
+        TimeseriesReportsResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "ReportsCustomerStatsResponse": ".types",
-    "ReportsLinksRequestOrder": ".types",
-    "ReportsLinksRequestSort": ".types",
-    "ReportsLinksResponse": ".types",
-    "ReportsOverviewResponse": ".types",
-    "ReportsPartnersRequestOrder": ".types",
-    "ReportsPartnersRequestSort": ".types",
-    "ReportsPartnersResponse": ".types",
-    "ReportsTimeseriesRequestGranularity": ".types",
-    "ReportsTimeseriesResponse": ".types",
+    "CustomerStatsReportsResponse": ".types",
+    "LinksReportsRequestOrder": ".types",
+    "LinksReportsRequestSort": ".types",
+    "LinksReportsResponse": ".types",
+    "OverviewReportsResponse": ".types",
+    "PartnersReportsRequestOrder": ".types",
+    "PartnersReportsRequestSort": ".types",
+    "PartnersReportsResponse": ".types",
+    "TimeseriesReportsRequestGranularity": ".types",
+    "TimeseriesReportsResponse": ".types",
 }
 
 
@@ -54,14 +54,14 @@ def __dir__():
 
 
 __all__ = [
-    "ReportsCustomerStatsResponse",
-    "ReportsLinksRequestOrder",
-    "ReportsLinksRequestSort",
-    "ReportsLinksResponse",
-    "ReportsOverviewResponse",
-    "ReportsPartnersRequestOrder",
-    "ReportsPartnersRequestSort",
-    "ReportsPartnersResponse",
-    "ReportsTimeseriesRequestGranularity",
-    "ReportsTimeseriesResponse",
+    "CustomerStatsReportsResponse",
+    "LinksReportsRequestOrder",
+    "LinksReportsRequestSort",
+    "LinksReportsResponse",
+    "OverviewReportsResponse",
+    "PartnersReportsRequestOrder",
+    "PartnersReportsRequestSort",
+    "PartnersReportsResponse",
+    "TimeseriesReportsRequestGranularity",
+    "TimeseriesReportsResponse",
 ]

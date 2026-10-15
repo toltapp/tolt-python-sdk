@@ -17,13 +17,16 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.create_promotion_code_response import CreatePromotionCodeResponse
-from .types.delete_promotion_code_response import DeletePromotionCodeResponse
-from .types.get_promotion_code_response import GetPromotionCodeResponse
+from .types.create_promotion_codes_request_type import CreatePromotionCodesRequestType
+from .types.create_promotion_codes_response import CreatePromotionCodesResponse
+from .types.delete_promotion_codes_response import DeletePromotionCodesResponse
+from .types.get_promotion_codes_response import GetPromotionCodesResponse
 from .types.list_promotion_codes_request_order import ListPromotionCodesRequestOrder
 from .types.list_promotion_codes_request_sort import ListPromotionCodesRequestSort
+from .types.list_promotion_codes_request_type import ListPromotionCodesRequestType
 from .types.list_promotion_codes_response import ListPromotionCodesResponse
-from .types.update_promotion_code_response import UpdatePromotionCodeResponse
+from .types.update_promotion_codes_request_type import UpdatePromotionCodesRequestType
+from .types.update_promotion_codes_response import UpdatePromotionCodesResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -34,7 +37,7 @@ class RawPromotionCodesClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_promotion_codes(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -48,7 +51,7 @@ class RawPromotionCodesClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
-        type: typing.Optional[str] = None,
+        type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListPromotionCodesResponse]:
@@ -84,7 +87,7 @@ class RawPromotionCodesClient:
 
         partner_id : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[ListPromotionCodesRequestType]
 
         search : typing.Optional[str]
 
@@ -168,15 +171,15 @@ class RawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_promotion_code(
+    def create(
         self,
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreatePromotionCodeResponse]:
+    ) -> HttpResponse[CreatePromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -184,7 +187,7 @@ class RawPromotionCodesClient:
 
         partner_id : str
 
-        type : typing.Optional[str]
+        type : typing.Optional[CreatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -193,7 +196,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[CreatePromotionCodeResponse]
+        HttpResponse[CreatePromotionCodesResponse]
             The created promotion code
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -214,9 +217,9 @@ class RawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePromotionCodeResponse,
+                    CreatePromotionCodesResponse,
                     parse_obj_as(
-                        type_=CreatePromotionCodeResponse,  # type: ignore
+                        type_=CreatePromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -263,9 +266,9 @@ class RawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_promotion_code(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetPromotionCodeResponse]:
+    ) -> HttpResponse[GetPromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -276,7 +279,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[GetPromotionCodeResponse]
+        HttpResponse[GetPromotionCodesResponse]
             The requested promotion code
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -287,9 +290,9 @@ class RawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPromotionCodeResponse,
+                    GetPromotionCodesResponse,
                     parse_obj_as(
-                        type_=GetPromotionCodeResponse,  # type: ignore
+                        type_=GetPromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -336,15 +339,15 @@ class RawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def update_promotion_code(
+    def update(
         self,
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdatePromotionCodeResponse]:
+    ) -> HttpResponse[UpdatePromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -352,7 +355,7 @@ class RawPromotionCodesClient:
 
         code : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[UpdatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -361,7 +364,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[UpdatePromotionCodeResponse]
+        HttpResponse[UpdatePromotionCodesResponse]
             The updated promotion code
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -381,9 +384,9 @@ class RawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePromotionCodeResponse,
+                    UpdatePromotionCodesResponse,
                     parse_obj_as(
-                        type_=UpdatePromotionCodeResponse,  # type: ignore
+                        type_=UpdatePromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -441,9 +444,9 @@ class RawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete_promotion_code(
+    def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeletePromotionCodeResponse]:
+    ) -> HttpResponse[DeletePromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -454,7 +457,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[DeletePromotionCodeResponse]
+        HttpResponse[DeletePromotionCodesResponse]
             The deleted promotion code
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -465,9 +468,9 @@ class RawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeletePromotionCodeResponse,
+                    DeletePromotionCodesResponse,
                     parse_obj_as(
-                        type_=DeletePromotionCodeResponse,  # type: ignore
+                        type_=DeletePromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -519,7 +522,7 @@ class AsyncRawPromotionCodesClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_promotion_codes(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -533,7 +536,7 @@ class AsyncRawPromotionCodesClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
-        type: typing.Optional[str] = None,
+        type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListPromotionCodesResponse]:
@@ -569,7 +572,7 @@ class AsyncRawPromotionCodesClient:
 
         partner_id : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[ListPromotionCodesRequestType]
 
         search : typing.Optional[str]
 
@@ -653,15 +656,15 @@ class AsyncRawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_promotion_code(
+    async def create(
         self,
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreatePromotionCodeResponse]:
+    ) -> AsyncHttpResponse[CreatePromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -669,7 +672,7 @@ class AsyncRawPromotionCodesClient:
 
         partner_id : str
 
-        type : typing.Optional[str]
+        type : typing.Optional[CreatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -678,7 +681,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreatePromotionCodeResponse]
+        AsyncHttpResponse[CreatePromotionCodesResponse]
             The created promotion code
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -699,9 +702,9 @@ class AsyncRawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePromotionCodeResponse,
+                    CreatePromotionCodesResponse,
                     parse_obj_as(
-                        type_=CreatePromotionCodeResponse,  # type: ignore
+                        type_=CreatePromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -748,9 +751,9 @@ class AsyncRawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_promotion_code(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetPromotionCodeResponse]:
+    ) -> AsyncHttpResponse[GetPromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -761,7 +764,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetPromotionCodeResponse]
+        AsyncHttpResponse[GetPromotionCodesResponse]
             The requested promotion code
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -772,9 +775,9 @@ class AsyncRawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPromotionCodeResponse,
+                    GetPromotionCodesResponse,
                     parse_obj_as(
-                        type_=GetPromotionCodeResponse,  # type: ignore
+                        type_=GetPromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -821,15 +824,15 @@ class AsyncRawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def update_promotion_code(
+    async def update(
         self,
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdatePromotionCodeResponse]:
+    ) -> AsyncHttpResponse[UpdatePromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -837,7 +840,7 @@ class AsyncRawPromotionCodesClient:
 
         code : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[UpdatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -846,7 +849,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdatePromotionCodeResponse]
+        AsyncHttpResponse[UpdatePromotionCodesResponse]
             The updated promotion code
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -866,9 +869,9 @@ class AsyncRawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePromotionCodeResponse,
+                    UpdatePromotionCodesResponse,
                     parse_obj_as(
-                        type_=UpdatePromotionCodeResponse,  # type: ignore
+                        type_=UpdatePromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -926,9 +929,9 @@ class AsyncRawPromotionCodesClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def delete_promotion_code(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeletePromotionCodeResponse]:
+    ) -> AsyncHttpResponse[DeletePromotionCodesResponse]:
         """
         Parameters
         ----------
@@ -939,7 +942,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeletePromotionCodeResponse]
+        AsyncHttpResponse[DeletePromotionCodesResponse]
             The deleted promotion code
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -950,9 +953,9 @@ class AsyncRawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeletePromotionCodeResponse,
+                    DeletePromotionCodesResponse,
                     parse_obj_as(
-                        type_=DeletePromotionCodeResponse,  # type: ignore
+                        type_=DeletePromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

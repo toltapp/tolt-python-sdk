@@ -1,6 +1,6 @@
 # Reference
 ## Embed
-<details><summary><code>client.embed.<a href="src/tolt/embed/client.py">create_embed_token</a>(...) -> CreateEmbedTokenResponse</code></summary>
+<details><summary><code>client.embed.<a href="src/tolt/embed/client.py">create_token</a>(...) -> CreateTokenEmbedResponse</code></summary>
 <dl>
 <dd>
 
@@ -35,7 +35,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.embed.create_embed_token()
+client.embed.create_token()
 
 ```
 </dd>
@@ -59,7 +59,7 @@ client.embed.create_embed_token()
 <dl>
 <dd>
 
-**partner:** `typing.Optional[CreateEmbedTokenRequestPartner]` 
+**partner:** `typing.Optional[CreateTokenEmbedRequestPartner]` 
     
 </dd>
 </dl>
@@ -80,7 +80,7 @@ client.embed.create_embed_token()
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/tolt/groups/client.py">list_groups</a>(...) -> ListGroupsResponse</code></summary>
+<details><summary><code>client.groups.<a href="src/tolt/groups/client.py">list</a>(...) -> ListGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -101,7 +101,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.groups.list_groups()
+client.groups.list()
 
 ```
 </dd>
@@ -225,7 +225,7 @@ client.groups.list_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/tolt/groups/client.py">get_group</a>(...) -> GetGroupResponse</code></summary>
+<details><summary><code>client.groups.<a href="src/tolt/groups/client.py">get</a>(...) -> GetGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -246,7 +246,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.groups.get_group(
+client.groups.get(
     id="id",
 )
 
@@ -285,7 +285,7 @@ client.groups.get_group(
 </details>
 
 ## Flows
-<details><summary><code>client.flows.<a href="src/tolt/flows/client.py">list_flows</a>(...) -> ListFlowsResponse</code></summary>
+<details><summary><code>client.flows.<a href="src/tolt/flows/client.py">list</a>(...) -> ListFlowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -306,7 +306,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.flows.list_flows()
+client.flows.list()
 
 ```
 </dd>
@@ -454,7 +454,7 @@ client.flows.list_flows()
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/tolt/flows/client.py">get_flow</a>(...) -> GetFlowResponse</code></summary>
+<details><summary><code>client.flows.<a href="src/tolt/flows/client.py">get</a>(...) -> GetFlowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -475,7 +475,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.flows.get_flow(
+client.flows.get(
     id="id",
 )
 
@@ -514,7 +514,185 @@ client.flows.get_flow(
 </details>
 
 ## Clicks
-<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">create_click</a>(...) -> CreateClickResponse</code></summary>
+<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">list</a>(...) -> ListClicksResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists recorded clicks. Filter by program, partner, link, country, or device, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.clicks.list(
+    country="Canada",
+    device="desktop",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order:** `typing.Optional[ListClicksRequestOrder]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort:** `typing.Optional[ListClicksRequestSort]` — Column the list is ordered and paged by.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**program_id:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**partner_id:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**link_id:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — Filter by the click's stored country, matched exactly (values are not normalized). Clicks recorded by the tracking script store a country name (e.g. `Canada`); clicks created through the API store a 2-letter ISO code (e.g. `CA`). Filter by the exact form you expect.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**device:** `typing.Optional[str]` — Device type, e.g. `desktop`, `mobile` or `tablet`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">create</a>(...) -> CreateClicksResponse</code></summary>
 <dl>
 <dd>
 
@@ -549,7 +727,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.clicks.create_click(
+client.clicks.create(
     request={"key": "value"},
 )
 
@@ -567,7 +745,7 @@ client.clicks.create_click(
 <dl>
 <dd>
 
-**request:** `CreateClickRequest` 
+**request:** `CreateClicksRequest` 
     
 </dd>
 </dl>
@@ -587,7 +765,7 @@ client.clicks.create_click(
 </dl>
 </details>
 
-<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">get_click</a>(...) -> GetClickResponse</code></summary>
+<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">get</a>(...) -> GetClicksResponse</code></summary>
 <dl>
 <dd>
 
@@ -608,7 +786,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.clicks.get_click(
+client.clicks.get(
     id="id",
 )
 
@@ -647,7 +825,7 @@ client.clicks.get_click(
 </details>
 
 ## Partners
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">bulk_approve_partners</a>(...) -> BulkApprovePartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">bulk_approve</a>(...) -> BulkApprovePartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -682,7 +860,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.bulk_approve_partners(
+client.partners.bulk_approve(
     ids=[
         "part_9fQ2xLL",
         "part_3RtV9k"
@@ -723,7 +901,7 @@ client.partners.bulk_approve_partners(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">bulk_reject_partners</a>(...) -> BulkRejectPartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">bulk_reject</a>(...) -> BulkRejectPartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -758,7 +936,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.bulk_reject_partners(
+client.partners.bulk_reject(
     ids=[
         "part_9fQ2xLL",
         "part_3RtV9k"
@@ -807,7 +985,7 @@ client.partners.bulk_reject_partners(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">list_partners</a>(...) -> ListPartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">list</a>(...) -> ListPartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +1006,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.list_partners()
+client.partners.list()
 
 ```
 </dd>
@@ -960,7 +1138,7 @@ client.partners.list_partners()
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">create_partner</a>(...) -> CreatePartnerResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">create</a>(...) -> CreatePartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -995,7 +1173,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.create_partner(
+client.partners.create(
     email="sam@acme.com",
     program_id="prg_YRsbPDAK",
 )
@@ -1046,6 +1224,14 @@ client.partners.create_partner(
 <dl>
 <dd>
 
+**display_name:** `typing.Optional[str]` — Overrides the name shown for the partner; defaults to the first and last name.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **company_name:** `typing.Optional[str]` 
     
 </dd>
@@ -1070,6 +1256,14 @@ client.partners.create_partner(
 <dl>
 <dd>
 
+**created_at:** `typing.Optional[datetime.datetime]` — Backdate the partner's creation time. Defaults to now.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **group_id:** `typing.Optional[str]` — Group in the program. Defaults to the program's default group.
     
 </dd>
@@ -1078,7 +1272,7 @@ client.partners.create_partner(
 <dl>
 <dd>
 
-**status:** `typing.Optional[CreatePartnerRequestStatus]` 
+**status:** `typing.Optional[CreatePartnersRequestStatus]` 
     
 </dd>
 </dl>
@@ -1086,7 +1280,7 @@ client.partners.create_partner(
 <dl>
 <dd>
 
-**link:** `typing.Optional[CreatePartnerRequestLink]` — The referral link created with the partner. Defaults to a slug of the name or email.
+**link:** `typing.Optional[CreatePartnersRequestLink]` — The referral link created with the partner. Defaults to a slug of the name or email.
     
 </dd>
 </dl>
@@ -1114,7 +1308,7 @@ client.partners.create_partner(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">get_partner</a>(...) -> GetPartnerResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">get</a>(...) -> GetPartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1135,7 +1329,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.get_partner(
+client.partners.get(
     id="id",
 )
 
@@ -1173,7 +1367,7 @@ client.partners.get_partner(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">update_partner</a>(...) -> UpdatePartnerResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">update</a>(...) -> UpdatePartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1208,7 +1402,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.update_partner(
+client.partners.update(
     id="id",
 )
 
@@ -1302,7 +1496,7 @@ client.partners.update_partner(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">approve_partner</a>(...) -> ApprovePartnerResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">approve</a>(...) -> ApprovePartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1323,7 +1517,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.approve_partner(
+client.partners.approve(
     id="id",
 )
 
@@ -1361,7 +1555,7 @@ client.partners.approve_partner(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">reject_partner</a>(...) -> RejectPartnerResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">reject</a>(...) -> RejectPartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1382,7 +1576,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.reject_partner(
+client.partners.reject(
     id="id",
 )
 
@@ -1428,7 +1622,7 @@ client.partners.reject_partner(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">suspend_partner</a>(...) -> SuspendPartnerResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">suspend</a>(...) -> SuspendPartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1449,7 +1643,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.partners.suspend_partner(
+client.partners.suspend(
     id="id",
 )
 
@@ -1496,7 +1690,7 @@ client.partners.suspend_partner(
 </details>
 
 ## Programs
-<details><summary><code>client.programs.<a href="src/tolt/programs/client.py">list_programs</a>(...) -> ListProgramsResponse</code></summary>
+<details><summary><code>client.programs.<a href="src/tolt/programs/client.py">list</a>(...) -> ListProgramsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1517,7 +1711,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.programs.list_programs()
+client.programs.list()
 
 ```
 </dd>
@@ -1625,7 +1819,7 @@ client.programs.list_programs()
 </dl>
 </details>
 
-<details><summary><code>client.programs.<a href="src/tolt/programs/client.py">get_program</a>(...) -> GetProgramResponse</code></summary>
+<details><summary><code>client.programs.<a href="src/tolt/programs/client.py">get</a>(...) -> GetProgramsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1646,7 +1840,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.programs.get_program(
+client.programs.get(
     id="id",
 )
 
@@ -1685,7 +1879,7 @@ client.programs.get_program(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">list_customers</a>(...) -> ListCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">list</a>(...) -> ListCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1706,7 +1900,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.customers.list_customers()
+client.customers.list()
 
 ```
 </dd>
@@ -1818,7 +2012,7 @@ client.customers.list_customers()
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` 
+**status:** `typing.Optional[ListCustomersRequestStatus]` 
     
 </dd>
 </dl>
@@ -1827,6 +2021,22 @@ client.customers.list_customers()
 <dd>
 
 **search:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**click_id:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**link_id:** `typing.Optional[str]` 
     
 </dd>
 </dl>
@@ -1846,7 +2056,7 @@ client.customers.list_customers()
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">create_customer</a>(...) -> CreateCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">create</a>(...) -> CreateCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1867,7 +2077,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.customers.create_customer()
+client.customers.create()
 
 ```
 </dd>
@@ -1891,6 +2101,22 @@ client.customers.create_customer()
 <dl>
 <dd>
 
+**promotion_code:** `typing.Optional[str]` — Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_at:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **name:** `typing.Optional[str]` 
     
 </dd>
@@ -1907,7 +2133,7 @@ client.customers.create_customer()
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` 
+**status:** `typing.Optional[CreateCustomersRequestStatus]` 
     
 </dd>
 </dl>
@@ -1947,6 +2173,22 @@ client.customers.create_customer()
 <dl>
 <dd>
 
+**lead_at:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**active_at:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -1959,7 +2201,7 @@ client.customers.create_customer()
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">get_customer</a>(...) -> GetCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">get</a>(...) -> GetCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1980,7 +2222,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.customers.get_customer(
+client.customers.get(
     id="id",
 )
 
@@ -2018,7 +2260,7 @@ client.customers.get_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">update_customer</a>(...) -> UpdateCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">update</a>(...) -> UpdateCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2039,7 +2281,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.customers.update_customer(
+client.customers.update(
     id="id",
 )
 
@@ -2073,6 +2315,22 @@ client.customers.update_customer(
 <dl>
 <dd>
 
+**promotion_code:** `typing.Optional[str]` — Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_at:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **name:** `typing.Optional[str]` 
     
 </dd>
@@ -2081,7 +2339,7 @@ client.customers.update_customer(
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` 
+**status:** `typing.Optional[UpdateCustomersRequestStatus]` 
     
 </dd>
 </dl>
@@ -2149,7 +2407,7 @@ client.customers.update_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">delete_customer</a>(...) -> DeleteCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">delete</a>(...) -> DeleteCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2170,7 +2428,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.customers.delete_customer(
+client.customers.delete(
     id="id",
 )
 
@@ -2209,7 +2467,7 @@ client.customers.delete_customer(
 </details>
 
 ## Commissions
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">bulk_approve_commissions</a>(...) -> BulkApproveCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">bulk_approve</a>(...) -> BulkApproveCommissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2221,7 +2479,7 @@ client.customers.delete_customer(
 <dl>
 <dd>
 
-Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+Approves up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 </dd>
 </dl>
 </dd>
@@ -2244,7 +2502,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.bulk_approve_commissions(
+client.commissions.bulk_approve(
     ids=[
         "part_9fQ2xLL",
         "part_3RtV9k"
@@ -2285,7 +2543,7 @@ client.commissions.bulk_approve_commissions(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">bulk_decline_commissions</a>(...) -> BulkDeclineCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">bulk_decline</a>(...) -> BulkDeclineCommissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2297,7 +2555,7 @@ client.commissions.bulk_approve_commissions(
 <dl>
 <dd>
 
-Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+Declines up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 </dd>
 </dl>
 </dd>
@@ -2320,7 +2578,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.bulk_decline_commissions(
+client.commissions.bulk_decline(
     ids=[
         "part_9fQ2xLL",
         "part_3RtV9k"
@@ -2361,7 +2619,7 @@ client.commissions.bulk_decline_commissions(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">list_commissions</a>(...) -> ListCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">list</a>(...) -> ListCommissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2382,7 +2640,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.list_commissions()
+client.commissions.list()
 
 ```
 </dd>
@@ -2538,9 +2796,23 @@ client.commissions.list_commissions()
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">create_commission</a>(...) -> CreateCommissionResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">create</a>(...) -> CreateCommissionsResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Supports historical created_at values. Status defaults to approved when omitted.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -2559,7 +2831,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.create_commission(
+client.commissions.create(
     request={"key": "value"},
 )
 
@@ -2577,7 +2849,7 @@ client.commissions.create_commission(
 <dl>
 <dd>
 
-**request:** `CreateCommissionRequest` 
+**request:** `CreateCommissionsRequest` 
     
 </dd>
 </dl>
@@ -2597,7 +2869,7 @@ client.commissions.create_commission(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">get_commission</a>(...) -> GetCommissionResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">get</a>(...) -> GetCommissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2618,7 +2890,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.get_commission(
+client.commissions.get(
     id="id",
 )
 
@@ -2656,9 +2928,23 @@ client.commissions.get_commission(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">update_commission</a>(...) -> UpdateCommissionResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">update</a>(...) -> UpdateCommissionsResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -2677,7 +2963,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.update_commission(
+client.commissions.update(
     id="id",
 )
 
@@ -2771,7 +3057,7 @@ client.commissions.update_commission(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">delete_commission</a>(...) -> DeleteCommissionResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">delete</a>(...) -> DeleteCommissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2792,7 +3078,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.delete_commission(
+client.commissions.delete(
     id="id",
 )
 
@@ -2830,7 +3116,7 @@ client.commissions.delete_commission(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">approve_commission</a>(...) -> ApproveCommissionResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">approve</a>(...) -> ApproveCommissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2851,7 +3137,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.approve_commission(
+client.commissions.approve(
     id="id",
 )
 
@@ -2889,7 +3175,7 @@ client.commissions.approve_commission(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">decline_commission</a>(...) -> DeclineCommissionResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">decline</a>(...) -> DeclineCommissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2910,7 +3196,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.commissions.decline_commission(
+client.commissions.decline(
     id="id",
 )
 
@@ -2949,7 +3235,7 @@ client.commissions.decline_commission(
 </details>
 
 ## Transactions
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">list</a>(...) -> ListTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2970,7 +3256,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.transactions.list_transactions()
+client.transactions.list()
 
 ```
 </dd>
@@ -3110,9 +3396,23 @@ client.transactions.list_transactions()
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">create_transaction</a>(...) -> CreateTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">create</a>(...) -> CreateTransactionsResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -3131,7 +3431,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.transactions.create_transaction(
+client.transactions.create(
     amount=1,
     customer_id="customer_id",
 )
@@ -3159,6 +3459,30 @@ client.transactions.create_transaction(
 <dd>
 
 **customer_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_at:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product_id:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product_name:** `typing.Optional[str]` 
     
 </dd>
 </dl>
@@ -3218,7 +3542,7 @@ client.transactions.create_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">get_transaction</a>(...) -> GetTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">get</a>(...) -> GetTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3239,7 +3563,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.transactions.get_transaction(
+client.transactions.get(
     id="id",
 )
 
@@ -3277,7 +3601,7 @@ client.transactions.get_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">update_transaction</a>(...) -> UpdateTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">update</a>(...) -> UpdateTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3298,7 +3622,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.transactions.update_transaction(
+client.transactions.update(
     id="id",
 )
 
@@ -3372,6 +3696,22 @@ client.transactions.update_transaction(
 <dl>
 <dd>
 
+**product_id:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**product_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **interval:** `typing.Optional[str]` 
     
 </dd>
@@ -3400,7 +3740,7 @@ client.transactions.update_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">delete_transaction</a>(...) -> DeleteTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">delete</a>(...) -> DeleteTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3421,7 +3761,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.transactions.delete_transaction(
+client.transactions.delete(
     id="id",
 )
 
@@ -3459,9 +3799,23 @@ client.transactions.delete_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">refund_transaction</a>(...) -> RefundTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">refund</a>(...) -> RefundTransactionsResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -3480,7 +3834,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.transactions.refund_transaction(
+client.transactions.refund(
     id="id",
 )
 
@@ -3518,7 +3872,7 @@ client.transactions.refund_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">rerun_transaction_flows</a>(...) -> RerunTransactionFlowsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">rerun_flows</a>(...) -> RerunFlowsTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3553,7 +3907,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.transactions.rerun_transaction_flows(
+client.transactions.rerun_flows(
     id="id",
 )
 
@@ -3592,9 +3946,23 @@ client.transactions.rerun_transaction_flows(
 </details>
 
 ## Links
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">list_links</a>(...) -> ListLinksResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">list</a>(...) -> ListLinksResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists ordinary links. Campaign-managed links are excluded.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -3613,7 +3981,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.links.list_links()
+client.links.list()
 
 ```
 </dd>
@@ -3753,7 +4121,7 @@ client.links.list_links()
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">create_link</a>(...) -> CreateLinkResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">create</a>(...) -> CreateLinksResponse</code></summary>
 <dl>
 <dd>
 
@@ -3774,7 +4142,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.links.create_link(
+client.links.create(
     value="value",
     partner_id="partner_id",
 )
@@ -3829,9 +4197,23 @@ client.links.create_link(
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">get_link</a>(...) -> GetLinkResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">get_by_param_value</a>(...) -> GetByParamValueLinksResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -3850,7 +4232,89 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.links.get_link(
+client.links.get_by_param_value(
+    param="ref",
+    value="sam",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**param:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**value:** `str` — Matched case-insensitively.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">get</a>(...) -> GetLinksResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets an ordinary or campaign-managed link by ID.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.PRODUCTION,
+)
+
+client.links.get(
     id="id",
 )
 
@@ -3888,9 +4352,23 @@ client.links.get_link(
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">update_link</a>(...) -> UpdateLinkResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">update</a>(...) -> UpdateLinksResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -3909,7 +4387,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.links.update_link(
+client.links.update(
     id="id",
 )
 
@@ -3963,9 +4441,23 @@ client.links.update_link(
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">delete_link</a>(...) -> DeleteLinkResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">delete</a>(...) -> DeleteLinksResponse</code></summary>
 <dl>
 <dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+</dd>
+</dl>
+</dd>
+</dl>
 
 #### 🔌 Usage
 
@@ -3984,7 +4476,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.links.delete_link(
+client.links.delete(
     id="id",
 )
 
@@ -4023,7 +4515,7 @@ client.links.delete_link(
 </details>
 
 ## PromotionCodes
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">list_promotion_codes</a>(...) -> ListPromotionCodesResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">list</a>(...) -> ListPromotionCodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4044,7 +4536,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.promotion_codes.list_promotion_codes()
+client.promotion_codes.list()
 
 ```
 </dd>
@@ -4148,7 +4640,7 @@ client.promotion_codes.list_promotion_codes()
 <dl>
 <dd>
 
-**type:** `typing.Optional[str]` 
+**type:** `typing.Optional[ListPromotionCodesRequestType]` 
     
 </dd>
 </dl>
@@ -4176,7 +4668,7 @@ client.promotion_codes.list_promotion_codes()
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">create_promotion_code</a>(...) -> CreatePromotionCodeResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">create</a>(...) -> CreatePromotionCodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4197,7 +4689,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.promotion_codes.create_promotion_code(
+client.promotion_codes.create(
     code="code",
     partner_id="partner_id",
 )
@@ -4232,7 +4724,7 @@ client.promotion_codes.create_promotion_code(
 <dl>
 <dd>
 
-**type:** `typing.Optional[str]` 
+**type:** `typing.Optional[CreatePromotionCodesRequestType]` 
     
 </dd>
 </dl>
@@ -4260,7 +4752,7 @@ client.promotion_codes.create_promotion_code(
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">get_promotion_code</a>(...) -> GetPromotionCodeResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">get</a>(...) -> GetPromotionCodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4281,7 +4773,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.promotion_codes.get_promotion_code(
+client.promotion_codes.get(
     id="id",
 )
 
@@ -4319,7 +4811,7 @@ client.promotion_codes.get_promotion_code(
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">update_promotion_code</a>(...) -> UpdatePromotionCodeResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">update</a>(...) -> UpdatePromotionCodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4340,7 +4832,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.promotion_codes.update_promotion_code(
+client.promotion_codes.update(
     id="id",
 )
 
@@ -4374,7 +4866,7 @@ client.promotion_codes.update_promotion_code(
 <dl>
 <dd>
 
-**type:** `typing.Optional[str]` 
+**type:** `typing.Optional[UpdatePromotionCodesRequestType]` 
     
 </dd>
 </dl>
@@ -4402,7 +4894,7 @@ client.promotion_codes.update_promotion_code(
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">delete_promotion_code</a>(...) -> DeletePromotionCodeResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">delete</a>(...) -> DeletePromotionCodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4423,7 +4915,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.PRODUCTION,
 )
 
-client.promotion_codes.delete_promotion_code(
+client.promotion_codes.delete(
     id="id",
 )
 
@@ -4462,7 +4954,7 @@ client.promotion_codes.delete_promotion_code(
 </details>
 
 ## Reports
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">overview</a>(...) -> ReportsOverviewResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">overview</a>(...) -> OverviewReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4535,7 +5027,7 @@ client.reports.overview()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">partners</a>(...) -> ReportsPartnersResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">partners</a>(...) -> PartnersReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4596,6 +5088,14 @@ client.reports.partners()
 <dl>
 <dd>
 
+**currency:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **limit:** `typing.Optional[int]` 
     
 </dd>
@@ -4612,7 +5112,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ReportsPartnersRequestSort]` 
+**sort:** `typing.Optional[PartnersReportsRequestSort]` 
     
 </dd>
 </dl>
@@ -4620,7 +5120,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ReportsPartnersRequestOrder]` 
+**order:** `typing.Optional[PartnersReportsRequestOrder]` 
     
 </dd>
 </dl>
@@ -4640,7 +5140,7 @@ client.reports.partners()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">links</a>(...) -> ReportsLinksResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">links</a>(...) -> LinksReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4701,6 +5201,14 @@ client.reports.links()
 <dl>
 <dd>
 
+**currency:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **limit:** `typing.Optional[int]` 
     
 </dd>
@@ -4717,7 +5225,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ReportsLinksRequestSort]` 
+**sort:** `typing.Optional[LinksReportsRequestSort]` 
     
 </dd>
 </dl>
@@ -4725,7 +5233,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ReportsLinksRequestOrder]` 
+**order:** `typing.Optional[LinksReportsRequestOrder]` 
     
 </dd>
 </dl>
@@ -4745,7 +5253,7 @@ client.reports.links()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">timeseries</a>(...) -> ReportsTimeseriesResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">timeseries</a>(...) -> TimeseriesReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4806,7 +5314,15 @@ client.reports.timeseries()
 <dl>
 <dd>
 
-**granularity:** `typing.Optional[ReportsTimeseriesRequestGranularity]` 
+**granularity:** `typing.Optional[TimeseriesReportsRequestGranularity]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**currency:** `typing.Optional[str]` 
     
 </dd>
 </dl>
@@ -4826,7 +5342,7 @@ client.reports.timeseries()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">customer_stats</a>(...) -> ReportsCustomerStatsResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">customer_stats</a>(...) -> CustomerStatsReportsResponse</code></summary>
 <dl>
 <dd>
 

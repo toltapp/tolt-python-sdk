@@ -13,17 +13,21 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
+from ..errors.conflict_error import ConflictError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.create_customer_response import CreateCustomerResponse
-from .types.delete_customer_response import DeleteCustomerResponse
-from .types.get_customer_response import GetCustomerResponse
+from .types.create_customers_request_status import CreateCustomersRequestStatus
+from .types.create_customers_response import CreateCustomersResponse
+from .types.delete_customers_response import DeleteCustomersResponse
+from .types.get_customers_response import GetCustomersResponse
 from .types.list_customers_request_order import ListCustomersRequestOrder
 from .types.list_customers_request_sort import ListCustomersRequestSort
+from .types.list_customers_request_status import ListCustomersRequestStatus
 from .types.list_customers_response import ListCustomersResponse
-from .types.update_customer_response import UpdateCustomerResponse
+from .types.update_customers_request_status import UpdateCustomersRequestStatus
+from .types.update_customers_response import UpdateCustomersResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -34,7 +38,7 @@ class RawCustomersClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_customers(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -49,8 +53,10 @@ class RawCustomersClient:
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
-        status: typing.Optional[str] = None,
+        status: typing.Optional[ListCustomersRequestStatus] = None,
         search: typing.Optional[str] = None,
+        click_id: typing.Optional[str] = None,
+        link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListCustomersResponse]:
         """
@@ -87,9 +93,13 @@ class RawCustomersClient:
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[ListCustomersRequestStatus]
 
         search : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -117,6 +127,8 @@ class RawCustomersClient:
                 "customer_id": customer_id,
                 "status": status,
                 "search": search,
+                "click_id": click_id,
+                "link_id": link_id,
             },
             request_options=request_options,
         )
@@ -172,29 +184,38 @@ class RawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_customer(
+    def create(
         self,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
         partner_id: typing.Optional[str] = OMIT,
+        lead_at: typing.Optional[dt.datetime] = OMIT,
+        active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreateCustomerResponse]:
+    ) -> HttpResponse[CreateCustomersResponse]:
         """
         Parameters
         ----------
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[CreateCustomersRequestStatus]
 
         subscription_id : typing.Optional[str]
 
@@ -204,12 +225,16 @@ class RawCustomersClient:
 
         partner_id : typing.Optional[str]
 
+        lead_at : typing.Optional[dt.datetime]
+
+        active_at : typing.Optional[dt.datetime]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[CreateCustomerResponse]
+        HttpResponse[CreateCustomersResponse]
             The created customer
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -217,6 +242,8 @@ class RawCustomersClient:
             method="POST",
             json={
                 "email": email,
+                "promotion_code": promotion_code,
+                "created_at": created_at,
                 "name": name,
                 "customer_id": customer_id,
                 "status": status,
@@ -224,6 +251,8 @@ class RawCustomersClient:
                 "click_id": click_id,
                 "link_id": link_id,
                 "partner_id": partner_id,
+                "lead_at": lead_at,
+                "active_at": active_at,
             },
             headers={
                 "content-type": "application/json",
@@ -234,9 +263,9 @@ class RawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCustomerResponse,
+                    CreateCustomersResponse,
                     parse_obj_as(
-                        type_=CreateCustomerResponse,  # type: ignore
+                        type_=CreateCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -254,6 +283,17 @@ class RawCustomersClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -283,9 +323,9 @@ class RawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_customer(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetCustomerResponse]:
+    ) -> HttpResponse[GetCustomersResponse]:
         """
         Parameters
         ----------
@@ -296,7 +336,7 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[GetCustomerResponse]
+        HttpResponse[GetCustomersResponse]
             The requested customer
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -307,9 +347,9 @@ class RawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCustomerResponse,
+                    GetCustomersResponse,
                     parse_obj_as(
-                        type_=GetCustomerResponse,  # type: ignore
+                        type_=GetCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -356,13 +396,15 @@ class RawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def update_customer(
+    def update(
         self,
         id: str,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -370,7 +412,7 @@ class RawCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateCustomerResponse]:
+    ) -> HttpResponse[UpdateCustomersResponse]:
         """
         Parameters
         ----------
@@ -378,9 +420,14 @@ class RawCustomersClient:
 
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[UpdateCustomersRequestStatus]
 
         customer_id : typing.Optional[str]
 
@@ -399,7 +446,7 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[UpdateCustomerResponse]
+        HttpResponse[UpdateCustomersResponse]
             The updated customer
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -407,6 +454,8 @@ class RawCustomersClient:
             method="PUT",
             json={
                 "email": email,
+                "promotion_code": promotion_code,
+                "created_at": created_at,
                 "name": name,
                 "status": status,
                 "customer_id": customer_id,
@@ -425,9 +474,9 @@ class RawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCustomerResponse,
+                    UpdateCustomersResponse,
                     parse_obj_as(
-                        type_=UpdateCustomerResponse,  # type: ignore
+                        type_=UpdateCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -465,6 +514,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -485,9 +545,9 @@ class RawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete_customer(
+    def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteCustomerResponse]:
+    ) -> HttpResponse[DeleteCustomersResponse]:
         """
         Parameters
         ----------
@@ -498,7 +558,7 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[DeleteCustomerResponse]
+        HttpResponse[DeleteCustomersResponse]
             The deleted customer
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -509,13 +569,24 @@ class RawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCustomerResponse,
+                    DeleteCustomersResponse,
                     parse_obj_as(
-                        type_=DeleteCustomerResponse,  # type: ignore
+                        type_=DeleteCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -563,7 +634,7 @@ class AsyncRawCustomersClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_customers(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -578,8 +649,10 @@ class AsyncRawCustomersClient:
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
-        status: typing.Optional[str] = None,
+        status: typing.Optional[ListCustomersRequestStatus] = None,
         search: typing.Optional[str] = None,
+        click_id: typing.Optional[str] = None,
+        link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListCustomersResponse]:
         """
@@ -616,9 +689,13 @@ class AsyncRawCustomersClient:
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[ListCustomersRequestStatus]
 
         search : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -646,6 +723,8 @@ class AsyncRawCustomersClient:
                 "customer_id": customer_id,
                 "status": status,
                 "search": search,
+                "click_id": click_id,
+                "link_id": link_id,
             },
             request_options=request_options,
         )
@@ -701,29 +780,38 @@ class AsyncRawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_customer(
+    async def create(
         self,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
         partner_id: typing.Optional[str] = OMIT,
+        lead_at: typing.Optional[dt.datetime] = OMIT,
+        active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreateCustomerResponse]:
+    ) -> AsyncHttpResponse[CreateCustomersResponse]:
         """
         Parameters
         ----------
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[CreateCustomersRequestStatus]
 
         subscription_id : typing.Optional[str]
 
@@ -733,12 +821,16 @@ class AsyncRawCustomersClient:
 
         partner_id : typing.Optional[str]
 
+        lead_at : typing.Optional[dt.datetime]
+
+        active_at : typing.Optional[dt.datetime]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[CreateCustomerResponse]
+        AsyncHttpResponse[CreateCustomersResponse]
             The created customer
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -746,6 +838,8 @@ class AsyncRawCustomersClient:
             method="POST",
             json={
                 "email": email,
+                "promotion_code": promotion_code,
+                "created_at": created_at,
                 "name": name,
                 "customer_id": customer_id,
                 "status": status,
@@ -753,6 +847,8 @@ class AsyncRawCustomersClient:
                 "click_id": click_id,
                 "link_id": link_id,
                 "partner_id": partner_id,
+                "lead_at": lead_at,
+                "active_at": active_at,
             },
             headers={
                 "content-type": "application/json",
@@ -763,9 +859,9 @@ class AsyncRawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCustomerResponse,
+                    CreateCustomersResponse,
                     parse_obj_as(
-                        type_=CreateCustomerResponse,  # type: ignore
+                        type_=CreateCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -783,6 +879,17 @@ class AsyncRawCustomersClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -812,9 +919,9 @@ class AsyncRawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_customer(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetCustomerResponse]:
+    ) -> AsyncHttpResponse[GetCustomersResponse]:
         """
         Parameters
         ----------
@@ -825,7 +932,7 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetCustomerResponse]
+        AsyncHttpResponse[GetCustomersResponse]
             The requested customer
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -836,9 +943,9 @@ class AsyncRawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCustomerResponse,
+                    GetCustomersResponse,
                     parse_obj_as(
-                        type_=GetCustomerResponse,  # type: ignore
+                        type_=GetCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -885,13 +992,15 @@ class AsyncRawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def update_customer(
+    async def update(
         self,
         id: str,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -899,7 +1008,7 @@ class AsyncRawCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateCustomerResponse]:
+    ) -> AsyncHttpResponse[UpdateCustomersResponse]:
         """
         Parameters
         ----------
@@ -907,9 +1016,14 @@ class AsyncRawCustomersClient:
 
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[UpdateCustomersRequestStatus]
 
         customer_id : typing.Optional[str]
 
@@ -928,7 +1042,7 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateCustomerResponse]
+        AsyncHttpResponse[UpdateCustomersResponse]
             The updated customer
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -936,6 +1050,8 @@ class AsyncRawCustomersClient:
             method="PUT",
             json={
                 "email": email,
+                "promotion_code": promotion_code,
+                "created_at": created_at,
                 "name": name,
                 "status": status,
                 "customer_id": customer_id,
@@ -954,9 +1070,9 @@ class AsyncRawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCustomerResponse,
+                    UpdateCustomersResponse,
                     parse_obj_as(
-                        type_=UpdateCustomerResponse,  # type: ignore
+                        type_=UpdateCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -994,6 +1110,17 @@ class AsyncRawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1014,9 +1141,9 @@ class AsyncRawCustomersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def delete_customer(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteCustomerResponse]:
+    ) -> AsyncHttpResponse[DeleteCustomersResponse]:
         """
         Parameters
         ----------
@@ -1027,7 +1154,7 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteCustomerResponse]
+        AsyncHttpResponse[DeleteCustomersResponse]
             The deleted customer
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1038,13 +1165,24 @@ class AsyncRawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCustomerResponse,
+                    DeleteCustomersResponse,
                     parse_obj_as(
-                        type_=DeleteCustomerResponse,  # type: ignore
+                        type_=DeleteCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

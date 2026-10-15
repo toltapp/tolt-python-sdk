@@ -17,7 +17,7 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.get_group_response import GetGroupResponse
+from .types.get_groups_response import GetGroupsResponse
 from .types.list_groups_request_default import ListGroupsRequestDefault
 from .types.list_groups_request_order import ListGroupsRequestOrder
 from .types.list_groups_request_sort import ListGroupsRequestSort
@@ -29,7 +29,7 @@ class RawGroupsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_groups(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -159,9 +159,9 @@ class RawGroupsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_group(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetGroupResponse]:
+    ) -> HttpResponse[GetGroupsResponse]:
         """
         Parameters
         ----------
@@ -172,7 +172,7 @@ class RawGroupsClient:
 
         Returns
         -------
-        HttpResponse[GetGroupResponse]
+        HttpResponse[GetGroupsResponse]
             The requested group
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -183,9 +183,9 @@ class RawGroupsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetGroupResponse,
+                    GetGroupsResponse,
                     parse_obj_as(
-                        type_=GetGroupResponse,  # type: ignore
+                        type_=GetGroupsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -237,7 +237,7 @@ class AsyncRawGroupsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_groups(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -367,9 +367,9 @@ class AsyncRawGroupsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_group(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetGroupResponse]:
+    ) -> AsyncHttpResponse[GetGroupsResponse]:
         """
         Parameters
         ----------
@@ -380,7 +380,7 @@ class AsyncRawGroupsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetGroupResponse]
+        AsyncHttpResponse[GetGroupsResponse]
             The requested group
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -391,9 +391,9 @@ class AsyncRawGroupsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetGroupResponse,
+                    GetGroupsResponse,
                     parse_obj_as(
-                        type_=GetGroupResponse,  # type: ignore
+                        type_=GetGroupsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

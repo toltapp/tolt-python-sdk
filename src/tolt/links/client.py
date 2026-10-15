@@ -6,13 +6,14 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawLinksClient, RawLinksClient
-from .types.create_link_response import CreateLinkResponse
-from .types.delete_link_response import DeleteLinkResponse
-from .types.get_link_response import GetLinkResponse
+from .types.create_links_response import CreateLinksResponse
+from .types.delete_links_response import DeleteLinksResponse
+from .types.get_by_param_value_links_response import GetByParamValueLinksResponse
+from .types.get_links_response import GetLinksResponse
 from .types.list_links_request_order import ListLinksRequestOrder
 from .types.list_links_request_sort import ListLinksRequestSort
 from .types.list_links_response import ListLinksResponse
-from .types.update_link_response import UpdateLinkResponse
+from .types.update_links_response import UpdateLinksResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -33,7 +34,7 @@ class LinksClient:
         """
         return self._raw_client
 
-    def list_links(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -53,6 +54,8 @@ class LinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListLinksResponse:
         """
+        Lists ordinary links. Campaign-managed links are excluded.
+
         Parameters
         ----------
         limit : typing.Optional[int]
@@ -105,9 +108,9 @@ class LinksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.links.list_links()
+        client.links.list()
         """
-        _response = self._raw_client.list_links(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -126,14 +129,14 @@ class LinksClient:
         )
         return _response.data
 
-    def create_link(
+    def create(
         self,
         *,
         value: str,
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateLinkResponse:
+    ) -> CreateLinksResponse:
         """
         Parameters
         ----------
@@ -148,7 +151,7 @@ class LinksClient:
 
         Returns
         -------
-        CreateLinkResponse
+        CreateLinksResponse
             The created link
 
         Examples
@@ -158,18 +161,56 @@ class LinksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.links.create_link(
+        client.links.create(
             value="value",
             partner_id="partner_id",
         )
         """
-        _response = self._raw_client.create_link(
+        _response = self._raw_client.create(
             value=value, partner_id=partner_id, param=param, request_options=request_options
         )
         return _response.data
 
-    def get_link(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinkResponse:
+    def get_by_param_value(
+        self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> GetByParamValueLinksResponse:
         """
+        Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
+
+        Parameters
+        ----------
+        param : str
+
+        value : str
+            Matched case-insensitively.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetByParamValueLinksResponse
+            The matching link
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.links.get_by_param_value(
+            param="ref",
+            value="sam",
+        )
+        """
+        _response = self._raw_client.get_by_param_value(param=param, value=value, request_options=request_options)
+        return _response.data
+
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinksResponse:
+        """
+        Gets an ordinary or campaign-managed link by ID.
+
         Parameters
         ----------
         id : str
@@ -179,7 +220,7 @@ class LinksClient:
 
         Returns
         -------
-        GetLinkResponse
+        GetLinksResponse
             The requested link
 
         Examples
@@ -189,22 +230,24 @@ class LinksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.links.get_link(
+        client.links.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_link(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    def update_link(
+    def update(
         self,
         id: str,
         *,
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateLinkResponse:
+    ) -> UpdateLinksResponse:
         """
+        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -218,7 +261,7 @@ class LinksClient:
 
         Returns
         -------
-        UpdateLinkResponse
+        UpdateLinksResponse
             The updated link
 
         Examples
@@ -228,15 +271,17 @@ class LinksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.links.update_link(
+        client.links.update(
             id="id",
         )
         """
-        _response = self._raw_client.update_link(id, param=param, value=value, request_options=request_options)
+        _response = self._raw_client.update(id, param=param, value=value, request_options=request_options)
         return _response.data
 
-    def delete_link(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinkResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinksResponse:
         """
+        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -246,7 +291,7 @@ class LinksClient:
 
         Returns
         -------
-        DeleteLinkResponse
+        DeleteLinksResponse
             The deleted link
 
         Examples
@@ -256,11 +301,11 @@ class LinksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.links.delete_link(
+        client.links.delete(
             id="id",
         )
         """
-        _response = self._raw_client.delete_link(id, request_options=request_options)
+        _response = self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
 
@@ -279,7 +324,7 @@ class AsyncLinksClient:
         """
         return self._raw_client
 
-    async def list_links(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -299,6 +344,8 @@ class AsyncLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListLinksResponse:
         """
+        Lists ordinary links. Campaign-managed links are excluded.
+
         Parameters
         ----------
         limit : typing.Optional[int]
@@ -356,12 +403,12 @@ class AsyncLinksClient:
 
 
         async def main() -> None:
-            await client.links.list_links()
+            await client.links.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_links(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -380,14 +427,14 @@ class AsyncLinksClient:
         )
         return _response.data
 
-    async def create_link(
+    async def create(
         self,
         *,
         value: str,
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateLinkResponse:
+    ) -> CreateLinksResponse:
         """
         Parameters
         ----------
@@ -402,7 +449,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        CreateLinkResponse
+        CreateLinksResponse
             The created link
 
         Examples
@@ -417,7 +464,7 @@ class AsyncLinksClient:
 
 
         async def main() -> None:
-            await client.links.create_link(
+            await client.links.create(
                 value="value",
                 partner_id="partner_id",
             )
@@ -425,13 +472,59 @@ class AsyncLinksClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_link(
+        _response = await self._raw_client.create(
             value=value, partner_id=partner_id, param=param, request_options=request_options
         )
         return _response.data
 
-    async def get_link(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinkResponse:
+    async def get_by_param_value(
+        self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> GetByParamValueLinksResponse:
         """
+        Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
+
+        Parameters
+        ----------
+        param : str
+
+        value : str
+            Matched case-insensitively.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        GetByParamValueLinksResponse
+            The matching link
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.links.get_by_param_value(
+                param="ref",
+                value="sam",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_by_param_value(param=param, value=value, request_options=request_options)
+        return _response.data
+
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinksResponse:
+        """
+        Gets an ordinary or campaign-managed link by ID.
+
         Parameters
         ----------
         id : str
@@ -441,7 +534,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        GetLinkResponse
+        GetLinksResponse
             The requested link
 
         Examples
@@ -456,25 +549,27 @@ class AsyncLinksClient:
 
 
         async def main() -> None:
-            await client.links.get_link(
+            await client.links.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_link(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    async def update_link(
+    async def update(
         self,
         id: str,
         *,
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateLinkResponse:
+    ) -> UpdateLinksResponse:
         """
+        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -488,7 +583,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        UpdateLinkResponse
+        UpdateLinksResponse
             The updated link
 
         Examples
@@ -503,20 +598,20 @@ class AsyncLinksClient:
 
 
         async def main() -> None:
-            await client.links.update_link(
+            await client.links.update(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update_link(id, param=param, value=value, request_options=request_options)
+        _response = await self._raw_client.update(id, param=param, value=value, request_options=request_options)
         return _response.data
 
-    async def delete_link(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteLinkResponse:
+    async def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinksResponse:
         """
+        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+
         Parameters
         ----------
         id : str
@@ -526,7 +621,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        DeleteLinkResponse
+        DeleteLinksResponse
             The deleted link
 
         Examples
@@ -541,12 +636,12 @@ class AsyncLinksClient:
 
 
         async def main() -> None:
-            await client.links.delete_link(
+            await client.links.delete(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete_link(id, request_options=request_options)
+        _response = await self._raw_client.delete(id, request_options=request_options)
         return _response.data

@@ -6,21 +6,27 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_customer_response import CreateCustomerResponse
-    from .delete_customer_response import DeleteCustomerResponse
-    from .get_customer_response import GetCustomerResponse
+    from .create_customers_request_status import CreateCustomersRequestStatus
+    from .create_customers_response import CreateCustomersResponse
+    from .delete_customers_response import DeleteCustomersResponse
+    from .get_customers_response import GetCustomersResponse
     from .list_customers_request_order import ListCustomersRequestOrder
     from .list_customers_request_sort import ListCustomersRequestSort
+    from .list_customers_request_status import ListCustomersRequestStatus
     from .list_customers_response import ListCustomersResponse
-    from .update_customer_response import UpdateCustomerResponse
+    from .update_customers_request_status import UpdateCustomersRequestStatus
+    from .update_customers_response import UpdateCustomersResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateCustomerResponse": ".create_customer_response",
-    "DeleteCustomerResponse": ".delete_customer_response",
-    "GetCustomerResponse": ".get_customer_response",
+    "CreateCustomersRequestStatus": ".create_customers_request_status",
+    "CreateCustomersResponse": ".create_customers_response",
+    "DeleteCustomersResponse": ".delete_customers_response",
+    "GetCustomersResponse": ".get_customers_response",
     "ListCustomersRequestOrder": ".list_customers_request_order",
     "ListCustomersRequestSort": ".list_customers_request_sort",
+    "ListCustomersRequestStatus": ".list_customers_request_status",
     "ListCustomersResponse": ".list_customers_response",
-    "UpdateCustomerResponse": ".update_customer_response",
+    "UpdateCustomersRequestStatus": ".update_customers_request_status",
+    "UpdateCustomersResponse": ".update_customers_response",
 }
 
 
@@ -46,11 +52,14 @@ def __dir__():
 
 
 __all__ = [
-    "CreateCustomerResponse",
-    "DeleteCustomerResponse",
-    "GetCustomerResponse",
+    "CreateCustomersRequestStatus",
+    "CreateCustomersResponse",
+    "DeleteCustomersResponse",
+    "GetCustomersResponse",
     "ListCustomersRequestOrder",
     "ListCustomersRequestSort",
+    "ListCustomersRequestStatus",
     "ListCustomersResponse",
-    "UpdateCustomerResponse",
+    "UpdateCustomersRequestStatus",
+    "UpdateCustomersResponse",
 ]
