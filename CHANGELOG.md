@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.6.1 (2026-10-15)
+
+### Bug Fixes
+
+- Republish with corrected README usage examples
+  ([`9b03d39`](https://github.com/toltapp/tolt-python-sdk/commit/9b03d39ac1479388708e378b1cff9dcb1a81dd66))
+
+### Documentation
+
+- Use the renamed partners.approve method in README usage
+  ([`f0a653a`](https://github.com/toltapp/tolt-python-sdk/commit/f0a653aeb2cc41184585fd140261fe7e4594f04b))
+
+
 ## v0.6.0 (2026-10-15)
 
 ### Features
