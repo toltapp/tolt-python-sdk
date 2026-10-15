@@ -18,15 +18,15 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.create_transaction_response import CreateTransactionResponse
-from .types.delete_transaction_response import DeleteTransactionResponse
-from .types.get_transaction_response import GetTransactionResponse
+from .types.create_transactions_response import CreateTransactionsResponse
+from .types.delete_transactions_response import DeleteTransactionsResponse
+from .types.get_transactions_response import GetTransactionsResponse
 from .types.list_transactions_request_order import ListTransactionsRequestOrder
 from .types.list_transactions_request_sort import ListTransactionsRequestSort
 from .types.list_transactions_response import ListTransactionsResponse
-from .types.refund_transaction_response import RefundTransactionResponse
-from .types.rerun_transaction_flows_response import RerunTransactionFlowsResponse
-from .types.update_transaction_response import UpdateTransactionResponse
+from .types.refund_transactions_response import RefundTransactionsResponse
+from .types.rerun_flows_transactions_response import RerunFlowsTransactionsResponse
+from .types.update_transactions_response import UpdateTransactionsResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -37,7 +37,7 @@ class RawTransactionsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_transactions(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -175,25 +175,36 @@ class RawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create_transaction(
+    def create(
         self,
         *,
         amount: int,
         customer_id: str,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreateTransactionResponse]:
+    ) -> HttpResponse[CreateTransactionsResponse]:
         """
+        Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
+
         Parameters
         ----------
         amount : int
             Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
 
         customer_id : str
+
+        created_at : typing.Optional[dt.datetime]
+
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
 
         billing_type : typing.Optional[str]
 
@@ -210,13 +221,16 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[CreateTransactionResponse]
+        HttpResponse[CreateTransactionsResponse]
             The created transaction
         """
         _response = self._client_wrapper.httpx_client.request(
             "v2/transactions",
             method="POST",
             json={
+                "created_at": created_at,
+                "product_id": product_id,
+                "product_name": product_name,
                 "amount": amount,
                 "customer_id": customer_id,
                 "billing_type": billing_type,
@@ -234,9 +248,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateTransactionResponse,
+                    CreateTransactionsResponse,
                     parse_obj_as(
-                        type_=CreateTransactionResponse,  # type: ignore
+                        type_=CreateTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -283,9 +297,9 @@ class RawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_transaction(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetTransactionResponse]:
+    ) -> HttpResponse[GetTransactionsResponse]:
         """
         Parameters
         ----------
@@ -296,7 +310,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[GetTransactionResponse]
+        HttpResponse[GetTransactionsResponse]
             The requested transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -307,9 +321,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetTransactionResponse,
+                    GetTransactionsResponse,
                     parse_obj_as(
-                        type_=GetTransactionResponse,  # type: ignore
+                        type_=GetTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -356,7 +370,7 @@ class RawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def update_transaction(
+    def update(
         self,
         id: str,
         *,
@@ -366,10 +380,12 @@ class RawTransactionsClient:
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateTransactionResponse]:
+    ) -> HttpResponse[UpdateTransactionsResponse]:
         """
         Parameters
         ----------
@@ -388,6 +404,10 @@ class RawTransactionsClient:
 
         click_id : typing.Optional[str]
 
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
+
         interval : typing.Optional[str]
 
         created_at : typing.Optional[dt.datetime]
@@ -397,7 +417,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[UpdateTransactionResponse]
+        HttpResponse[UpdateTransactionsResponse]
             The updated transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -410,6 +430,8 @@ class RawTransactionsClient:
                 "billing_type": billing_type,
                 "charge_id": charge_id,
                 "click_id": click_id,
+                "product_id": product_id,
+                "product_name": product_name,
                 "interval": interval,
                 "created_at": created_at,
             },
@@ -422,9 +444,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateTransactionResponse,
+                    UpdateTransactionsResponse,
                     parse_obj_as(
-                        type_=UpdateTransactionResponse,  # type: ignore
+                        type_=UpdateTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -493,9 +515,9 @@ class RawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete_transaction(
+    def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteTransactionResponse]:
+    ) -> HttpResponse[DeleteTransactionsResponse]:
         """
         Parameters
         ----------
@@ -506,7 +528,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[DeleteTransactionResponse]
+        HttpResponse[DeleteTransactionsResponse]
             The deleted transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -517,9 +539,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteTransactionResponse,
+                    DeleteTransactionsResponse,
                     parse_obj_as(
-                        type_=DeleteTransactionResponse,  # type: ignore
+                        type_=DeleteTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -577,10 +599,12 @@ class RawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def refund_transaction(
+    def refund(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[RefundTransactionResponse]:
+    ) -> HttpResponse[RefundTransactionsResponse]:
         """
+        Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
+
         Parameters
         ----------
         id : str
@@ -590,7 +614,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[RefundTransactionResponse]
+        HttpResponse[RefundTransactionsResponse]
             The refunded transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -601,9 +625,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RefundTransactionResponse,
+                    RefundTransactionsResponse,
                     parse_obj_as(
-                        type_=RefundTransactionResponse,  # type: ignore
+                        type_=RefundTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -661,9 +685,9 @@ class RawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def rerun_transaction_flows(
+    def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[RerunTransactionFlowsResponse]:
+    ) -> HttpResponse[RerunFlowsTransactionsResponse]:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -676,7 +700,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[RerunTransactionFlowsResponse]
+        HttpResponse[RerunFlowsTransactionsResponse]
             Flow reprocessing queued
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -687,9 +711,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RerunTransactionFlowsResponse,
+                    RerunFlowsTransactionsResponse,
                     parse_obj_as(
-                        type_=RerunTransactionFlowsResponse,  # type: ignore
+                        type_=RerunFlowsTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -752,7 +776,7 @@ class AsyncRawTransactionsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_transactions(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -890,25 +914,36 @@ class AsyncRawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create_transaction(
+    async def create(
         self,
         *,
         amount: int,
         customer_id: str,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreateTransactionResponse]:
+    ) -> AsyncHttpResponse[CreateTransactionsResponse]:
         """
+        Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
+
         Parameters
         ----------
         amount : int
             Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
 
         customer_id : str
+
+        created_at : typing.Optional[dt.datetime]
+
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
 
         billing_type : typing.Optional[str]
 
@@ -925,13 +960,16 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreateTransactionResponse]
+        AsyncHttpResponse[CreateTransactionsResponse]
             The created transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
             "v2/transactions",
             method="POST",
             json={
+                "created_at": created_at,
+                "product_id": product_id,
+                "product_name": product_name,
                 "amount": amount,
                 "customer_id": customer_id,
                 "billing_type": billing_type,
@@ -949,9 +987,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateTransactionResponse,
+                    CreateTransactionsResponse,
                     parse_obj_as(
-                        type_=CreateTransactionResponse,  # type: ignore
+                        type_=CreateTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -998,9 +1036,9 @@ class AsyncRawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_transaction(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetTransactionResponse]:
+    ) -> AsyncHttpResponse[GetTransactionsResponse]:
         """
         Parameters
         ----------
@@ -1011,7 +1049,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetTransactionResponse]
+        AsyncHttpResponse[GetTransactionsResponse]
             The requested transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1022,9 +1060,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetTransactionResponse,
+                    GetTransactionsResponse,
                     parse_obj_as(
-                        type_=GetTransactionResponse,  # type: ignore
+                        type_=GetTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1071,7 +1109,7 @@ class AsyncRawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def update_transaction(
+    async def update(
         self,
         id: str,
         *,
@@ -1081,10 +1119,12 @@ class AsyncRawTransactionsClient:
         billing_type: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
+        product_id: typing.Optional[str] = OMIT,
+        product_name: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateTransactionResponse]:
+    ) -> AsyncHttpResponse[UpdateTransactionsResponse]:
         """
         Parameters
         ----------
@@ -1103,6 +1143,10 @@ class AsyncRawTransactionsClient:
 
         click_id : typing.Optional[str]
 
+        product_id : typing.Optional[str]
+
+        product_name : typing.Optional[str]
+
         interval : typing.Optional[str]
 
         created_at : typing.Optional[dt.datetime]
@@ -1112,7 +1156,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateTransactionResponse]
+        AsyncHttpResponse[UpdateTransactionsResponse]
             The updated transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1125,6 +1169,8 @@ class AsyncRawTransactionsClient:
                 "billing_type": billing_type,
                 "charge_id": charge_id,
                 "click_id": click_id,
+                "product_id": product_id,
+                "product_name": product_name,
                 "interval": interval,
                 "created_at": created_at,
             },
@@ -1137,9 +1183,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateTransactionResponse,
+                    UpdateTransactionsResponse,
                     parse_obj_as(
-                        type_=UpdateTransactionResponse,  # type: ignore
+                        type_=UpdateTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1208,9 +1254,9 @@ class AsyncRawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def delete_transaction(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteTransactionResponse]:
+    ) -> AsyncHttpResponse[DeleteTransactionsResponse]:
         """
         Parameters
         ----------
@@ -1221,7 +1267,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteTransactionResponse]
+        AsyncHttpResponse[DeleteTransactionsResponse]
             The deleted transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1232,9 +1278,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteTransactionResponse,
+                    DeleteTransactionsResponse,
                     parse_obj_as(
-                        type_=DeleteTransactionResponse,  # type: ignore
+                        type_=DeleteTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1292,10 +1338,12 @@ class AsyncRawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def refund_transaction(
+    async def refund(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[RefundTransactionResponse]:
+    ) -> AsyncHttpResponse[RefundTransactionsResponse]:
         """
+        Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
+
         Parameters
         ----------
         id : str
@@ -1305,7 +1353,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[RefundTransactionResponse]
+        AsyncHttpResponse[RefundTransactionsResponse]
             The refunded transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1316,9 +1364,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RefundTransactionResponse,
+                    RefundTransactionsResponse,
                     parse_obj_as(
-                        type_=RefundTransactionResponse,  # type: ignore
+                        type_=RefundTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1376,9 +1424,9 @@ class AsyncRawTransactionsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def rerun_transaction_flows(
+    async def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[RerunTransactionFlowsResponse]:
+    ) -> AsyncHttpResponse[RerunFlowsTransactionsResponse]:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -1391,7 +1439,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[RerunTransactionFlowsResponse]
+        AsyncHttpResponse[RerunFlowsTransactionsResponse]
             Flow reprocessing queued
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1402,9 +1450,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RerunTransactionFlowsResponse,
+                    RerunFlowsTransactionsResponse,
                     parse_obj_as(
-                        type_=RerunTransactionFlowsResponse,  # type: ignore
+                        type_=RerunFlowsTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

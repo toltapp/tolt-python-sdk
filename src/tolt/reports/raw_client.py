@@ -14,16 +14,16 @@ from ..errors.bad_request_error import BadRequestError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.reports_customer_stats_response import ReportsCustomerStatsResponse
-from .types.reports_links_request_order import ReportsLinksRequestOrder
-from .types.reports_links_request_sort import ReportsLinksRequestSort
-from .types.reports_links_response import ReportsLinksResponse
-from .types.reports_overview_response import ReportsOverviewResponse
-from .types.reports_partners_request_order import ReportsPartnersRequestOrder
-from .types.reports_partners_request_sort import ReportsPartnersRequestSort
-from .types.reports_partners_response import ReportsPartnersResponse
-from .types.reports_timeseries_request_granularity import ReportsTimeseriesRequestGranularity
-from .types.reports_timeseries_response import ReportsTimeseriesResponse
+from .types.customer_stats_reports_response import CustomerStatsReportsResponse
+from .types.links_reports_request_order import LinksReportsRequestOrder
+from .types.links_reports_request_sort import LinksReportsRequestSort
+from .types.links_reports_response import LinksReportsResponse
+from .types.overview_reports_response import OverviewReportsResponse
+from .types.partners_reports_request_order import PartnersReportsRequestOrder
+from .types.partners_reports_request_sort import PartnersReportsRequestSort
+from .types.partners_reports_response import PartnersReportsResponse
+from .types.timeseries_reports_request_granularity import TimeseriesReportsRequestGranularity
+from .types.timeseries_reports_response import TimeseriesReportsResponse
 from pydantic import ValidationError
 
 
@@ -38,7 +38,7 @@ class RawReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ReportsOverviewResponse]:
+    ) -> HttpResponse[OverviewReportsResponse]:
         """
         Parameters
         ----------
@@ -53,7 +53,7 @@ class RawReportsClient:
 
         Returns
         -------
-        HttpResponse[ReportsOverviewResponse]
+        HttpResponse[OverviewReportsResponse]
             Aggregate totals for the organization
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -69,9 +69,9 @@ class RawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsOverviewResponse,
+                    OverviewReportsResponse,
                     parse_obj_as(
-                        type_=ReportsOverviewResponse,  # type: ignore
+                        type_=OverviewReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -124,12 +124,13 @@ class RawReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsPartnersRequestSort] = None,
-        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        sort: typing.Optional[PartnersReportsRequestSort] = None,
+        order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ReportsPartnersResponse]:
+    ) -> HttpResponse[PartnersReportsResponse]:
         """
         Parameters
         ----------
@@ -139,20 +140,22 @@ class RawReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsPartnersRequestSort]
+        sort : typing.Optional[PartnersReportsRequestSort]
 
-        order : typing.Optional[ReportsPartnersRequestOrder]
+        order : typing.Optional[PartnersReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[ReportsPartnersResponse]
+        HttpResponse[PartnersReportsResponse]
             A page of partner breakdown rows
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -162,6 +165,7 @@ class RawReportsClient:
                 "program_id": program_id,
                 "start_date": str(start_date) if start_date is not None else None,
                 "end_date": str(end_date) if end_date is not None else None,
+                "currency": currency,
                 "limit": limit,
                 "offset": offset,
                 "sort": sort,
@@ -172,9 +176,9 @@ class RawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsPartnersResponse,
+                    PartnersReportsResponse,
                     parse_obj_as(
-                        type_=ReportsPartnersResponse,  # type: ignore
+                        type_=PartnersReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -227,12 +231,13 @@ class RawReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsLinksRequestSort] = None,
-        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        sort: typing.Optional[LinksReportsRequestSort] = None,
+        order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ReportsLinksResponse]:
+    ) -> HttpResponse[LinksReportsResponse]:
         """
         Parameters
         ----------
@@ -242,20 +247,22 @@ class RawReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsLinksRequestSort]
+        sort : typing.Optional[LinksReportsRequestSort]
 
-        order : typing.Optional[ReportsLinksRequestOrder]
+        order : typing.Optional[LinksReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[ReportsLinksResponse]
+        HttpResponse[LinksReportsResponse]
             A page of link breakdown rows
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -265,6 +272,7 @@ class RawReportsClient:
                 "program_id": program_id,
                 "start_date": str(start_date) if start_date is not None else None,
                 "end_date": str(end_date) if end_date is not None else None,
+                "currency": currency,
                 "limit": limit,
                 "offset": offset,
                 "sort": sort,
@@ -275,9 +283,9 @@ class RawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsLinksResponse,
+                    LinksReportsResponse,
                     parse_obj_as(
-                        type_=ReportsLinksResponse,  # type: ignore
+                        type_=LinksReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -330,9 +338,10 @@ class RawReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
-        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
+        currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ReportsTimeseriesResponse]:
+    ) -> HttpResponse[TimeseriesReportsResponse]:
         """
         Parameters
         ----------
@@ -342,14 +351,16 @@ class RawReportsClient:
 
         end_date : typing.Optional[dt.date]
 
-        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+        granularity : typing.Optional[TimeseriesReportsRequestGranularity]
+
+        currency : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[ReportsTimeseriesResponse]
+        HttpResponse[TimeseriesReportsResponse]
             One point per non-empty period
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -360,15 +371,16 @@ class RawReportsClient:
                 "start_date": str(start_date) if start_date is not None else None,
                 "end_date": str(end_date) if end_date is not None else None,
                 "granularity": granularity,
+                "currency": currency,
             },
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsTimeseriesResponse,
+                    TimeseriesReportsResponse,
                     parse_obj_as(
-                        type_=ReportsTimeseriesResponse,  # type: ignore
+                        type_=TimeseriesReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -422,7 +434,7 @@ class RawReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ReportsCustomerStatsResponse]:
+    ) -> HttpResponse[CustomerStatsReportsResponse]:
         """
         Parameters
         ----------
@@ -437,7 +449,7 @@ class RawReportsClient:
 
         Returns
         -------
-        HttpResponse[ReportsCustomerStatsResponse]
+        HttpResponse[CustomerStatsReportsResponse]
             Customer status counts for the organization
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -453,9 +465,9 @@ class RawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsCustomerStatsResponse,
+                    CustomerStatsReportsResponse,
                     parse_obj_as(
-                        type_=ReportsCustomerStatsResponse,  # type: ignore
+                        type_=CustomerStatsReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -514,7 +526,7 @@ class AsyncRawReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ReportsOverviewResponse]:
+    ) -> AsyncHttpResponse[OverviewReportsResponse]:
         """
         Parameters
         ----------
@@ -529,7 +541,7 @@ class AsyncRawReportsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ReportsOverviewResponse]
+        AsyncHttpResponse[OverviewReportsResponse]
             Aggregate totals for the organization
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -545,9 +557,9 @@ class AsyncRawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsOverviewResponse,
+                    OverviewReportsResponse,
                     parse_obj_as(
-                        type_=ReportsOverviewResponse,  # type: ignore
+                        type_=OverviewReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -600,12 +612,13 @@ class AsyncRawReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsPartnersRequestSort] = None,
-        order: typing.Optional[ReportsPartnersRequestOrder] = None,
+        sort: typing.Optional[PartnersReportsRequestSort] = None,
+        order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ReportsPartnersResponse]:
+    ) -> AsyncHttpResponse[PartnersReportsResponse]:
         """
         Parameters
         ----------
@@ -615,20 +628,22 @@ class AsyncRawReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsPartnersRequestSort]
+        sort : typing.Optional[PartnersReportsRequestSort]
 
-        order : typing.Optional[ReportsPartnersRequestOrder]
+        order : typing.Optional[PartnersReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[ReportsPartnersResponse]
+        AsyncHttpResponse[PartnersReportsResponse]
             A page of partner breakdown rows
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -638,6 +653,7 @@ class AsyncRawReportsClient:
                 "program_id": program_id,
                 "start_date": str(start_date) if start_date is not None else None,
                 "end_date": str(end_date) if end_date is not None else None,
+                "currency": currency,
                 "limit": limit,
                 "offset": offset,
                 "sort": sort,
@@ -648,9 +664,9 @@ class AsyncRawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsPartnersResponse,
+                    PartnersReportsResponse,
                     parse_obj_as(
-                        type_=ReportsPartnersResponse,  # type: ignore
+                        type_=PartnersReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -703,12 +719,13 @@ class AsyncRawReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
+        currency: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         offset: typing.Optional[int] = None,
-        sort: typing.Optional[ReportsLinksRequestSort] = None,
-        order: typing.Optional[ReportsLinksRequestOrder] = None,
+        sort: typing.Optional[LinksReportsRequestSort] = None,
+        order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ReportsLinksResponse]:
+    ) -> AsyncHttpResponse[LinksReportsResponse]:
         """
         Parameters
         ----------
@@ -718,20 +735,22 @@ class AsyncRawReportsClient:
 
         end_date : typing.Optional[dt.date]
 
+        currency : typing.Optional[str]
+
         limit : typing.Optional[int]
 
         offset : typing.Optional[int]
 
-        sort : typing.Optional[ReportsLinksRequestSort]
+        sort : typing.Optional[LinksReportsRequestSort]
 
-        order : typing.Optional[ReportsLinksRequestOrder]
+        order : typing.Optional[LinksReportsRequestOrder]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[ReportsLinksResponse]
+        AsyncHttpResponse[LinksReportsResponse]
             A page of link breakdown rows
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -741,6 +760,7 @@ class AsyncRawReportsClient:
                 "program_id": program_id,
                 "start_date": str(start_date) if start_date is not None else None,
                 "end_date": str(end_date) if end_date is not None else None,
+                "currency": currency,
                 "limit": limit,
                 "offset": offset,
                 "sort": sort,
@@ -751,9 +771,9 @@ class AsyncRawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsLinksResponse,
+                    LinksReportsResponse,
                     parse_obj_as(
-                        type_=ReportsLinksResponse,  # type: ignore
+                        type_=LinksReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -806,9 +826,10 @@ class AsyncRawReportsClient:
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
-        granularity: typing.Optional[ReportsTimeseriesRequestGranularity] = None,
+        granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
+        currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ReportsTimeseriesResponse]:
+    ) -> AsyncHttpResponse[TimeseriesReportsResponse]:
         """
         Parameters
         ----------
@@ -818,14 +839,16 @@ class AsyncRawReportsClient:
 
         end_date : typing.Optional[dt.date]
 
-        granularity : typing.Optional[ReportsTimeseriesRequestGranularity]
+        granularity : typing.Optional[TimeseriesReportsRequestGranularity]
+
+        currency : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[ReportsTimeseriesResponse]
+        AsyncHttpResponse[TimeseriesReportsResponse]
             One point per non-empty period
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -836,15 +859,16 @@ class AsyncRawReportsClient:
                 "start_date": str(start_date) if start_date is not None else None,
                 "end_date": str(end_date) if end_date is not None else None,
                 "granularity": granularity,
+                "currency": currency,
             },
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsTimeseriesResponse,
+                    TimeseriesReportsResponse,
                     parse_obj_as(
-                        type_=ReportsTimeseriesResponse,  # type: ignore
+                        type_=TimeseriesReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -898,7 +922,7 @@ class AsyncRawReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ReportsCustomerStatsResponse]:
+    ) -> AsyncHttpResponse[CustomerStatsReportsResponse]:
         """
         Parameters
         ----------
@@ -913,7 +937,7 @@ class AsyncRawReportsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ReportsCustomerStatsResponse]
+        AsyncHttpResponse[CustomerStatsReportsResponse]
             Customer status counts for the organization
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -929,9 +953,9 @@ class AsyncRawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ReportsCustomerStatsResponse,
+                    CustomerStatsReportsResponse,
                     parse_obj_as(
-                        type_=ReportsCustomerStatsResponse,  # type: ignore
+                        type_=CustomerStatsReportsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

@@ -6,13 +6,13 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .get_group_response import GetGroupResponse
+    from .get_groups_response import GetGroupsResponse
     from .list_groups_request_default import ListGroupsRequestDefault
     from .list_groups_request_order import ListGroupsRequestOrder
     from .list_groups_request_sort import ListGroupsRequestSort
     from .list_groups_response import ListGroupsResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "GetGroupResponse": ".get_group_response",
+    "GetGroupsResponse": ".get_groups_response",
     "ListGroupsRequestDefault": ".list_groups_request_default",
     "ListGroupsRequestOrder": ".list_groups_request_order",
     "ListGroupsRequestSort": ".list_groups_request_sort",
@@ -42,7 +42,7 @@ def __dir__():
 
 
 __all__ = [
-    "GetGroupResponse",
+    "GetGroupsResponse",
     "ListGroupsRequestDefault",
     "ListGroupsRequestOrder",
     "ListGroupsRequestSort",

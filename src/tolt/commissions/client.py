@@ -6,18 +6,18 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawCommissionsClient, RawCommissionsClient
-from .types.approve_commission_response import ApproveCommissionResponse
+from .types.approve_commissions_response import ApproveCommissionsResponse
 from .types.bulk_approve_commissions_response import BulkApproveCommissionsResponse
 from .types.bulk_decline_commissions_response import BulkDeclineCommissionsResponse
-from .types.create_commission_request import CreateCommissionRequest
-from .types.create_commission_response import CreateCommissionResponse
-from .types.decline_commission_response import DeclineCommissionResponse
-from .types.delete_commission_response import DeleteCommissionResponse
-from .types.get_commission_response import GetCommissionResponse
+from .types.create_commissions_request import CreateCommissionsRequest
+from .types.create_commissions_response import CreateCommissionsResponse
+from .types.decline_commissions_response import DeclineCommissionsResponse
+from .types.delete_commissions_response import DeleteCommissionsResponse
+from .types.get_commissions_response import GetCommissionsResponse
 from .types.list_commissions_request_order import ListCommissionsRequestOrder
 from .types.list_commissions_request_sort import ListCommissionsRequestSort
 from .types.list_commissions_response import ListCommissionsResponse
-from .types.update_commission_response import UpdateCommissionResponse
+from .types.update_commissions_response import UpdateCommissionsResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -38,11 +38,11 @@ class CommissionsClient:
         """
         return self._raw_client
 
-    def bulk_approve_commissions(
+    def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> BulkApproveCommissionsResponse:
         """
-        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Approves up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -64,18 +64,18 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.bulk_approve_commissions(
+        client.commissions.bulk_approve(
             ids=["part_9fQ2xLL", "part_3RtV9k"],
         )
         """
-        _response = self._raw_client.bulk_approve_commissions(ids=ids, request_options=request_options)
+        _response = self._raw_client.bulk_approve(ids=ids, request_options=request_options)
         return _response.data
 
-    def bulk_decline_commissions(
+    def bulk_decline(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> BulkDeclineCommissionsResponse:
         """
-        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Declines up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -97,14 +97,14 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.bulk_decline_commissions(
+        client.commissions.bulk_decline(
             ids=["part_9fQ2xLL", "part_3RtV9k"],
         )
         """
-        _response = self._raw_client.bulk_decline_commissions(ids=ids, request_options=request_options)
+        _response = self._raw_client.bulk_decline(ids=ids, request_options=request_options)
         return _response.data
 
-    def list_commissions(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -182,9 +182,9 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.list_commissions()
+        client.commissions.list()
         """
-        _response = self._raw_client.list_commissions(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -205,20 +205,22 @@ class CommissionsClient:
         )
         return _response.data
 
-    def create_commission(
-        self, *, request: CreateCommissionRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> CreateCommissionResponse:
+    def create(
+        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> CreateCommissionsResponse:
         """
+        Supports historical created_at values. Status defaults to approved when omitted.
+
         Parameters
         ----------
-        request : CreateCommissionRequest
+        request : CreateCommissionsRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateCommissionResponse
+        CreateCommissionsResponse
             The created commission
 
         Examples
@@ -228,16 +230,14 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.create_commission(
+        client.commissions.create(
             request={"key": "value"},
         )
         """
-        _response = self._raw_client.create_commission(request=request, request_options=request_options)
+        _response = self._raw_client.create(request=request, request_options=request_options)
         return _response.data
 
-    def get_commission(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetCommissionResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionsResponse:
         """
         Parameters
         ----------
@@ -248,7 +248,7 @@ class CommissionsClient:
 
         Returns
         -------
-        GetCommissionResponse
+        GetCommissionsResponse
             The requested commission
 
         Examples
@@ -258,14 +258,14 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.get_commission(
+        client.commissions.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_commission(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    def update_commission(
+    def update(
         self,
         id: str,
         *,
@@ -277,8 +277,10 @@ class CommissionsClient:
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCommissionResponse:
+    ) -> UpdateCommissionsResponse:
         """
+        Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
+
         Parameters
         ----------
         id : str
@@ -304,7 +306,7 @@ class CommissionsClient:
 
         Returns
         -------
-        UpdateCommissionResponse
+        UpdateCommissionsResponse
             The updated commission
 
         Examples
@@ -314,11 +316,11 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.update_commission(
+        client.commissions.update(
             id="id",
         )
         """
-        _response = self._raw_client.update_commission(
+        _response = self._raw_client.update(
             id,
             amount=amount,
             revenue=revenue,
@@ -331,9 +333,7 @@ class CommissionsClient:
         )
         return _response.data
 
-    def delete_commission(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteCommissionResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteCommissionsResponse:
         """
         Parameters
         ----------
@@ -344,7 +344,7 @@ class CommissionsClient:
 
         Returns
         -------
-        DeleteCommissionResponse
+        DeleteCommissionsResponse
             The deleted commission
 
         Examples
@@ -354,16 +354,16 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.delete_commission(
+        client.commissions.delete(
             id="id",
         )
         """
-        _response = self._raw_client.delete_commission(id, request_options=request_options)
+        _response = self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
-    def approve_commission(
+    def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ApproveCommissionResponse:
+    ) -> ApproveCommissionsResponse:
         """
         Parameters
         ----------
@@ -374,7 +374,7 @@ class CommissionsClient:
 
         Returns
         -------
-        ApproveCommissionResponse
+        ApproveCommissionsResponse
             The approved commission
 
         Examples
@@ -384,16 +384,16 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.approve_commission(
+        client.commissions.approve(
             id="id",
         )
         """
-        _response = self._raw_client.approve_commission(id, request_options=request_options)
+        _response = self._raw_client.approve(id, request_options=request_options)
         return _response.data
 
-    def decline_commission(
+    def decline(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeclineCommissionResponse:
+    ) -> DeclineCommissionsResponse:
         """
         Parameters
         ----------
@@ -404,7 +404,7 @@ class CommissionsClient:
 
         Returns
         -------
-        DeclineCommissionResponse
+        DeclineCommissionsResponse
             The declined commission
 
         Examples
@@ -414,11 +414,11 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.decline_commission(
+        client.commissions.decline(
             id="id",
         )
         """
-        _response = self._raw_client.decline_commission(id, request_options=request_options)
+        _response = self._raw_client.decline(id, request_options=request_options)
         return _response.data
 
 
@@ -437,11 +437,11 @@ class AsyncCommissionsClient:
         """
         return self._raw_client
 
-    async def bulk_approve_commissions(
+    async def bulk_approve(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> BulkApproveCommissionsResponse:
         """
-        Approves up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Approves up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -468,21 +468,21 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.bulk_approve_commissions(
+            await client.commissions.bulk_approve(
                 ids=["part_9fQ2xLL", "part_3RtV9k"],
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.bulk_approve_commissions(ids=ids, request_options=request_options)
+        _response = await self._raw_client.bulk_approve(ids=ids, request_options=request_options)
         return _response.data
 
-    async def bulk_decline_commissions(
+    async def bulk_decline(
         self, *, ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> BulkDeclineCommissionsResponse:
         """
-        Declines up to 100 commissions. Each id is processed on its own and the response reports the outcome per id, with the error code for any that were refused.
+        Declines up to 100 commissions and reports the outcome per id. Successful changes and affected draft invoice totals commit together.
 
         Parameters
         ----------
@@ -509,17 +509,17 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.bulk_decline_commissions(
+            await client.commissions.bulk_decline(
                 ids=["part_9fQ2xLL", "part_3RtV9k"],
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.bulk_decline_commissions(ids=ids, request_options=request_options)
+        _response = await self._raw_client.bulk_decline(ids=ids, request_options=request_options)
         return _response.data
 
-    async def list_commissions(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -602,12 +602,12 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.list_commissions()
+            await client.commissions.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_commissions(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -628,20 +628,22 @@ class AsyncCommissionsClient:
         )
         return _response.data
 
-    async def create_commission(
-        self, *, request: CreateCommissionRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> CreateCommissionResponse:
+    async def create(
+        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
+    ) -> CreateCommissionsResponse:
         """
+        Supports historical created_at values. Status defaults to approved when omitted.
+
         Parameters
         ----------
-        request : CreateCommissionRequest
+        request : CreateCommissionsRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateCommissionResponse
+        CreateCommissionsResponse
             The created commission
 
         Examples
@@ -656,19 +658,17 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.create_commission(
+            await client.commissions.create(
                 request={"key": "value"},
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_commission(request=request, request_options=request_options)
+        _response = await self._raw_client.create(request=request, request_options=request_options)
         return _response.data
 
-    async def get_commission(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetCommissionResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionsResponse:
         """
         Parameters
         ----------
@@ -679,7 +679,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        GetCommissionResponse
+        GetCommissionsResponse
             The requested commission
 
         Examples
@@ -694,17 +694,17 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.get_commission(
+            await client.commissions.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_commission(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    async def update_commission(
+    async def update(
         self,
         id: str,
         *,
@@ -716,8 +716,10 @@ class AsyncCommissionsClient:
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCommissionResponse:
+    ) -> UpdateCommissionsResponse:
         """
+        Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
+
         Parameters
         ----------
         id : str
@@ -743,7 +745,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        UpdateCommissionResponse
+        UpdateCommissionsResponse
             The updated commission
 
         Examples
@@ -758,14 +760,14 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.update_commission(
+            await client.commissions.update(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update_commission(
+        _response = await self._raw_client.update(
             id,
             amount=amount,
             revenue=revenue,
@@ -778,9 +780,9 @@ class AsyncCommissionsClient:
         )
         return _response.data
 
-    async def delete_commission(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteCommissionResponse:
+    ) -> DeleteCommissionsResponse:
         """
         Parameters
         ----------
@@ -791,7 +793,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        DeleteCommissionResponse
+        DeleteCommissionsResponse
             The deleted commission
 
         Examples
@@ -806,19 +808,19 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.delete_commission(
+            await client.commissions.delete(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete_commission(id, request_options=request_options)
+        _response = await self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
-    async def approve_commission(
+    async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ApproveCommissionResponse:
+    ) -> ApproveCommissionsResponse:
         """
         Parameters
         ----------
@@ -829,7 +831,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        ApproveCommissionResponse
+        ApproveCommissionsResponse
             The approved commission
 
         Examples
@@ -844,19 +846,19 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.approve_commission(
+            await client.commissions.approve(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.approve_commission(id, request_options=request_options)
+        _response = await self._raw_client.approve(id, request_options=request_options)
         return _response.data
 
-    async def decline_commission(
+    async def decline(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeclineCommissionResponse:
+    ) -> DeclineCommissionsResponse:
         """
         Parameters
         ----------
@@ -867,7 +869,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        DeclineCommissionResponse
+        DeclineCommissionsResponse
             The declined commission
 
         Examples
@@ -882,12 +884,12 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.decline_commission(
+            await client.commissions.decline(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.decline_commission(id, request_options=request_options)
+        _response = await self._raw_client.decline(id, request_options=request_options)
         return _response.data

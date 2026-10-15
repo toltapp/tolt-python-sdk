@@ -6,13 +6,16 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawCustomersClient, RawCustomersClient
-from .types.create_customer_response import CreateCustomerResponse
-from .types.delete_customer_response import DeleteCustomerResponse
-from .types.get_customer_response import GetCustomerResponse
+from .types.create_customers_request_status import CreateCustomersRequestStatus
+from .types.create_customers_response import CreateCustomersResponse
+from .types.delete_customers_response import DeleteCustomersResponse
+from .types.get_customers_response import GetCustomersResponse
 from .types.list_customers_request_order import ListCustomersRequestOrder
 from .types.list_customers_request_sort import ListCustomersRequestSort
+from .types.list_customers_request_status import ListCustomersRequestStatus
 from .types.list_customers_response import ListCustomersResponse
-from .types.update_customer_response import UpdateCustomerResponse
+from .types.update_customers_request_status import UpdateCustomersRequestStatus
+from .types.update_customers_response import UpdateCustomersResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -33,7 +36,7 @@ class CustomersClient:
         """
         return self._raw_client
 
-    def list_customers(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -48,8 +51,10 @@ class CustomersClient:
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
-        status: typing.Optional[str] = None,
+        status: typing.Optional[ListCustomersRequestStatus] = None,
         search: typing.Optional[str] = None,
+        click_id: typing.Optional[str] = None,
+        link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListCustomersResponse:
         """
@@ -86,9 +91,13 @@ class CustomersClient:
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[ListCustomersRequestStatus]
 
         search : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -105,9 +114,9 @@ class CustomersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.customers.list_customers()
+        client.customers.list()
         """
-        _response = self._raw_client.list_customers(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -122,33 +131,44 @@ class CustomersClient:
             customer_id=customer_id,
             status=status,
             search=search,
+            click_id=click_id,
+            link_id=link_id,
             request_options=request_options,
         )
         return _response.data
 
-    def create_customer(
+    def create(
         self,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
         partner_id: typing.Optional[str] = OMIT,
+        lead_at: typing.Optional[dt.datetime] = OMIT,
+        active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateCustomerResponse:
+    ) -> CreateCustomersResponse:
         """
         Parameters
         ----------
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[CreateCustomersRequestStatus]
 
         subscription_id : typing.Optional[str]
 
@@ -158,12 +178,16 @@ class CustomersClient:
 
         partner_id : typing.Optional[str]
 
+        lead_at : typing.Optional[dt.datetime]
+
+        active_at : typing.Optional[dt.datetime]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateCustomerResponse
+        CreateCustomersResponse
             The created customer
 
         Examples
@@ -173,10 +197,12 @@ class CustomersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.customers.create_customer()
+        client.customers.create()
         """
-        _response = self._raw_client.create_customer(
+        _response = self._raw_client.create(
             email=email,
+            promotion_code=promotion_code,
+            created_at=created_at,
             name=name,
             customer_id=customer_id,
             status=status,
@@ -184,11 +210,13 @@ class CustomersClient:
             click_id=click_id,
             link_id=link_id,
             partner_id=partner_id,
+            lead_at=lead_at,
+            active_at=active_at,
             request_options=request_options,
         )
         return _response.data
 
-    def get_customer(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomerResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomersResponse:
         """
         Parameters
         ----------
@@ -199,7 +227,7 @@ class CustomersClient:
 
         Returns
         -------
-        GetCustomerResponse
+        GetCustomersResponse
             The requested customer
 
         Examples
@@ -209,20 +237,22 @@ class CustomersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.customers.get_customer(
+        client.customers.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_customer(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    def update_customer(
+    def update(
         self,
         id: str,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -230,7 +260,7 @@ class CustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCustomerResponse:
+    ) -> UpdateCustomersResponse:
         """
         Parameters
         ----------
@@ -238,9 +268,14 @@ class CustomersClient:
 
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[UpdateCustomersRequestStatus]
 
         customer_id : typing.Optional[str]
 
@@ -259,7 +294,7 @@ class CustomersClient:
 
         Returns
         -------
-        UpdateCustomerResponse
+        UpdateCustomersResponse
             The updated customer
 
         Examples
@@ -269,13 +304,15 @@ class CustomersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.customers.update_customer(
+        client.customers.update(
             id="id",
         )
         """
-        _response = self._raw_client.update_customer(
+        _response = self._raw_client.update(
             id,
             email=email,
+            promotion_code=promotion_code,
+            created_at=created_at,
             name=name,
             status=status,
             customer_id=customer_id,
@@ -288,9 +325,7 @@ class CustomersClient:
         )
         return _response.data
 
-    def delete_customer(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteCustomerResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteCustomersResponse:
         """
         Parameters
         ----------
@@ -301,7 +336,7 @@ class CustomersClient:
 
         Returns
         -------
-        DeleteCustomerResponse
+        DeleteCustomersResponse
             The deleted customer
 
         Examples
@@ -311,11 +346,11 @@ class CustomersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.customers.delete_customer(
+        client.customers.delete(
             id="id",
         )
         """
-        _response = self._raw_client.delete_customer(id, request_options=request_options)
+        _response = self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
 
@@ -334,7 +369,7 @@ class AsyncCustomersClient:
         """
         return self._raw_client
 
-    async def list_customers(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -349,8 +384,10 @@ class AsyncCustomersClient:
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
         customer_id: typing.Optional[str] = None,
-        status: typing.Optional[str] = None,
+        status: typing.Optional[ListCustomersRequestStatus] = None,
         search: typing.Optional[str] = None,
+        click_id: typing.Optional[str] = None,
+        link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListCustomersResponse:
         """
@@ -387,9 +424,13 @@ class AsyncCustomersClient:
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[ListCustomersRequestStatus]
 
         search : typing.Optional[str]
+
+        click_id : typing.Optional[str]
+
+        link_id : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -411,12 +452,12 @@ class AsyncCustomersClient:
 
 
         async def main() -> None:
-            await client.customers.list_customers()
+            await client.customers.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_customers(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -431,33 +472,44 @@ class AsyncCustomersClient:
             customer_id=customer_id,
             status=status,
             search=search,
+            click_id=click_id,
+            link_id=link_id,
             request_options=request_options,
         )
         return _response.data
 
-    async def create_customer(
+    async def create(
         self,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
         partner_id: typing.Optional[str] = OMIT,
+        lead_at: typing.Optional[dt.datetime] = OMIT,
+        active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateCustomerResponse:
+    ) -> CreateCustomersResponse:
         """
         Parameters
         ----------
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
         customer_id : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[CreateCustomersRequestStatus]
 
         subscription_id : typing.Optional[str]
 
@@ -467,12 +519,16 @@ class AsyncCustomersClient:
 
         partner_id : typing.Optional[str]
 
+        lead_at : typing.Optional[dt.datetime]
+
+        active_at : typing.Optional[dt.datetime]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateCustomerResponse
+        CreateCustomersResponse
             The created customer
 
         Examples
@@ -487,13 +543,15 @@ class AsyncCustomersClient:
 
 
         async def main() -> None:
-            await client.customers.create_customer()
+            await client.customers.create()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_customer(
+        _response = await self._raw_client.create(
             email=email,
+            promotion_code=promotion_code,
+            created_at=created_at,
             name=name,
             customer_id=customer_id,
             status=status,
@@ -501,13 +559,13 @@ class AsyncCustomersClient:
             click_id=click_id,
             link_id=link_id,
             partner_id=partner_id,
+            lead_at=lead_at,
+            active_at=active_at,
             request_options=request_options,
         )
         return _response.data
 
-    async def get_customer(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetCustomerResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomersResponse:
         """
         Parameters
         ----------
@@ -518,7 +576,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        GetCustomerResponse
+        GetCustomersResponse
             The requested customer
 
         Examples
@@ -533,23 +591,25 @@ class AsyncCustomersClient:
 
 
         async def main() -> None:
-            await client.customers.get_customer(
+            await client.customers.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_customer(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    async def update_customer(
+    async def update(
         self,
         id: str,
         *,
         email: typing.Optional[str] = OMIT,
+        promotion_code: typing.Optional[str] = OMIT,
+        created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -557,7 +617,7 @@ class AsyncCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCustomerResponse:
+    ) -> UpdateCustomersResponse:
         """
         Parameters
         ----------
@@ -565,9 +625,14 @@ class AsyncCustomersClient:
 
         email : typing.Optional[str]
 
+        promotion_code : typing.Optional[str]
+            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+
+        created_at : typing.Optional[dt.datetime]
+
         name : typing.Optional[str]
 
-        status : typing.Optional[str]
+        status : typing.Optional[UpdateCustomersRequestStatus]
 
         customer_id : typing.Optional[str]
 
@@ -586,7 +651,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        UpdateCustomerResponse
+        UpdateCustomersResponse
             The updated customer
 
         Examples
@@ -601,16 +666,18 @@ class AsyncCustomersClient:
 
 
         async def main() -> None:
-            await client.customers.update_customer(
+            await client.customers.update(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update_customer(
+        _response = await self._raw_client.update(
             id,
             email=email,
+            promotion_code=promotion_code,
+            created_at=created_at,
             name=name,
             status=status,
             customer_id=customer_id,
@@ -623,9 +690,9 @@ class AsyncCustomersClient:
         )
         return _response.data
 
-    async def delete_customer(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteCustomerResponse:
+    ) -> DeleteCustomersResponse:
         """
         Parameters
         ----------
@@ -636,7 +703,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        DeleteCustomerResponse
+        DeleteCustomersResponse
             The deleted customer
 
         Examples
@@ -651,12 +718,12 @@ class AsyncCustomersClient:
 
 
         async def main() -> None:
-            await client.customers.delete_customer(
+            await client.customers.delete(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete_customer(id, request_options=request_options)
+        _response = await self._raw_client.delete(id, request_options=request_options)
         return _response.data

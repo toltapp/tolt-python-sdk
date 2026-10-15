@@ -6,13 +6,16 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawPromotionCodesClient, RawPromotionCodesClient
-from .types.create_promotion_code_response import CreatePromotionCodeResponse
-from .types.delete_promotion_code_response import DeletePromotionCodeResponse
-from .types.get_promotion_code_response import GetPromotionCodeResponse
+from .types.create_promotion_codes_request_type import CreatePromotionCodesRequestType
+from .types.create_promotion_codes_response import CreatePromotionCodesResponse
+from .types.delete_promotion_codes_response import DeletePromotionCodesResponse
+from .types.get_promotion_codes_response import GetPromotionCodesResponse
 from .types.list_promotion_codes_request_order import ListPromotionCodesRequestOrder
 from .types.list_promotion_codes_request_sort import ListPromotionCodesRequestSort
+from .types.list_promotion_codes_request_type import ListPromotionCodesRequestType
 from .types.list_promotion_codes_response import ListPromotionCodesResponse
-from .types.update_promotion_code_response import UpdatePromotionCodeResponse
+from .types.update_promotion_codes_request_type import UpdatePromotionCodesRequestType
+from .types.update_promotion_codes_response import UpdatePromotionCodesResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -33,7 +36,7 @@ class PromotionCodesClient:
         """
         return self._raw_client
 
-    def list_promotion_codes(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -47,7 +50,7 @@ class PromotionCodesClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
-        type: typing.Optional[str] = None,
+        type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListPromotionCodesResponse:
@@ -83,7 +86,7 @@ class PromotionCodesClient:
 
         partner_id : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[ListPromotionCodesRequestType]
 
         search : typing.Optional[str]
 
@@ -102,9 +105,9 @@ class PromotionCodesClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.promotion_codes.list_promotion_codes()
+        client.promotion_codes.list()
         """
-        _response = self._raw_client.list_promotion_codes(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -122,15 +125,15 @@ class PromotionCodesClient:
         )
         return _response.data
 
-    def create_promotion_code(
+    def create(
         self,
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePromotionCodeResponse:
+    ) -> CreatePromotionCodesResponse:
         """
         Parameters
         ----------
@@ -138,7 +141,7 @@ class PromotionCodesClient:
 
         partner_id : str
 
-        type : typing.Optional[str]
+        type : typing.Optional[CreatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -147,7 +150,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        CreatePromotionCodeResponse
+        CreatePromotionCodesResponse
             The created promotion code
 
         Examples
@@ -157,19 +160,17 @@ class PromotionCodesClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.promotion_codes.create_promotion_code(
+        client.promotion_codes.create(
             code="code",
             partner_id="partner_id",
         )
         """
-        _response = self._raw_client.create_promotion_code(
+        _response = self._raw_client.create(
             code=code, partner_id=partner_id, type=type, value=value, request_options=request_options
         )
         return _response.data
 
-    def get_promotion_code(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetPromotionCodeResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPromotionCodesResponse:
         """
         Parameters
         ----------
@@ -180,7 +181,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        GetPromotionCodeResponse
+        GetPromotionCodesResponse
             The requested promotion code
 
         Examples
@@ -190,22 +191,22 @@ class PromotionCodesClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.promotion_codes.get_promotion_code(
+        client.promotion_codes.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_promotion_code(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    def update_promotion_code(
+    def update(
         self,
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePromotionCodeResponse:
+    ) -> UpdatePromotionCodesResponse:
         """
         Parameters
         ----------
@@ -213,7 +214,7 @@ class PromotionCodesClient:
 
         code : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[UpdatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -222,7 +223,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        UpdatePromotionCodeResponse
+        UpdatePromotionCodesResponse
             The updated promotion code
 
         Examples
@@ -232,18 +233,16 @@ class PromotionCodesClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.promotion_codes.update_promotion_code(
+        client.promotion_codes.update(
             id="id",
         )
         """
-        _response = self._raw_client.update_promotion_code(
-            id, code=code, type=type, value=value, request_options=request_options
-        )
+        _response = self._raw_client.update(id, code=code, type=type, value=value, request_options=request_options)
         return _response.data
 
-    def delete_promotion_code(
+    def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeletePromotionCodeResponse:
+    ) -> DeletePromotionCodesResponse:
         """
         Parameters
         ----------
@@ -254,7 +253,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        DeletePromotionCodeResponse
+        DeletePromotionCodesResponse
             The deleted promotion code
 
         Examples
@@ -264,11 +263,11 @@ class PromotionCodesClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.promotion_codes.delete_promotion_code(
+        client.promotion_codes.delete(
             id="id",
         )
         """
-        _response = self._raw_client.delete_promotion_code(id, request_options=request_options)
+        _response = self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
 
@@ -287,7 +286,7 @@ class AsyncPromotionCodesClient:
         """
         return self._raw_client
 
-    async def list_promotion_codes(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -301,7 +300,7 @@ class AsyncPromotionCodesClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         partner_id: typing.Optional[str] = None,
-        type: typing.Optional[str] = None,
+        type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListPromotionCodesResponse:
@@ -337,7 +336,7 @@ class AsyncPromotionCodesClient:
 
         partner_id : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[ListPromotionCodesRequestType]
 
         search : typing.Optional[str]
 
@@ -361,12 +360,12 @@ class AsyncPromotionCodesClient:
 
 
         async def main() -> None:
-            await client.promotion_codes.list_promotion_codes()
+            await client.promotion_codes.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_promotion_codes(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -384,15 +383,15 @@ class AsyncPromotionCodesClient:
         )
         return _response.data
 
-    async def create_promotion_code(
+    async def create(
         self,
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePromotionCodeResponse:
+    ) -> CreatePromotionCodesResponse:
         """
         Parameters
         ----------
@@ -400,7 +399,7 @@ class AsyncPromotionCodesClient:
 
         partner_id : str
 
-        type : typing.Optional[str]
+        type : typing.Optional[CreatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -409,7 +408,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        CreatePromotionCodeResponse
+        CreatePromotionCodesResponse
             The created promotion code
 
         Examples
@@ -424,7 +423,7 @@ class AsyncPromotionCodesClient:
 
 
         async def main() -> None:
-            await client.promotion_codes.create_promotion_code(
+            await client.promotion_codes.create(
                 code="code",
                 partner_id="partner_id",
             )
@@ -432,14 +431,14 @@ class AsyncPromotionCodesClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_promotion_code(
+        _response = await self._raw_client.create(
             code=code, partner_id=partner_id, type=type, value=value, request_options=request_options
         )
         return _response.data
 
-    async def get_promotion_code(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetPromotionCodeResponse:
+    ) -> GetPromotionCodesResponse:
         """
         Parameters
         ----------
@@ -450,7 +449,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        GetPromotionCodeResponse
+        GetPromotionCodesResponse
             The requested promotion code
 
         Examples
@@ -465,25 +464,25 @@ class AsyncPromotionCodesClient:
 
 
         async def main() -> None:
-            await client.promotion_codes.get_promotion_code(
+            await client.promotion_codes.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_promotion_code(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data
 
-    async def update_promotion_code(
+    async def update(
         self,
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[str] = OMIT,
+        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePromotionCodeResponse:
+    ) -> UpdatePromotionCodesResponse:
         """
         Parameters
         ----------
@@ -491,7 +490,7 @@ class AsyncPromotionCodesClient:
 
         code : typing.Optional[str]
 
-        type : typing.Optional[str]
+        type : typing.Optional[UpdatePromotionCodesRequestType]
 
         value : typing.Optional[str]
 
@@ -500,7 +499,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        UpdatePromotionCodeResponse
+        UpdatePromotionCodesResponse
             The updated promotion code
 
         Examples
@@ -515,21 +514,21 @@ class AsyncPromotionCodesClient:
 
 
         async def main() -> None:
-            await client.promotion_codes.update_promotion_code(
+            await client.promotion_codes.update(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update_promotion_code(
+        _response = await self._raw_client.update(
             id, code=code, type=type, value=value, request_options=request_options
         )
         return _response.data
 
-    async def delete_promotion_code(
+    async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeletePromotionCodeResponse:
+    ) -> DeletePromotionCodesResponse:
         """
         Parameters
         ----------
@@ -540,7 +539,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        DeletePromotionCodeResponse
+        DeletePromotionCodesResponse
             The deleted promotion code
 
         Examples
@@ -555,12 +554,12 @@ class AsyncPromotionCodesClient:
 
 
         async def main() -> None:
-            await client.promotion_codes.delete_promotion_code(
+            await client.promotion_codes.delete(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete_promotion_code(id, request_options=request_options)
+        _response = await self._raw_client.delete(id, request_options=request_options)
         return _response.data

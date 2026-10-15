@@ -7,22 +7,24 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        CreateLinkResponse,
-        DeleteLinkResponse,
-        GetLinkResponse,
+        CreateLinksResponse,
+        DeleteLinksResponse,
+        GetByParamValueLinksResponse,
+        GetLinksResponse,
         ListLinksRequestOrder,
         ListLinksRequestSort,
         ListLinksResponse,
-        UpdateLinkResponse,
+        UpdateLinksResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateLinkResponse": ".types",
-    "DeleteLinkResponse": ".types",
-    "GetLinkResponse": ".types",
+    "CreateLinksResponse": ".types",
+    "DeleteLinksResponse": ".types",
+    "GetByParamValueLinksResponse": ".types",
+    "GetLinksResponse": ".types",
     "ListLinksRequestOrder": ".types",
     "ListLinksRequestSort": ".types",
     "ListLinksResponse": ".types",
-    "UpdateLinkResponse": ".types",
+    "UpdateLinksResponse": ".types",
 }
 
 
@@ -48,11 +50,12 @@ def __dir__():
 
 
 __all__ = [
-    "CreateLinkResponse",
-    "DeleteLinkResponse",
-    "GetLinkResponse",
+    "CreateLinksResponse",
+    "DeleteLinksResponse",
+    "GetByParamValueLinksResponse",
+    "GetLinksResponse",
     "ListLinksRequestOrder",
     "ListLinksRequestSort",
     "ListLinksResponse",
-    "UpdateLinkResponse",
+    "UpdateLinksResponse",
 ]

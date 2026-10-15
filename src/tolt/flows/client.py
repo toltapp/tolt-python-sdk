@@ -6,7 +6,7 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawFlowsClient, RawFlowsClient
-from .types.get_flow_response import GetFlowResponse
+from .types.get_flows_response import GetFlowsResponse
 from .types.list_flows_request_active import ListFlowsRequestActive
 from .types.list_flows_request_order import ListFlowsRequestOrder
 from .types.list_flows_request_sort import ListFlowsRequestSort
@@ -28,7 +28,7 @@ class FlowsClient:
         """
         return self._raw_client
 
-    def list_flows(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -103,9 +103,9 @@ class FlowsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.flows.list_flows()
+        client.flows.list()
         """
-        _response = self._raw_client.list_flows(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -125,7 +125,7 @@ class FlowsClient:
         )
         return _response.data
 
-    def get_flow(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowsResponse:
         """
         Parameters
         ----------
@@ -136,7 +136,7 @@ class FlowsClient:
 
         Returns
         -------
-        GetFlowResponse
+        GetFlowsResponse
             The requested flow
 
         Examples
@@ -146,11 +146,11 @@ class FlowsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.flows.get_flow(
+        client.flows.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_flow(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
 
@@ -169,7 +169,7 @@ class AsyncFlowsClient:
         """
         return self._raw_client
 
-    async def list_flows(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -249,12 +249,12 @@ class AsyncFlowsClient:
 
 
         async def main() -> None:
-            await client.flows.list_flows()
+            await client.flows.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_flows(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -274,7 +274,7 @@ class AsyncFlowsClient:
         )
         return _response.data
 
-    async def get_flow(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowsResponse:
         """
         Parameters
         ----------
@@ -285,7 +285,7 @@ class AsyncFlowsClient:
 
         Returns
         -------
-        GetFlowResponse
+        GetFlowsResponse
             The requested flow
 
         Examples
@@ -300,12 +300,12 @@ class AsyncFlowsClient:
 
 
         async def main() -> None:
-            await client.flows.get_flow(
+            await client.flows.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_flow(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data

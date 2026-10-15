@@ -6,27 +6,27 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .reports_customer_stats_response import ReportsCustomerStatsResponse
-    from .reports_links_request_order import ReportsLinksRequestOrder
-    from .reports_links_request_sort import ReportsLinksRequestSort
-    from .reports_links_response import ReportsLinksResponse
-    from .reports_overview_response import ReportsOverviewResponse
-    from .reports_partners_request_order import ReportsPartnersRequestOrder
-    from .reports_partners_request_sort import ReportsPartnersRequestSort
-    from .reports_partners_response import ReportsPartnersResponse
-    from .reports_timeseries_request_granularity import ReportsTimeseriesRequestGranularity
-    from .reports_timeseries_response import ReportsTimeseriesResponse
+    from .customer_stats_reports_response import CustomerStatsReportsResponse
+    from .links_reports_request_order import LinksReportsRequestOrder
+    from .links_reports_request_sort import LinksReportsRequestSort
+    from .links_reports_response import LinksReportsResponse
+    from .overview_reports_response import OverviewReportsResponse
+    from .partners_reports_request_order import PartnersReportsRequestOrder
+    from .partners_reports_request_sort import PartnersReportsRequestSort
+    from .partners_reports_response import PartnersReportsResponse
+    from .timeseries_reports_request_granularity import TimeseriesReportsRequestGranularity
+    from .timeseries_reports_response import TimeseriesReportsResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "ReportsCustomerStatsResponse": ".reports_customer_stats_response",
-    "ReportsLinksRequestOrder": ".reports_links_request_order",
-    "ReportsLinksRequestSort": ".reports_links_request_sort",
-    "ReportsLinksResponse": ".reports_links_response",
-    "ReportsOverviewResponse": ".reports_overview_response",
-    "ReportsPartnersRequestOrder": ".reports_partners_request_order",
-    "ReportsPartnersRequestSort": ".reports_partners_request_sort",
-    "ReportsPartnersResponse": ".reports_partners_response",
-    "ReportsTimeseriesRequestGranularity": ".reports_timeseries_request_granularity",
-    "ReportsTimeseriesResponse": ".reports_timeseries_response",
+    "CustomerStatsReportsResponse": ".customer_stats_reports_response",
+    "LinksReportsRequestOrder": ".links_reports_request_order",
+    "LinksReportsRequestSort": ".links_reports_request_sort",
+    "LinksReportsResponse": ".links_reports_response",
+    "OverviewReportsResponse": ".overview_reports_response",
+    "PartnersReportsRequestOrder": ".partners_reports_request_order",
+    "PartnersReportsRequestSort": ".partners_reports_request_sort",
+    "PartnersReportsResponse": ".partners_reports_response",
+    "TimeseriesReportsRequestGranularity": ".timeseries_reports_request_granularity",
+    "TimeseriesReportsResponse": ".timeseries_reports_response",
 }
 
 
@@ -52,14 +52,14 @@ def __dir__():
 
 
 __all__ = [
-    "ReportsCustomerStatsResponse",
-    "ReportsLinksRequestOrder",
-    "ReportsLinksRequestSort",
-    "ReportsLinksResponse",
-    "ReportsOverviewResponse",
-    "ReportsPartnersRequestOrder",
-    "ReportsPartnersRequestSort",
-    "ReportsPartnersResponse",
-    "ReportsTimeseriesRequestGranularity",
-    "ReportsTimeseriesResponse",
+    "CustomerStatsReportsResponse",
+    "LinksReportsRequestOrder",
+    "LinksReportsRequestSort",
+    "LinksReportsResponse",
+    "OverviewReportsResponse",
+    "PartnersReportsRequestOrder",
+    "PartnersReportsRequestSort",
+    "PartnersReportsResponse",
+    "TimeseriesReportsRequestGranularity",
+    "TimeseriesReportsResponse",
 ]

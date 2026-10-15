@@ -17,7 +17,7 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.get_flow_response import GetFlowResponse
+from .types.get_flows_response import GetFlowsResponse
 from .types.list_flows_request_active import ListFlowsRequestActive
 from .types.list_flows_request_order import ListFlowsRequestOrder
 from .types.list_flows_request_sort import ListFlowsRequestSort
@@ -29,7 +29,7 @@ class RawFlowsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_flows(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -171,9 +171,9 @@ class RawFlowsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_flow(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetFlowResponse]:
+    ) -> HttpResponse[GetFlowsResponse]:
         """
         Parameters
         ----------
@@ -184,7 +184,7 @@ class RawFlowsClient:
 
         Returns
         -------
-        HttpResponse[GetFlowResponse]
+        HttpResponse[GetFlowsResponse]
             The requested flow
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -195,9 +195,9 @@ class RawFlowsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetFlowResponse,
+                    GetFlowsResponse,
                     parse_obj_as(
-                        type_=GetFlowResponse,  # type: ignore
+                        type_=GetFlowsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -249,7 +249,7 @@ class AsyncRawFlowsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_flows(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -391,9 +391,9 @@ class AsyncRawFlowsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_flow(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetFlowResponse]:
+    ) -> AsyncHttpResponse[GetFlowsResponse]:
         """
         Parameters
         ----------
@@ -404,7 +404,7 @@ class AsyncRawFlowsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetFlowResponse]
+        AsyncHttpResponse[GetFlowsResponse]
             The requested flow
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -415,9 +415,9 @@ class AsyncRawFlowsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetFlowResponse,
+                    GetFlowsResponse,
                     parse_obj_as(
-                        type_=GetFlowResponse,  # type: ignore
+                        type_=GetFlowsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

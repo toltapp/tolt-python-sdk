@@ -6,13 +6,13 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .get_flow_response import GetFlowResponse
+    from .get_flows_response import GetFlowsResponse
     from .list_flows_request_active import ListFlowsRequestActive
     from .list_flows_request_order import ListFlowsRequestOrder
     from .list_flows_request_sort import ListFlowsRequestSort
     from .list_flows_response import ListFlowsResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "GetFlowResponse": ".get_flow_response",
+    "GetFlowsResponse": ".get_flows_response",
     "ListFlowsRequestActive": ".list_flows_request_active",
     "ListFlowsRequestOrder": ".list_flows_request_order",
     "ListFlowsRequestSort": ".list_flows_request_sort",
@@ -42,7 +42,7 @@ def __dir__():
 
 
 __all__ = [
-    "GetFlowResponse",
+    "GetFlowsResponse",
     "ListFlowsRequestActive",
     "ListFlowsRequestOrder",
     "ListFlowsRequestSort",

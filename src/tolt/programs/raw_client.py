@@ -17,7 +17,7 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.get_program_response import GetProgramResponse
+from .types.get_programs_response import GetProgramsResponse
 from .types.list_programs_request_order import ListProgramsRequestOrder
 from .types.list_programs_request_sort import ListProgramsRequestSort
 from .types.list_programs_response import ListProgramsResponse
@@ -28,7 +28,7 @@ class RawProgramsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list_programs(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -150,9 +150,9 @@ class RawProgramsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get_program(
+    def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetProgramResponse]:
+    ) -> HttpResponse[GetProgramsResponse]:
         """
         Parameters
         ----------
@@ -163,7 +163,7 @@ class RawProgramsClient:
 
         Returns
         -------
-        HttpResponse[GetProgramResponse]
+        HttpResponse[GetProgramsResponse]
             The requested program
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -174,9 +174,9 @@ class RawProgramsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetProgramResponse,
+                    GetProgramsResponse,
                     parse_obj_as(
-                        type_=GetProgramResponse,  # type: ignore
+                        type_=GetProgramsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -228,7 +228,7 @@ class AsyncRawProgramsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def list_programs(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -350,9 +350,9 @@ class AsyncRawProgramsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def get_program(
+    async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetProgramResponse]:
+    ) -> AsyncHttpResponse[GetProgramsResponse]:
         """
         Parameters
         ----------
@@ -363,7 +363,7 @@ class AsyncRawProgramsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetProgramResponse]
+        AsyncHttpResponse[GetProgramsResponse]
             The requested program
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -374,9 +374,9 @@ class AsyncRawProgramsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetProgramResponse,
+                    GetProgramsResponse,
                     parse_obj_as(
-                        type_=GetProgramResponse,  # type: ignore
+                        type_=GetProgramsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )

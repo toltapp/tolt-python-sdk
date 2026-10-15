@@ -6,7 +6,7 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawProgramsClient, RawProgramsClient
-from .types.get_program_response import GetProgramResponse
+from .types.get_programs_response import GetProgramsResponse
 from .types.list_programs_request_order import ListProgramsRequestOrder
 from .types.list_programs_request_sort import ListProgramsRequestSort
 from .types.list_programs_response import ListProgramsResponse
@@ -27,7 +27,7 @@ class ProgramsClient:
         """
         return self._raw_client
 
-    def list_programs(
+    def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -87,9 +87,9 @@ class ProgramsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.programs.list_programs()
+        client.programs.list()
         """
-        _response = self._raw_client.list_programs(
+        _response = self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -104,7 +104,7 @@ class ProgramsClient:
         )
         return _response.data
 
-    def get_program(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramsResponse:
         """
         Parameters
         ----------
@@ -115,7 +115,7 @@ class ProgramsClient:
 
         Returns
         -------
-        GetProgramResponse
+        GetProgramsResponse
             The requested program
 
         Examples
@@ -125,11 +125,11 @@ class ProgramsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.programs.get_program(
+        client.programs.get(
             id="id",
         )
         """
-        _response = self._raw_client.get_program(id, request_options=request_options)
+        _response = self._raw_client.get(id, request_options=request_options)
         return _response.data
 
 
@@ -148,7 +148,7 @@ class AsyncProgramsClient:
         """
         return self._raw_client
 
-    async def list_programs(
+    async def list(
         self,
         *,
         limit: typing.Optional[int] = None,
@@ -213,12 +213,12 @@ class AsyncProgramsClient:
 
 
         async def main() -> None:
-            await client.programs.list_programs()
+            await client.programs.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_programs(
+        _response = await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -233,9 +233,7 @@ class AsyncProgramsClient:
         )
         return _response.data
 
-    async def get_program(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetProgramResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramsResponse:
         """
         Parameters
         ----------
@@ -246,7 +244,7 @@ class AsyncProgramsClient:
 
         Returns
         -------
-        GetProgramResponse
+        GetProgramsResponse
             The requested program
 
         Examples
@@ -261,12 +259,12 @@ class AsyncProgramsClient:
 
 
         async def main() -> None:
-            await client.programs.get_program(
+            await client.programs.get(
                 id="id",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_program(id, request_options=request_options)
+        _response = await self._raw_client.get(id, request_options=request_options)
         return _response.data

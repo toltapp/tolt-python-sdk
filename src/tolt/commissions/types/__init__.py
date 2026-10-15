@@ -6,31 +6,31 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .approve_commission_response import ApproveCommissionResponse
+    from .approve_commissions_response import ApproveCommissionsResponse
     from .bulk_approve_commissions_response import BulkApproveCommissionsResponse
     from .bulk_decline_commissions_response import BulkDeclineCommissionsResponse
-    from .create_commission_request import CreateCommissionRequest
-    from .create_commission_response import CreateCommissionResponse
-    from .decline_commission_response import DeclineCommissionResponse
-    from .delete_commission_response import DeleteCommissionResponse
-    from .get_commission_response import GetCommissionResponse
+    from .create_commissions_request import CreateCommissionsRequest
+    from .create_commissions_response import CreateCommissionsResponse
+    from .decline_commissions_response import DeclineCommissionsResponse
+    from .delete_commissions_response import DeleteCommissionsResponse
+    from .get_commissions_response import GetCommissionsResponse
     from .list_commissions_request_order import ListCommissionsRequestOrder
     from .list_commissions_request_sort import ListCommissionsRequestSort
     from .list_commissions_response import ListCommissionsResponse
-    from .update_commission_response import UpdateCommissionResponse
+    from .update_commissions_response import UpdateCommissionsResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "ApproveCommissionResponse": ".approve_commission_response",
+    "ApproveCommissionsResponse": ".approve_commissions_response",
     "BulkApproveCommissionsResponse": ".bulk_approve_commissions_response",
     "BulkDeclineCommissionsResponse": ".bulk_decline_commissions_response",
-    "CreateCommissionRequest": ".create_commission_request",
-    "CreateCommissionResponse": ".create_commission_response",
-    "DeclineCommissionResponse": ".decline_commission_response",
-    "DeleteCommissionResponse": ".delete_commission_response",
-    "GetCommissionResponse": ".get_commission_response",
+    "CreateCommissionsRequest": ".create_commissions_request",
+    "CreateCommissionsResponse": ".create_commissions_response",
+    "DeclineCommissionsResponse": ".decline_commissions_response",
+    "DeleteCommissionsResponse": ".delete_commissions_response",
+    "GetCommissionsResponse": ".get_commissions_response",
     "ListCommissionsRequestOrder": ".list_commissions_request_order",
     "ListCommissionsRequestSort": ".list_commissions_request_sort",
     "ListCommissionsResponse": ".list_commissions_response",
-    "UpdateCommissionResponse": ".update_commission_response",
+    "UpdateCommissionsResponse": ".update_commissions_response",
 }
 
 
@@ -56,16 +56,16 @@ def __dir__():
 
 
 __all__ = [
-    "ApproveCommissionResponse",
+    "ApproveCommissionsResponse",
     "BulkApproveCommissionsResponse",
     "BulkDeclineCommissionsResponse",
-    "CreateCommissionRequest",
-    "CreateCommissionResponse",
-    "DeclineCommissionResponse",
-    "DeleteCommissionResponse",
-    "GetCommissionResponse",
+    "CreateCommissionsRequest",
+    "CreateCommissionsResponse",
+    "DeclineCommissionsResponse",
+    "DeleteCommissionsResponse",
+    "GetCommissionsResponse",
     "ListCommissionsRequestOrder",
     "ListCommissionsRequestSort",
     "ListCommissionsResponse",
-    "UpdateCommissionResponse",
+    "UpdateCommissionsResponse",
 ]

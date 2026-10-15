@@ -7,32 +7,32 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        ApproveCommissionResponse,
+        ApproveCommissionsResponse,
         BulkApproveCommissionsResponse,
         BulkDeclineCommissionsResponse,
-        CreateCommissionRequest,
-        CreateCommissionResponse,
-        DeclineCommissionResponse,
-        DeleteCommissionResponse,
-        GetCommissionResponse,
+        CreateCommissionsRequest,
+        CreateCommissionsResponse,
+        DeclineCommissionsResponse,
+        DeleteCommissionsResponse,
+        GetCommissionsResponse,
         ListCommissionsRequestOrder,
         ListCommissionsRequestSort,
         ListCommissionsResponse,
-        UpdateCommissionResponse,
+        UpdateCommissionsResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "ApproveCommissionResponse": ".types",
+    "ApproveCommissionsResponse": ".types",
     "BulkApproveCommissionsResponse": ".types",
     "BulkDeclineCommissionsResponse": ".types",
-    "CreateCommissionRequest": ".types",
-    "CreateCommissionResponse": ".types",
-    "DeclineCommissionResponse": ".types",
-    "DeleteCommissionResponse": ".types",
-    "GetCommissionResponse": ".types",
+    "CreateCommissionsRequest": ".types",
+    "CreateCommissionsResponse": ".types",
+    "DeclineCommissionsResponse": ".types",
+    "DeleteCommissionsResponse": ".types",
+    "GetCommissionsResponse": ".types",
     "ListCommissionsRequestOrder": ".types",
     "ListCommissionsRequestSort": ".types",
     "ListCommissionsResponse": ".types",
-    "UpdateCommissionResponse": ".types",
+    "UpdateCommissionsResponse": ".types",
 }
 
 
@@ -58,16 +58,16 @@ def __dir__():
 
 
 __all__ = [
-    "ApproveCommissionResponse",
+    "ApproveCommissionsResponse",
     "BulkApproveCommissionsResponse",
     "BulkDeclineCommissionsResponse",
-    "CreateCommissionRequest",
-    "CreateCommissionResponse",
-    "DeclineCommissionResponse",
-    "DeleteCommissionResponse",
-    "GetCommissionResponse",
+    "CreateCommissionsRequest",
+    "CreateCommissionsResponse",
+    "DeclineCommissionsResponse",
+    "DeleteCommissionsResponse",
+    "GetCommissionsResponse",
     "ListCommissionsRequestOrder",
     "ListCommissionsRequestSort",
     "ListCommissionsResponse",
-    "UpdateCommissionResponse",
+    "UpdateCommissionsResponse",
 ]

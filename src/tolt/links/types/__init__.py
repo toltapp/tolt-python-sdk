@@ -6,21 +6,23 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_link_response import CreateLinkResponse
-    from .delete_link_response import DeleteLinkResponse
-    from .get_link_response import GetLinkResponse
+    from .create_links_response import CreateLinksResponse
+    from .delete_links_response import DeleteLinksResponse
+    from .get_by_param_value_links_response import GetByParamValueLinksResponse
+    from .get_links_response import GetLinksResponse
     from .list_links_request_order import ListLinksRequestOrder
     from .list_links_request_sort import ListLinksRequestSort
     from .list_links_response import ListLinksResponse
-    from .update_link_response import UpdateLinkResponse
+    from .update_links_response import UpdateLinksResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateLinkResponse": ".create_link_response",
-    "DeleteLinkResponse": ".delete_link_response",
-    "GetLinkResponse": ".get_link_response",
+    "CreateLinksResponse": ".create_links_response",
+    "DeleteLinksResponse": ".delete_links_response",
+    "GetByParamValueLinksResponse": ".get_by_param_value_links_response",
+    "GetLinksResponse": ".get_links_response",
     "ListLinksRequestOrder": ".list_links_request_order",
     "ListLinksRequestSort": ".list_links_request_sort",
     "ListLinksResponse": ".list_links_response",
-    "UpdateLinkResponse": ".update_link_response",
+    "UpdateLinksResponse": ".update_links_response",
 }
 
 
@@ -46,11 +48,12 @@ def __dir__():
 
 
 __all__ = [
-    "CreateLinkResponse",
-    "DeleteLinkResponse",
-    "GetLinkResponse",
+    "CreateLinksResponse",
+    "DeleteLinksResponse",
+    "GetByParamValueLinksResponse",
+    "GetLinksResponse",
     "ListLinksRequestOrder",
     "ListLinksRequestSort",
     "ListLinksResponse",
-    "UpdateLinkResponse",
+    "UpdateLinksResponse",
 ]

@@ -6,11 +6,11 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_embed_token_request_partner import CreateEmbedTokenRequestPartner
-    from .create_embed_token_response import CreateEmbedTokenResponse
+    from .create_token_embed_request_partner import CreateTokenEmbedRequestPartner
+    from .create_token_embed_response import CreateTokenEmbedResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateEmbedTokenRequestPartner": ".create_embed_token_request_partner",
-    "CreateEmbedTokenResponse": ".create_embed_token_response",
+    "CreateTokenEmbedRequestPartner": ".create_token_embed_request_partner",
+    "CreateTokenEmbedResponse": ".create_token_embed_response",
 }
 
 
@@ -35,4 +35,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["CreateEmbedTokenRequestPartner", "CreateEmbedTokenResponse"]
+__all__ = ["CreateTokenEmbedRequestPartner", "CreateTokenEmbedResponse"]

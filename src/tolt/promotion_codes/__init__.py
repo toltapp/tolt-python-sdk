@@ -7,22 +7,28 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        CreatePromotionCodeResponse,
-        DeletePromotionCodeResponse,
-        GetPromotionCodeResponse,
+        CreatePromotionCodesRequestType,
+        CreatePromotionCodesResponse,
+        DeletePromotionCodesResponse,
+        GetPromotionCodesResponse,
         ListPromotionCodesRequestOrder,
         ListPromotionCodesRequestSort,
+        ListPromotionCodesRequestType,
         ListPromotionCodesResponse,
-        UpdatePromotionCodeResponse,
+        UpdatePromotionCodesRequestType,
+        UpdatePromotionCodesResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreatePromotionCodeResponse": ".types",
-    "DeletePromotionCodeResponse": ".types",
-    "GetPromotionCodeResponse": ".types",
+    "CreatePromotionCodesRequestType": ".types",
+    "CreatePromotionCodesResponse": ".types",
+    "DeletePromotionCodesResponse": ".types",
+    "GetPromotionCodesResponse": ".types",
     "ListPromotionCodesRequestOrder": ".types",
     "ListPromotionCodesRequestSort": ".types",
+    "ListPromotionCodesRequestType": ".types",
     "ListPromotionCodesResponse": ".types",
-    "UpdatePromotionCodeResponse": ".types",
+    "UpdatePromotionCodesRequestType": ".types",
+    "UpdatePromotionCodesResponse": ".types",
 }
 
 
@@ -48,11 +54,14 @@ def __dir__():
 
 
 __all__ = [
-    "CreatePromotionCodeResponse",
-    "DeletePromotionCodeResponse",
-    "GetPromotionCodeResponse",
+    "CreatePromotionCodesRequestType",
+    "CreatePromotionCodesResponse",
+    "DeletePromotionCodesResponse",
+    "GetPromotionCodesResponse",
     "ListPromotionCodesRequestOrder",
     "ListPromotionCodesRequestSort",
+    "ListPromotionCodesRequestType",
     "ListPromotionCodesResponse",
-    "UpdatePromotionCodeResponse",
+    "UpdatePromotionCodesRequestType",
+    "UpdatePromotionCodesResponse",
 ]

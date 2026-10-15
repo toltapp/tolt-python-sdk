@@ -6,21 +6,27 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_promotion_code_response import CreatePromotionCodeResponse
-    from .delete_promotion_code_response import DeletePromotionCodeResponse
-    from .get_promotion_code_response import GetPromotionCodeResponse
+    from .create_promotion_codes_request_type import CreatePromotionCodesRequestType
+    from .create_promotion_codes_response import CreatePromotionCodesResponse
+    from .delete_promotion_codes_response import DeletePromotionCodesResponse
+    from .get_promotion_codes_response import GetPromotionCodesResponse
     from .list_promotion_codes_request_order import ListPromotionCodesRequestOrder
     from .list_promotion_codes_request_sort import ListPromotionCodesRequestSort
+    from .list_promotion_codes_request_type import ListPromotionCodesRequestType
     from .list_promotion_codes_response import ListPromotionCodesResponse
-    from .update_promotion_code_response import UpdatePromotionCodeResponse
+    from .update_promotion_codes_request_type import UpdatePromotionCodesRequestType
+    from .update_promotion_codes_response import UpdatePromotionCodesResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreatePromotionCodeResponse": ".create_promotion_code_response",
-    "DeletePromotionCodeResponse": ".delete_promotion_code_response",
-    "GetPromotionCodeResponse": ".get_promotion_code_response",
+    "CreatePromotionCodesRequestType": ".create_promotion_codes_request_type",
+    "CreatePromotionCodesResponse": ".create_promotion_codes_response",
+    "DeletePromotionCodesResponse": ".delete_promotion_codes_response",
+    "GetPromotionCodesResponse": ".get_promotion_codes_response",
     "ListPromotionCodesRequestOrder": ".list_promotion_codes_request_order",
     "ListPromotionCodesRequestSort": ".list_promotion_codes_request_sort",
+    "ListPromotionCodesRequestType": ".list_promotion_codes_request_type",
     "ListPromotionCodesResponse": ".list_promotion_codes_response",
-    "UpdatePromotionCodeResponse": ".update_promotion_code_response",
+    "UpdatePromotionCodesRequestType": ".update_promotion_codes_request_type",
+    "UpdatePromotionCodesResponse": ".update_promotion_codes_response",
 }
 
 
@@ -46,11 +52,14 @@ def __dir__():
 
 
 __all__ = [
-    "CreatePromotionCodeResponse",
-    "DeletePromotionCodeResponse",
-    "GetPromotionCodeResponse",
+    "CreatePromotionCodesRequestType",
+    "CreatePromotionCodesResponse",
+    "DeletePromotionCodesResponse",
+    "GetPromotionCodesResponse",
     "ListPromotionCodesRequestOrder",
     "ListPromotionCodesRequestSort",
+    "ListPromotionCodesRequestType",
     "ListPromotionCodesResponse",
-    "UpdatePromotionCodeResponse",
+    "UpdatePromotionCodesRequestType",
+    "UpdatePromotionCodesResponse",
 ]

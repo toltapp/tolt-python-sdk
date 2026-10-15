@@ -7,14 +7,14 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        GetFlowResponse,
+        GetFlowsResponse,
         ListFlowsRequestActive,
         ListFlowsRequestOrder,
         ListFlowsRequestSort,
         ListFlowsResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "GetFlowResponse": ".types",
+    "GetFlowsResponse": ".types",
     "ListFlowsRequestActive": ".types",
     "ListFlowsRequestOrder": ".types",
     "ListFlowsRequestSort": ".types",
@@ -44,7 +44,7 @@ def __dir__():
 
 
 __all__ = [
-    "GetFlowResponse",
+    "GetFlowsResponse",
     "ListFlowsRequestActive",
     "ListFlowsRequestOrder",
     "ListFlowsRequestSort",
