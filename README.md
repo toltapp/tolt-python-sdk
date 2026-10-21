@@ -1,188 +1,90 @@
-# Tolt Python Library
+# tolt
 
-[![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=Tolt%2FPython)
-[![pypi](https://img.shields.io/pypi/v/tolt)](https://pypi.python.org/pypi/tolt)
+Python SDK for the Tolt API (v2), with sync and async clients. Run it on your server: it needs your secret API key. Requires Python 3.10 or newer.
 
-The Tolt Python library provides convenient access to the Tolt APIs from Python.
+## Install
 
-## Table of Contents
-
-- [Installation](#installation)
-- [Reference](#reference)
-- [Usage](#usage)
-- [Environments](#environments)
-- [Async Client](#async-client)
-- [Exception Handling](#exception-handling)
-- [Advanced](#advanced)
-  - [Access Raw Response Data](#access-raw-response-data)
-  - [Retries](#retries)
-  - [Timeouts](#timeouts)
-  - [Custom Client](#custom-client)
-- [Contributing](#contributing)
-
-## Installation
-
-```sh
+```bash
 pip install tolt
 ```
 
-## Reference
-
-A full reference for this library is available [here](./reference.md).
-
 ## Usage
 
-Instantiate and use the client with the following:
-
 ```python
+import os
 from tolt import ToltApi
 
-client = ToltApi(
-    token="<token>",
-)
+client = ToltApi(token=os.environ["TOLT_API_KEY"])
 
-client.partners.approve(
-    id="id",
-)
+partner = client.partners.get(id="part_8fKq2LmZx7RtYw3nVbHc5dPj").data
+
+for customer in client.customers.list():
+    print(customer.id)
 ```
 
-## Environments
+Single-item calls return the API envelope, so read `.data`. `list` returns a pager: iterate it to walk every page, or read `.items` for one page.
 
-This SDK allows you to configure different environments for API requests.
+Resources: `partners`, `customers`, `transactions`, `commissions`, `links`, `clicks`, `promotion_codes`, `programs`, `groups`, `flows`, `reports`, `embed_tokens`.
 
-```python
-from tolt import ToltApi
-from tolt.environment import ToltApiEnvironment
-
-client = ToltApi(
-    environment=ToltApiEnvironment.PRODUCTION,
-)
-```
-
-## Async Client
-
-The SDK also exports an `async` client so that you can make non-blocking calls to our API. Note that if you are constructing an Async httpx client class to pass into this client, use `httpx.AsyncClient()` instead of `httpx.Client()` (e.g. for the `httpx_client` parameter of this client).
+### Async
 
 ```python
 import asyncio
-
+import os
 from tolt import AsyncToltApi
 
-client = AsyncToltApi(
-    token="<token>",
-)
+client = AsyncToltApi(token=os.environ["TOLT_API_KEY"])
 
 
 async def main() -> None:
-    await client.partners.approve(
-        id="id",
-    )
+    async for partner in await client.partners.list():
+        print(partner.id)
 
 
 asyncio.run(main())
 ```
 
-## Exception Handling
-
-When the API returns a non-success status code (4xx or 5xx response), a subclass of the following error
-will be thrown.
-
-```python
-from tolt.core.api_error import ApiError
-
-try:
-    client.partners.approve(...)
-except ApiError as e:
-    print(e.status_code)
-    print(e.body)
-```
-
-## Advanced
-
-### Access Raw Response Data
-
-The SDK provides access to raw response data, including headers, through the `.with_raw_response` property.
-The `.with_raw_response` property returns a "raw" client that can be used to access the `.headers` and `.data` attributes.
-
-```python
-from tolt import ToltApi
-
-client = ToltApi(...)
-response = client.partners.with_raw_response.approve(...)
-print(response.headers)  # access the response headers
-print(response.status_code)  # access the response status code
-print(response.data)  # access the underlying object
-```
-
-### Retries
-
-The SDK is instrumented with automatic retries with exponential backoff. A request will be retried as long
-as the request is deemed retryable and the number of retry attempts has not grown larger than the configured
-retry limit (default: 2).
-
-Which status codes are retried depends on the `retryStatusCodes` generator configuration:
-
-**`legacy`** (current default): retries on
-- [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
-- [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
-- [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
-- [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) (All server errors, including 500)
-
-**`recommended`**: retries on
-- [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
-- [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
-- [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
-- [502](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502) (Bad Gateway)
-- [503](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503) (Service Unavailable)
-- [504](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504) (Gateway Timeout)
-
-Use the `max_retries` request option to configure this behavior.
-
-```python
-client.partners.approve(..., request_options={
-    "max_retries": 1
-})
-```
-
-### Timeouts
-
-The SDK defaults to a 60 second timeout. You can configure this with a timeout option at the client or request level.
-
-```python
-from tolt import ToltApi
-
-client = ToltApi(..., timeout=20.0)
-
-# Override timeout for a specific method
-client.partners.approve(..., request_options={
-    "timeout": 1
-})
-```
-
-### Custom Client
-
-You can override the `httpx` client to customize it for your use-case. Some common use-cases include support for proxies
-and transports.
+## Errors
 
 ```python
 import httpx
-from tolt import ToltApi
+from tolt import NotFoundError
+from tolt.core.api_error import ApiError
 
-client = ToltApi(
-    ...,
-    httpx_client=httpx.Client(
-        proxy="http://my.test.proxy.example.com",
-        transport=httpx.HTTPTransport(local_address="0.0.0.0"),
-    ),
-)
+try:
+    client.partners.get(id="part_8fKq2LmZx7RtYw3nVbHc5dPj")
+except NotFoundError as e:
+    print(e.body.code)  # "not_found"
+except ApiError as e:
+    print(e.status_code, e.body)
+except httpx.TimeoutException:
+    ...  # no response within the timeout
 ```
 
-## Contributing
+Every API error extends `ApiError`. Timeouts raise httpx's `TimeoutException`. Read `e.status_code` and `e.body` rather than `str(e)`, which starts with the response headers.
 
-While we value open-source contributions to this SDK, this library is generated programmatically.
-Additions made directly to this library would have to be moved over to our generation code,
-otherwise they would be overwritten upon the next generated release. Feel free to open a PR as
-a proof of concept, but know that we will not be able to merge it as-is. We suggest opening
-an issue first to discuss with us!
+## Retries and timeouts
 
-On the other hand, contributions to the README are always very welcome!
+Failed requests (408, 409, 429, 5xx and dropped connections) are retried twice with backoff. Calls that create something (every `create`, and `transactions.rerun_flows`) are never retried, so a server error can't create a duplicate. Override per client or per call:
+
+```python
+client = ToltApi(token=os.environ["TOLT_API_KEY"], max_retries=3, timeout=30)
+
+client.partners.get(id="part_8fKq2LmZx7RtYw3nVbHc5dPj", request_options={"timeout": 5})
+```
+
+The client talks to `https://platform.tolt.com` by default. Pass `base_url` to point it elsewhere.
+
+## Type checking
+
+The package ships `py.typed`. With mypy, annotate sub-clients you pass around (`partners: PartnersClient = client.partners`), since mypy reads the client's sub-client properties as untyped. Pyright infers them.
+
+## Development
+
+`src/tolt/` is generated by [Fern](https://buildwithfern.com) from the API's OpenAPI spec in [toltapp/tolt-sdks](https://github.com/toltapp/tolt-sdks), which opens a pull request here when the spec changes. Don't edit it by hand.
+
+```bash
+pip install -e . pytest mypy
+pytest tests
+mypy src/tolt --exclude src/tolt/tests
+```
