@@ -239,7 +239,7 @@ class RawTransactionsClient:
         Parameters
         ----------
         amount : int
-            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it. It must be 0 or more: to reverse a payment, refund its transaction instead of recording a negative amount.
 
         customer_id : str
             Id of the customer who paid (cus_...), as returned when listing customers. The transaction goes to that customer's partner and program, and the customer becomes active.
@@ -1128,7 +1128,7 @@ class AsyncRawTransactionsClient:
         Parameters
         ----------
         amount : int
-            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it. It must be 0 or more: to reverse a payment, refund its transaction instead of recording a negative amount.
 
         customer_id : str
             Id of the customer who paid (cus_...), as returned when listing customers. The transaction goes to that customer's partner and program, and the customer becomes active.

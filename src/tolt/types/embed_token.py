@@ -10,6 +10,10 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 class EmbedToken(UniversalBaseModel):
     token: str
     expires_at: dt.datetime
+    partner_id: str = pydantic.Field()
+    """
+    The partner the token is for, including one this call just created.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

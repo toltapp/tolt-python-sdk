@@ -12,7 +12,7 @@
 <dl>
 <dd>
 
-Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
+Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id), the partner is created when the program has none with that email, so one call covers a user's first visit.
 </dd>
 </dl>
 </dd>
@@ -59,7 +59,7 @@ client.embed_tokens.create()
 <dl>
 <dd>
 
-**partner:** `typing.Optional[CreateEmbedTokenRequestPartner]` — Look up an onboarded partner by email within a program. Send this or partner_id, not both.
+**partner:** `typing.Optional[CreateEmbedTokenRequestPartner]` — Find the partner by email within the program, or create them (active, with a referral link) when the program has no partner with that email. Send this or partner_id, not both.
     
 </dd>
 </dl>
@@ -3929,7 +3929,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**amount:** `int` — The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
+**amount:** `int` — The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it. It must be 0 or more: to reverse a payment, refund its transaction instead of recording a negative amount.
     
 </dd>
 </dl>
