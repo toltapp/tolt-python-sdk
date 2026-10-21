@@ -6,16 +6,14 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_clicks_request import CreateClicksRequest
-    from .create_clicks_response import CreateClicksResponse
-    from .get_clicks_response import GetClicksResponse
+    from .create_click_response import CreateClickResponse
+    from .get_click_response import GetClickResponse
     from .list_clicks_request_order import ListClicksRequestOrder
     from .list_clicks_request_sort import ListClicksRequestSort
     from .list_clicks_response import ListClicksResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateClicksRequest": ".create_clicks_request",
-    "CreateClicksResponse": ".create_clicks_response",
-    "GetClicksResponse": ".get_clicks_response",
+    "CreateClickResponse": ".create_click_response",
+    "GetClickResponse": ".get_click_response",
     "ListClicksRequestOrder": ".list_clicks_request_order",
     "ListClicksRequestSort": ".list_clicks_request_sort",
     "ListClicksResponse": ".list_clicks_response",
@@ -44,9 +42,8 @@ def __dir__():
 
 
 __all__ = [
-    "CreateClicksRequest",
-    "CreateClicksResponse",
-    "GetClicksResponse",
+    "CreateClickResponse",
+    "GetClickResponse",
     "ListClicksRequestOrder",
     "ListClicksRequestSort",
     "ListClicksResponse",

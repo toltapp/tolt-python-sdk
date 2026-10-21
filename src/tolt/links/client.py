@@ -4,16 +4,18 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.link import Link
 from .raw_client import AsyncRawLinksClient, RawLinksClient
-from .types.create_links_response import CreateLinksResponse
-from .types.delete_links_response import DeleteLinksResponse
-from .types.get_by_param_value_links_response import GetByParamValueLinksResponse
-from .types.get_links_response import GetLinksResponse
+from .types.create_link_response import CreateLinkResponse
+from .types.delete_link_response import DeleteLinkResponse
+from .types.get_link_by_param_value_response import GetLinkByParamValueResponse
+from .types.get_link_response import GetLinkResponse
 from .types.list_links_request_order import ListLinksRequestOrder
 from .types.list_links_request_sort import ListLinksRequestSort
 from .types.list_links_response import ListLinksResponse
-from .types.update_links_response import UpdateLinksResponse
+from .types.update_link_response import UpdateLinkResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -52,7 +54,7 @@ class LinksClient:
         value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListLinksResponse:
+    ) -> SyncPager[Link, ListLinksResponse]:
         """
         Lists ordinary links. Campaign-managed links are excluded.
 
@@ -105,7 +107,7 @@ class LinksClient:
 
         Returns
         -------
-        ListLinksResponse
+        SyncPager[Link, ListLinksResponse]
             A page of links
 
         Examples
@@ -115,9 +117,14 @@ class LinksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.links.list()
+        response = client.links.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -134,7 +141,6 @@ class LinksClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
         self,
@@ -143,7 +149,7 @@ class LinksClient:
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateLinksResponse:
+    ) -> CreateLinkResponse:
         """
         Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
 
@@ -163,7 +169,7 @@ class LinksClient:
 
         Returns
         -------
-        CreateLinksResponse
+        CreateLinkResponse
             The created link
 
         Examples
@@ -186,7 +192,7 @@ class LinksClient:
 
     def get_by_param_value(
         self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetByParamValueLinksResponse:
+    ) -> GetLinkByParamValueResponse:
         """
         Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
 
@@ -202,7 +208,7 @@ class LinksClient:
 
         Returns
         -------
-        GetByParamValueLinksResponse
+        GetLinkByParamValueResponse
             The matching link
 
         Examples
@@ -220,7 +226,7 @@ class LinksClient:
         _response = self._raw_client.get_by_param_value(param=param, value=value, request_options=request_options)
         return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinksResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinkResponse:
         """
         Gets an ordinary or campaign-managed link by ID.
 
@@ -233,7 +239,7 @@ class LinksClient:
 
         Returns
         -------
-        GetLinksResponse
+        GetLinkResponse
             The requested link
 
         Examples
@@ -257,7 +263,7 @@ class LinksClient:
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateLinksResponse:
+    ) -> UpdateLinkResponse:
         """
         Updates an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -276,7 +282,7 @@ class LinksClient:
 
         Returns
         -------
-        UpdateLinksResponse
+        UpdateLinkResponse
             The updated link
 
         Examples
@@ -295,7 +301,7 @@ class LinksClient:
         _response = self._raw_client.update(id, param=param, value=value, request_options=request_options)
         return _response.data
 
-    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinksResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinkResponse:
         """
         Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -308,7 +314,7 @@ class LinksClient:
 
         Returns
         -------
-        DeleteLinksResponse
+        DeleteLinkResponse
             The deleted link
 
         Examples
@@ -359,7 +365,7 @@ class AsyncLinksClient:
         value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListLinksResponse:
+    ) -> AsyncPager[Link, ListLinksResponse]:
         """
         Lists ordinary links. Campaign-managed links are excluded.
 
@@ -412,7 +418,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        ListLinksResponse
+        AsyncPager[Link, ListLinksResponse]
             A page of links
 
         Examples
@@ -427,12 +433,18 @@ class AsyncLinksClient:
 
 
         async def main() -> None:
-            await client.links.list()
+            response = await client.links.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -449,7 +461,6 @@ class AsyncLinksClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
         self,
@@ -458,7 +469,7 @@ class AsyncLinksClient:
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateLinksResponse:
+    ) -> CreateLinkResponse:
         """
         Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
 
@@ -478,7 +489,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        CreateLinksResponse
+        CreateLinkResponse
             The created link
 
         Examples
@@ -509,7 +520,7 @@ class AsyncLinksClient:
 
     async def get_by_param_value(
         self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetByParamValueLinksResponse:
+    ) -> GetLinkByParamValueResponse:
         """
         Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
 
@@ -525,7 +536,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        GetByParamValueLinksResponse
+        GetLinkByParamValueResponse
             The matching link
 
         Examples
@@ -551,7 +562,7 @@ class AsyncLinksClient:
         _response = await self._raw_client.get_by_param_value(param=param, value=value, request_options=request_options)
         return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinksResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetLinkResponse:
         """
         Gets an ordinary or campaign-managed link by ID.
 
@@ -564,7 +575,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        GetLinksResponse
+        GetLinkResponse
             The requested link
 
         Examples
@@ -596,7 +607,7 @@ class AsyncLinksClient:
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateLinksResponse:
+    ) -> UpdateLinkResponse:
         """
         Updates an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -615,7 +626,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        UpdateLinksResponse
+        UpdateLinkResponse
             The updated link
 
         Examples
@@ -642,7 +653,7 @@ class AsyncLinksClient:
         _response = await self._raw_client.update(id, param=param, value=value, request_options=request_options)
         return _response.data
 
-    async def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinksResponse:
+    async def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinkResponse:
         """
         Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -655,7 +666,7 @@ class AsyncLinksClient:
 
         Returns
         -------
-        DeleteLinksResponse
+        DeleteLinkResponse
             The deleted link
 
         Examples

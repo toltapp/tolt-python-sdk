@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from .clicks.client import AsyncClicksClient, ClicksClient
     from .commissions.client import AsyncCommissionsClient, CommissionsClient
     from .customers.client import AsyncCustomersClient, CustomersClient
-    from .embed.client import AsyncEmbedClient, EmbedClient
+    from .embed_tokens.client import AsyncEmbedTokensClient, EmbedTokensClient
     from .flows.client import AsyncFlowsClient, FlowsClient
     from .groups.client import AsyncGroupsClient, GroupsClient
     from .links.client import AsyncLinksClient, LinksClient
@@ -108,7 +108,7 @@ class ToltApi:
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
         )
-        self._embed: typing.Optional[EmbedClient] = None
+        self._embed_tokens: typing.Optional[EmbedTokensClient] = None
         self._groups: typing.Optional[GroupsClient] = None
         self._flows: typing.Optional[FlowsClient] = None
         self._clicks: typing.Optional[ClicksClient] = None
@@ -122,12 +122,12 @@ class ToltApi:
         self._reports: typing.Optional[ReportsClient] = None
 
     @property
-    def embed(self):
-        if self._embed is None:
-            from .embed.client import EmbedClient  # noqa: E402
+    def embed_tokens(self):
+        if self._embed_tokens is None:
+            from .embed_tokens.client import EmbedTokensClient  # noqa: E402
 
-            self._embed = EmbedClient(client_wrapper=self._client_wrapper)
-        return self._embed
+            self._embed_tokens = EmbedTokensClient(client_wrapper=self._client_wrapper)
+        return self._embed_tokens
 
     @property
     def groups(self):
@@ -323,7 +323,7 @@ class AsyncToltApi:
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
         )
-        self._embed: typing.Optional[AsyncEmbedClient] = None
+        self._embed_tokens: typing.Optional[AsyncEmbedTokensClient] = None
         self._groups: typing.Optional[AsyncGroupsClient] = None
         self._flows: typing.Optional[AsyncFlowsClient] = None
         self._clicks: typing.Optional[AsyncClicksClient] = None
@@ -337,12 +337,12 @@ class AsyncToltApi:
         self._reports: typing.Optional[AsyncReportsClient] = None
 
     @property
-    def embed(self):
-        if self._embed is None:
-            from .embed.client import AsyncEmbedClient  # noqa: E402
+    def embed_tokens(self):
+        if self._embed_tokens is None:
+            from .embed_tokens.client import AsyncEmbedTokensClient  # noqa: E402
 
-            self._embed = AsyncEmbedClient(client_wrapper=self._client_wrapper)
-        return self._embed
+            self._embed_tokens = AsyncEmbedTokensClient(client_wrapper=self._client_wrapper)
+        return self._embed_tokens
 
     @property
     def groups(self):

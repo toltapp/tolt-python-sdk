@@ -4,21 +4,23 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.commission import Commission
 from .raw_client import AsyncRawCommissionsClient, RawCommissionsClient
-from .types.approve_commissions_response import ApproveCommissionsResponse
+from .types.approve_commission_response import ApproveCommissionResponse
 from .types.bulk_approve_commissions_response import BulkApproveCommissionsResponse
 from .types.bulk_decline_commissions_response import BulkDeclineCommissionsResponse
-from .types.create_commissions_request import CreateCommissionsRequest
-from .types.create_commissions_response import CreateCommissionsResponse
-from .types.decline_commissions_response import DeclineCommissionsResponse
-from .types.delete_commissions_response import DeleteCommissionsResponse
-from .types.get_commissions_response import GetCommissionsResponse
+from .types.create_commission_request_status import CreateCommissionRequestStatus
+from .types.create_commission_response import CreateCommissionResponse
+from .types.decline_commission_response import DeclineCommissionResponse
+from .types.delete_commission_response import DeleteCommissionResponse
+from .types.get_commission_response import GetCommissionResponse
 from .types.list_commissions_request_order import ListCommissionsRequestOrder
 from .types.list_commissions_request_sort import ListCommissionsRequestSort
 from .types.list_commissions_response import ListCommissionsResponse
-from .types.update_commissions_request_status import UpdateCommissionsRequestStatus
-from .types.update_commissions_response import UpdateCommissionsResponse
+from .types.update_commission_request_status import UpdateCommissionRequestStatus
+from .types.update_commission_response import UpdateCommissionResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -125,7 +127,7 @@ class CommissionsClient:
         type: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListCommissionsResponse:
+    ) -> SyncPager[Commission, ListCommissionsResponse]:
         """
         Lists commissions. Filter by program, partner, customer, transaction, status or type, and page with cursors.
 
@@ -184,7 +186,7 @@ class CommissionsClient:
 
         Returns
         -------
-        ListCommissionsResponse
+        SyncPager[Commission, ListCommissionsResponse]
             A page of commissions
 
         Examples
@@ -194,9 +196,14 @@ class CommissionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.commissions.list()
+        response = client.commissions.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -215,24 +222,62 @@ class CommissionsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
-        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> CreateCommissionsResponse:
+        self,
+        *,
+        amount: int,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        program_id: typing.Optional[str] = OMIT,
+        revenue: typing.Optional[int] = OMIT,
+        status: typing.Optional[CreateCommissionRequestStatus] = OMIT,
+        source: typing.Optional[str] = OMIT,
+        charge_id: typing.Optional[str] = OMIT,
+        transaction_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateCommissionResponse:
         """
         Supports historical created_at values. Status defaults to approved when omitted.
 
         Parameters
         ----------
-        request : CreateCommissionsRequest
+        amount : int
+            What the partner earns for this commission, in minor units of the program currency (cents for USD).
+
+        created_at : typing.Optional[dt.datetime]
+            When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change. Defaults to now.
+
+        customer_id : typing.Optional[str]
+            Id of the customer the commission is for (cus_...), as returned when listing customers. The commission goes to the customer's partner and program; partner_id and program_id can be left out, and when given they must match the customer's.
+
+        partner_id : typing.Optional[str]
+            Id of the partner who earns the commission (part_...), as returned when listing partners. Used with program_id when no customer_id is given.
+
+        program_id : typing.Optional[str]
+            Id of the partner's program (prg_...). Required with partner_id when no customer_id is given.
+
+        revenue : typing.Optional[int]
+            The sale amount the commission is based on, in minor units of the program currency.
+
+        status : typing.Optional[CreateCommissionRequestStatus]
+
+        source : typing.Optional[str]
+            Free-form label for where the commission came from, such as stripe or api.
+
+        charge_id : typing.Optional[str]
+            Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
+
+        transaction_id : typing.Optional[str]
+            Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateCommissionsResponse
+        CreateCommissionResponse
             The created commission
 
         Examples
@@ -243,13 +288,30 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.create(
-            request={"key": "value"},
+            amount=1000,
+            customer_id="cus_LBfjvtfct9pVUeLojMHiGnXv",
+            revenue=5000,
+            status="approved",
+            source="api",
+            transaction_id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
         )
         """
-        _response = self._raw_client.create(request=request, request_options=request_options)
+        _response = self._raw_client.create(
+            amount=amount,
+            created_at=created_at,
+            customer_id=customer_id,
+            partner_id=partner_id,
+            program_id=program_id,
+            revenue=revenue,
+            status=status,
+            source=source,
+            charge_id=charge_id,
+            transaction_id=transaction_id,
+            request_options=request_options,
+        )
         return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionsResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionResponse:
         """
         Gets a commission by ID, with its amount, status, type and partner, plus its customer and transaction when it has them.
 
@@ -262,7 +324,7 @@ class CommissionsClient:
 
         Returns
         -------
-        GetCommissionsResponse
+        GetCommissionResponse
             The requested commission
 
         Examples
@@ -285,13 +347,13 @@ class CommissionsClient:
         *,
         amount: typing.Optional[int] = OMIT,
         revenue: typing.Optional[int] = OMIT,
-        status: typing.Optional[UpdateCommissionsRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCommissionRequestStatus] = OMIT,
         source: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCommissionsResponse:
+    ) -> UpdateCommissionResponse:
         """
         Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
 
@@ -305,7 +367,7 @@ class CommissionsClient:
         revenue : typing.Optional[int]
             The sale amount the commission is based on, in minor units of the program currency.
 
-        status : typing.Optional[UpdateCommissionsRequestStatus]
+        status : typing.Optional[UpdateCommissionRequestStatus]
 
         source : typing.Optional[str]
             Free-form label for where the commission came from, such as stripe or api.
@@ -324,7 +386,7 @@ class CommissionsClient:
 
         Returns
         -------
-        UpdateCommissionsResponse
+        UpdateCommissionResponse
             The updated commission
 
         Examples
@@ -354,7 +416,7 @@ class CommissionsClient:
         )
         return _response.data
 
-    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteCommissionsResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteCommissionResponse:
         """
         Deletes a commission. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -367,7 +429,7 @@ class CommissionsClient:
 
         Returns
         -------
-        DeleteCommissionsResponse
+        DeleteCommissionResponse
             The deleted commission
 
         Examples
@@ -384,9 +446,7 @@ class CommissionsClient:
         _response = self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
-    def approve(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ApproveCommissionsResponse:
+    def approve(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ApproveCommissionResponse:
         """
         Marks a commission approved so it is included in the next payout. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -399,7 +459,7 @@ class CommissionsClient:
 
         Returns
         -------
-        ApproveCommissionsResponse
+        ApproveCommissionResponse
             The approved commission
 
         Examples
@@ -416,9 +476,7 @@ class CommissionsClient:
         _response = self._raw_client.approve(id, request_options=request_options)
         return _response.data
 
-    def decline(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeclineCommissionsResponse:
+    def decline(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeclineCommissionResponse:
         """
         Marks a commission declined so it is left out of payouts until it is approved again. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -431,7 +489,7 @@ class CommissionsClient:
 
         Returns
         -------
-        DeclineCommissionsResponse
+        DeclineCommissionResponse
             The declined commission
 
         Examples
@@ -566,7 +624,7 @@ class AsyncCommissionsClient:
         type: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListCommissionsResponse:
+    ) -> AsyncPager[Commission, ListCommissionsResponse]:
         """
         Lists commissions. Filter by program, partner, customer, transaction, status or type, and page with cursors.
 
@@ -625,7 +683,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        ListCommissionsResponse
+        AsyncPager[Commission, ListCommissionsResponse]
             A page of commissions
 
         Examples
@@ -640,12 +698,18 @@ class AsyncCommissionsClient:
 
 
         async def main() -> None:
-            await client.commissions.list()
+            response = await client.commissions.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -664,24 +728,62 @@ class AsyncCommissionsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
-        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> CreateCommissionsResponse:
+        self,
+        *,
+        amount: int,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        program_id: typing.Optional[str] = OMIT,
+        revenue: typing.Optional[int] = OMIT,
+        status: typing.Optional[CreateCommissionRequestStatus] = OMIT,
+        source: typing.Optional[str] = OMIT,
+        charge_id: typing.Optional[str] = OMIT,
+        transaction_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateCommissionResponse:
         """
         Supports historical created_at values. Status defaults to approved when omitted.
 
         Parameters
         ----------
-        request : CreateCommissionsRequest
+        amount : int
+            What the partner earns for this commission, in minor units of the program currency (cents for USD).
+
+        created_at : typing.Optional[dt.datetime]
+            When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change. Defaults to now.
+
+        customer_id : typing.Optional[str]
+            Id of the customer the commission is for (cus_...), as returned when listing customers. The commission goes to the customer's partner and program; partner_id and program_id can be left out, and when given they must match the customer's.
+
+        partner_id : typing.Optional[str]
+            Id of the partner who earns the commission (part_...), as returned when listing partners. Used with program_id when no customer_id is given.
+
+        program_id : typing.Optional[str]
+            Id of the partner's program (prg_...). Required with partner_id when no customer_id is given.
+
+        revenue : typing.Optional[int]
+            The sale amount the commission is based on, in minor units of the program currency.
+
+        status : typing.Optional[CreateCommissionRequestStatus]
+
+        source : typing.Optional[str]
+            Free-form label for where the commission came from, such as stripe or api.
+
+        charge_id : typing.Optional[str]
+            Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
+
+        transaction_id : typing.Optional[str]
+            Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateCommissionsResponse
+        CreateCommissionResponse
             The created commission
 
         Examples
@@ -697,16 +799,33 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.create(
-                request={"key": "value"},
+                amount=1000,
+                customer_id="cus_LBfjvtfct9pVUeLojMHiGnXv",
+                revenue=5000,
+                status="approved",
+                source="api",
+                transaction_id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create(request=request, request_options=request_options)
+        _response = await self._raw_client.create(
+            amount=amount,
+            created_at=created_at,
+            customer_id=customer_id,
+            partner_id=partner_id,
+            program_id=program_id,
+            revenue=revenue,
+            status=status,
+            source=source,
+            charge_id=charge_id,
+            transaction_id=transaction_id,
+            request_options=request_options,
+        )
         return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionsResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionResponse:
         """
         Gets a commission by ID, with its amount, status, type and partner, plus its customer and transaction when it has them.
 
@@ -719,7 +838,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        GetCommissionsResponse
+        GetCommissionResponse
             The requested commission
 
         Examples
@@ -750,13 +869,13 @@ class AsyncCommissionsClient:
         *,
         amount: typing.Optional[int] = OMIT,
         revenue: typing.Optional[int] = OMIT,
-        status: typing.Optional[UpdateCommissionsRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCommissionRequestStatus] = OMIT,
         source: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCommissionsResponse:
+    ) -> UpdateCommissionResponse:
         """
         Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
 
@@ -770,7 +889,7 @@ class AsyncCommissionsClient:
         revenue : typing.Optional[int]
             The sale amount the commission is based on, in minor units of the program currency.
 
-        status : typing.Optional[UpdateCommissionsRequestStatus]
+        status : typing.Optional[UpdateCommissionRequestStatus]
 
         source : typing.Optional[str]
             Free-form label for where the commission came from, such as stripe or api.
@@ -789,7 +908,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        UpdateCommissionsResponse
+        UpdateCommissionResponse
             The updated commission
 
         Examples
@@ -829,7 +948,7 @@ class AsyncCommissionsClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteCommissionsResponse:
+    ) -> DeleteCommissionResponse:
         """
         Deletes a commission. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -842,7 +961,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        DeleteCommissionsResponse
+        DeleteCommissionResponse
             The deleted commission
 
         Examples
@@ -869,7 +988,7 @@ class AsyncCommissionsClient:
 
     async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ApproveCommissionsResponse:
+    ) -> ApproveCommissionResponse:
         """
         Marks a commission approved so it is included in the next payout. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -882,7 +1001,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        ApproveCommissionsResponse
+        ApproveCommissionResponse
             The approved commission
 
         Examples
@@ -909,7 +1028,7 @@ class AsyncCommissionsClient:
 
     async def decline(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeclineCommissionsResponse:
+    ) -> DeclineCommissionResponse:
         """
         Marks a commission declined so it is left out of payouts until it is approved again. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -922,7 +1041,7 @@ class AsyncCommissionsClient:
 
         Returns
         -------
-        DeclineCommissionsResponse
+        DeclineCommissionResponse
             The declined commission
 
         Examples

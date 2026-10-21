@@ -6,25 +6,25 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .create_transactions_response import CreateTransactionsResponse
-    from .delete_transactions_response import DeleteTransactionsResponse
-    from .get_transactions_response import GetTransactionsResponse
+    from .create_transaction_response import CreateTransactionResponse
+    from .delete_transaction_response import DeleteTransactionResponse
+    from .get_transaction_response import GetTransactionResponse
     from .list_transactions_request_order import ListTransactionsRequestOrder
     from .list_transactions_request_sort import ListTransactionsRequestSort
     from .list_transactions_response import ListTransactionsResponse
-    from .refund_transactions_response import RefundTransactionsResponse
-    from .rerun_flows_transactions_response import RerunFlowsTransactionsResponse
-    from .update_transactions_response import UpdateTransactionsResponse
+    from .refund_transaction_response import RefundTransactionResponse
+    from .rerun_transaction_flows_response import RerunTransactionFlowsResponse
+    from .update_transaction_response import UpdateTransactionResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateTransactionsResponse": ".create_transactions_response",
-    "DeleteTransactionsResponse": ".delete_transactions_response",
-    "GetTransactionsResponse": ".get_transactions_response",
+    "CreateTransactionResponse": ".create_transaction_response",
+    "DeleteTransactionResponse": ".delete_transaction_response",
+    "GetTransactionResponse": ".get_transaction_response",
     "ListTransactionsRequestOrder": ".list_transactions_request_order",
     "ListTransactionsRequestSort": ".list_transactions_request_sort",
     "ListTransactionsResponse": ".list_transactions_response",
-    "RefundTransactionsResponse": ".refund_transactions_response",
-    "RerunFlowsTransactionsResponse": ".rerun_flows_transactions_response",
-    "UpdateTransactionsResponse": ".update_transactions_response",
+    "RefundTransactionResponse": ".refund_transaction_response",
+    "RerunTransactionFlowsResponse": ".rerun_transaction_flows_response",
+    "UpdateTransactionResponse": ".update_transaction_response",
 }
 
 
@@ -50,13 +50,13 @@ def __dir__():
 
 
 __all__ = [
-    "CreateTransactionsResponse",
-    "DeleteTransactionsResponse",
-    "GetTransactionsResponse",
+    "CreateTransactionResponse",
+    "DeleteTransactionResponse",
+    "GetTransactionResponse",
     "ListTransactionsRequestOrder",
     "ListTransactionsRequestSort",
     "ListTransactionsResponse",
-    "RefundTransactionsResponse",
-    "RerunFlowsTransactionsResponse",
-    "UpdateTransactionsResponse",
+    "RefundTransactionResponse",
+    "RerunTransactionFlowsResponse",
+    "UpdateTransactionResponse",
 ]

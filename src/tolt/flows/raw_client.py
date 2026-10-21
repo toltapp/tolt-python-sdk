@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -17,9 +18,9 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.get_flows_response import GetFlowsResponse
-from .types.list_flows_request_active import ListFlowsRequestActive
+from ..types.error_response import ErrorResponse
+from ..types.flow import Flow
+from .types.get_flow_response import GetFlowResponse
 from .types.list_flows_request_order import ListFlowsRequestOrder
 from .types.list_flows_request_sort import ListFlowsRequestSort
 from .types.list_flows_response import ListFlowsResponse
@@ -46,10 +47,10 @@ class RawFlowsClient:
         group_id: typing.Optional[str] = None,
         campaign_id: typing.Optional[str] = None,
         event: typing.Optional[str] = None,
-        active: typing.Optional[ListFlowsRequestActive] = None,
+        active: typing.Optional[bool] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListFlowsResponse]:
+    ) -> SyncPager[Flow, ListFlowsResponse]:
         """
         Lists flows. Filter by program, group, campaign, event or active state, and page with cursors.
 
@@ -94,7 +95,7 @@ class RawFlowsClient:
         event : typing.Optional[str]
             Only flows triggered by this event, such as transaction_created or lead_created.
 
-        active : typing.Optional[ListFlowsRequestActive]
+        active : typing.Optional[bool]
             true lists only active flows, false only paused flows, which do not run.
 
         search : typing.Optional[str]
@@ -105,7 +106,7 @@ class RawFlowsClient:
 
         Returns
         -------
-        HttpResponse[ListFlowsResponse]
+        SyncPager[Flow, ListFlowsResponse]
             A page of flows
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -132,21 +133,42 @@ class RawFlowsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListFlowsResponse,
                     parse_obj_as(
                         type_=ListFlowsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    program_id=program_id,
+                    group_id=group_id,
+                    campaign_id=campaign_id,
+                    event=event,
+                    active=active,
+                    search=search,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -155,9 +177,9 @@ class RawFlowsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -166,9 +188,9 @@ class RawFlowsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -177,9 +199,9 @@ class RawFlowsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -193,9 +215,7 @@ class RawFlowsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetFlowsResponse]:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[GetFlowResponse]:
         """
         Gets a flow by ID, with the event it runs on, its conditions and its action: a commission to generate or a group to move the partner to.
 
@@ -208,7 +228,7 @@ class RawFlowsClient:
 
         Returns
         -------
-        HttpResponse[GetFlowsResponse]
+        HttpResponse[GetFlowResponse]
             The requested flow
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -219,9 +239,9 @@ class RawFlowsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetFlowsResponse,
+                    GetFlowResponse,
                     parse_obj_as(
-                        type_=GetFlowsResponse,  # type: ignore
+                        type_=GetFlowResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -230,9 +250,9 @@ class RawFlowsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -241,9 +261,9 @@ class RawFlowsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -252,9 +272,9 @@ class RawFlowsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -263,9 +283,9 @@ class RawFlowsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -300,10 +320,10 @@ class AsyncRawFlowsClient:
         group_id: typing.Optional[str] = None,
         campaign_id: typing.Optional[str] = None,
         event: typing.Optional[str] = None,
-        active: typing.Optional[ListFlowsRequestActive] = None,
+        active: typing.Optional[bool] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListFlowsResponse]:
+    ) -> AsyncPager[Flow, ListFlowsResponse]:
         """
         Lists flows. Filter by program, group, campaign, event or active state, and page with cursors.
 
@@ -348,7 +368,7 @@ class AsyncRawFlowsClient:
         event : typing.Optional[str]
             Only flows triggered by this event, such as transaction_created or lead_created.
 
-        active : typing.Optional[ListFlowsRequestActive]
+        active : typing.Optional[bool]
             true lists only active flows, false only paused flows, which do not run.
 
         search : typing.Optional[str]
@@ -359,7 +379,7 @@ class AsyncRawFlowsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListFlowsResponse]
+        AsyncPager[Flow, ListFlowsResponse]
             A page of flows
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -386,21 +406,45 @@ class AsyncRawFlowsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListFlowsResponse,
                     parse_obj_as(
                         type_=ListFlowsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        program_id=program_id,
+                        group_id=group_id,
+                        campaign_id=campaign_id,
+                        event=event,
+                        active=active,
+                        search=search,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -409,9 +453,9 @@ class AsyncRawFlowsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -420,9 +464,9 @@ class AsyncRawFlowsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -431,9 +475,9 @@ class AsyncRawFlowsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -449,7 +493,7 @@ class AsyncRawFlowsClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetFlowsResponse]:
+    ) -> AsyncHttpResponse[GetFlowResponse]:
         """
         Gets a flow by ID, with the event it runs on, its conditions and its action: a commission to generate or a group to move the partner to.
 
@@ -462,7 +506,7 @@ class AsyncRawFlowsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetFlowsResponse]
+        AsyncHttpResponse[GetFlowResponse]
             The requested flow
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -473,9 +517,9 @@ class AsyncRawFlowsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetFlowsResponse,
+                    GetFlowResponse,
                     parse_obj_as(
-                        type_=GetFlowsResponse,  # type: ignore
+                        type_=GetFlowResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -484,9 +528,9 @@ class AsyncRawFlowsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -495,9 +539,9 @@ class AsyncRawFlowsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -506,9 +550,9 @@ class AsyncRawFlowsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -517,9 +561,9 @@ class AsyncRawFlowsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

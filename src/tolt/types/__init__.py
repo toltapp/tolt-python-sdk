@@ -14,9 +14,9 @@ if typing.TYPE_CHECKING:
     from .created_partner import CreatedPartner
     from .customer import Customer
     from .embed_token import EmbedToken
-    from .error import Error
     from .error_code import ErrorCode
-    from .error_errors_item import ErrorErrorsItem
+    from .error_response import ErrorResponse
+    from .field_error import FieldError
     from .flow import Flow
     from .group import Group
     from .link import Link
@@ -43,9 +43,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreatedPartner": ".created_partner",
     "Customer": ".customer",
     "EmbedToken": ".embed_token",
-    "Error": ".error",
     "ErrorCode": ".error_code",
-    "ErrorErrorsItem": ".error_errors_item",
+    "ErrorResponse": ".error_response",
+    "FieldError": ".field_error",
     "Flow": ".flow",
     "Group": ".group",
     "Link": ".link",
@@ -96,9 +96,9 @@ __all__ = [
     "CreatedPartner",
     "Customer",
     "EmbedToken",
-    "Error",
     "ErrorCode",
-    "ErrorErrorsItem",
+    "ErrorResponse",
+    "FieldError",
     "Flow",
     "Group",
     "Link",

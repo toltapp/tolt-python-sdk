@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -19,21 +20,22 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.approve_partners_response import ApprovePartnersResponse
+from ..types.error_response import ErrorResponse
+from ..types.partner_details import PartnerDetails
+from .types.approve_partner_response import ApprovePartnerResponse
 from .types.bulk_approve_partners_response import BulkApprovePartnersResponse
 from .types.bulk_reject_partners_response import BulkRejectPartnersResponse
-from .types.create_partners_request_link import CreatePartnersRequestLink
-from .types.create_partners_request_status import CreatePartnersRequestStatus
-from .types.create_partners_response import CreatePartnersResponse
-from .types.get_partners_response import GetPartnersResponse
+from .types.create_partner_request_link import CreatePartnerRequestLink
+from .types.create_partner_request_status import CreatePartnerRequestStatus
+from .types.create_partner_response import CreatePartnerResponse
+from .types.get_partner_response import GetPartnerResponse
 from .types.list_partners_request_order import ListPartnersRequestOrder
 from .types.list_partners_request_sort import ListPartnersRequestSort
 from .types.list_partners_request_status import ListPartnersRequestStatus
 from .types.list_partners_response import ListPartnersResponse
-from .types.reject_partners_response import RejectPartnersResponse
-from .types.suspend_partners_response import SuspendPartnersResponse
-from .types.update_partners_response import UpdatePartnersResponse
+from .types.reject_partner_response import RejectPartnerResponse
+from .types.suspend_partner_response import SuspendPartnerResponse
+from .types.update_partner_response import UpdatePartnerResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -89,9 +91,9 @@ class RawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -100,9 +102,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -111,9 +113,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -122,9 +124,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -191,9 +193,9 @@ class RawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -202,9 +204,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -213,9 +215,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -224,9 +226,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -257,7 +259,7 @@ class RawPartnersClient:
         group_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListPartnersResponse]:
+    ) -> SyncPager[PartnerDetails, ListPartnersResponse]:
         """
         Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
 
@@ -307,7 +309,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[ListPartnersResponse]
+        SyncPager[PartnerDetails, ListPartnersResponse]
             A page of partners
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -332,21 +334,40 @@ class RawPartnersClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListPartnersResponse,
                     parse_obj_as(
                         type_=ListPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    status=status,
+                    program_id=program_id,
+                    group_id=group_id,
+                    search=search,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -355,9 +376,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -366,9 +387,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -377,9 +398,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -406,11 +427,11 @@ class RawPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreatePartnersResponse]:
+    ) -> HttpResponse[CreatePartnerResponse]:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -446,10 +467,10 @@ class RawPartnersClient:
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnersRequestStatus]
+        status : typing.Optional[CreatePartnerRequestStatus]
             Use pending to add the partner as an application that still needs approval instead of an active partner.
 
-        link : typing.Optional[CreatePartnersRequestLink]
+        link : typing.Optional[CreatePartnerRequestLink]
             The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
@@ -460,9 +481,12 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[CreatePartnersResponse]
+        HttpResponse[CreatePartnerResponse]
             The created partner with its referral link
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = self._client_wrapper.httpx_client.request(
             "v2/partners",
             method="POST",
@@ -479,22 +503,22 @@ class RawPartnersClient:
                 "group_id": group_id,
                 "status": status,
                 "link": convert_and_respect_annotation_metadata(
-                    object_=link, annotation=CreatePartnersRequestLink, direction="write"
+                    object_=link, annotation=CreatePartnerRequestLink, direction="write"
                 ),
                 "notify_partner": notify_partner,
             },
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePartnersResponse,
+                    CreatePartnerResponse,
                     parse_obj_as(
-                        type_=CreatePartnersResponse,  # type: ignore
+                        type_=CreatePartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -503,9 +527,9 @@ class RawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -514,9 +538,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -525,9 +549,9 @@ class RawPartnersClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -536,9 +560,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -547,9 +571,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -565,7 +589,7 @@ class RawPartnersClient:
 
     def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetPartnersResponse]:
+    ) -> HttpResponse[GetPartnerResponse]:
         """
         Gets a partner by ID, with their profile, status, group and program.
 
@@ -578,7 +602,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[GetPartnersResponse]
+        HttpResponse[GetPartnerResponse]
             The requested partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -589,9 +613,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPartnersResponse,
+                    GetPartnerResponse,
                     parse_obj_as(
-                        type_=GetPartnersResponse,  # type: ignore
+                        type_=GetPartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -600,9 +624,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -611,9 +635,9 @@ class RawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -622,9 +646,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -633,9 +657,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -660,7 +684,7 @@ class RawPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdatePartnersResponse]:
+    ) -> HttpResponse[UpdatePartnerResponse]:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -691,7 +715,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[UpdatePartnersResponse]
+        HttpResponse[UpdatePartnerResponse]
             The updated partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -714,9 +738,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePartnersResponse,
+                    UpdatePartnerResponse,
                     parse_obj_as(
-                        type_=UpdatePartnersResponse,  # type: ignore
+                        type_=UpdatePartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -725,9 +749,9 @@ class RawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -736,9 +760,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -747,9 +771,9 @@ class RawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -758,9 +782,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -769,9 +793,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -787,7 +811,7 @@ class RawPartnersClient:
 
     def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[ApprovePartnersResponse]:
+    ) -> HttpResponse[ApprovePartnerResponse]:
         """
         Makes the partner active. A partner who was not already active is sent the program's approval email.
 
@@ -800,7 +824,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[ApprovePartnersResponse]
+        HttpResponse[ApprovePartnerResponse]
             The approved partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -811,9 +835,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApprovePartnersResponse,
+                    ApprovePartnerResponse,
                     parse_obj_as(
-                        type_=ApprovePartnersResponse,  # type: ignore
+                        type_=ApprovePartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -822,9 +846,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -833,9 +857,9 @@ class RawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -844,9 +868,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -855,9 +879,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -877,7 +901,7 @@ class RawPartnersClient:
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[RejectPartnersResponse]:
+    ) -> HttpResponse[RejectPartnerResponse]:
         """
         Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
 
@@ -893,7 +917,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[RejectPartnersResponse]
+        HttpResponse[RejectPartnerResponse]
             The rejected partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -911,9 +935,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RejectPartnersResponse,
+                    RejectPartnerResponse,
                     parse_obj_as(
-                        type_=RejectPartnersResponse,  # type: ignore
+                        type_=RejectPartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -922,9 +946,9 @@ class RawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -933,9 +957,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -944,9 +968,9 @@ class RawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -955,9 +979,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -966,9 +990,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -988,7 +1012,7 @@ class RawPartnersClient:
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[SuspendPartnersResponse]:
+    ) -> HttpResponse[SuspendPartnerResponse]:
         """
         Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
 
@@ -1004,7 +1028,7 @@ class RawPartnersClient:
 
         Returns
         -------
-        HttpResponse[SuspendPartnersResponse]
+        HttpResponse[SuspendPartnerResponse]
             The suspended partner
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -1022,9 +1046,9 @@ class RawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    SuspendPartnersResponse,
+                    SuspendPartnerResponse,
                     parse_obj_as(
-                        type_=SuspendPartnersResponse,  # type: ignore
+                        type_=SuspendPartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1033,9 +1057,9 @@ class RawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1044,9 +1068,9 @@ class RawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1055,9 +1079,9 @@ class RawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1066,9 +1090,9 @@ class RawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1077,9 +1101,9 @@ class RawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1143,9 +1167,9 @@ class AsyncRawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1154,9 +1178,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1165,9 +1189,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1176,9 +1200,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1245,9 +1269,9 @@ class AsyncRawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1256,9 +1280,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1267,9 +1291,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1278,9 +1302,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1311,7 +1335,7 @@ class AsyncRawPartnersClient:
         group_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListPartnersResponse]:
+    ) -> AsyncPager[PartnerDetails, ListPartnersResponse]:
         """
         Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
 
@@ -1361,7 +1385,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListPartnersResponse]
+        AsyncPager[PartnerDetails, ListPartnersResponse]
             A page of partners
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1386,21 +1410,43 @@ class AsyncRawPartnersClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListPartnersResponse,
                     parse_obj_as(
                         type_=ListPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        status=status,
+                        program_id=program_id,
+                        group_id=group_id,
+                        search=search,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1409,9 +1455,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1420,9 +1466,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1431,9 +1477,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1460,11 +1506,11 @@ class AsyncRawPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreatePartnersResponse]:
+    ) -> AsyncHttpResponse[CreatePartnerResponse]:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -1500,10 +1546,10 @@ class AsyncRawPartnersClient:
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnersRequestStatus]
+        status : typing.Optional[CreatePartnerRequestStatus]
             Use pending to add the partner as an application that still needs approval instead of an active partner.
 
-        link : typing.Optional[CreatePartnersRequestLink]
+        link : typing.Optional[CreatePartnerRequestLink]
             The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
@@ -1514,9 +1560,12 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreatePartnersResponse]
+        AsyncHttpResponse[CreatePartnerResponse]
             The created partner with its referral link
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = await self._client_wrapper.httpx_client.request(
             "v2/partners",
             method="POST",
@@ -1533,22 +1582,22 @@ class AsyncRawPartnersClient:
                 "group_id": group_id,
                 "status": status,
                 "link": convert_and_respect_annotation_metadata(
-                    object_=link, annotation=CreatePartnersRequestLink, direction="write"
+                    object_=link, annotation=CreatePartnerRequestLink, direction="write"
                 ),
                 "notify_partner": notify_partner,
             },
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePartnersResponse,
+                    CreatePartnerResponse,
                     parse_obj_as(
-                        type_=CreatePartnersResponse,  # type: ignore
+                        type_=CreatePartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1557,9 +1606,9 @@ class AsyncRawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1568,9 +1617,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1579,9 +1628,9 @@ class AsyncRawPartnersClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1590,9 +1639,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1601,9 +1650,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1619,7 +1668,7 @@ class AsyncRawPartnersClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetPartnersResponse]:
+    ) -> AsyncHttpResponse[GetPartnerResponse]:
         """
         Gets a partner by ID, with their profile, status, group and program.
 
@@ -1632,7 +1681,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetPartnersResponse]
+        AsyncHttpResponse[GetPartnerResponse]
             The requested partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1643,9 +1692,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPartnersResponse,
+                    GetPartnerResponse,
                     parse_obj_as(
-                        type_=GetPartnersResponse,  # type: ignore
+                        type_=GetPartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1654,9 +1703,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1665,9 +1714,9 @@ class AsyncRawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1676,9 +1725,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1687,9 +1736,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1714,7 +1763,7 @@ class AsyncRawPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdatePartnersResponse]:
+    ) -> AsyncHttpResponse[UpdatePartnerResponse]:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -1745,7 +1794,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdatePartnersResponse]
+        AsyncHttpResponse[UpdatePartnerResponse]
             The updated partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1768,9 +1817,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePartnersResponse,
+                    UpdatePartnerResponse,
                     parse_obj_as(
-                        type_=UpdatePartnersResponse,  # type: ignore
+                        type_=UpdatePartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1779,9 +1828,9 @@ class AsyncRawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1790,9 +1839,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1801,9 +1850,9 @@ class AsyncRawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1812,9 +1861,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1823,9 +1872,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1841,7 +1890,7 @@ class AsyncRawPartnersClient:
 
     async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[ApprovePartnersResponse]:
+    ) -> AsyncHttpResponse[ApprovePartnerResponse]:
         """
         Makes the partner active. A partner who was not already active is sent the program's approval email.
 
@@ -1854,7 +1903,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[ApprovePartnersResponse]
+        AsyncHttpResponse[ApprovePartnerResponse]
             The approved partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1865,9 +1914,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApprovePartnersResponse,
+                    ApprovePartnerResponse,
                     parse_obj_as(
-                        type_=ApprovePartnersResponse,  # type: ignore
+                        type_=ApprovePartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1876,9 +1925,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1887,9 +1936,9 @@ class AsyncRawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1898,9 +1947,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1909,9 +1958,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1931,7 +1980,7 @@ class AsyncRawPartnersClient:
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[RejectPartnersResponse]:
+    ) -> AsyncHttpResponse[RejectPartnerResponse]:
         """
         Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
 
@@ -1947,7 +1996,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[RejectPartnersResponse]
+        AsyncHttpResponse[RejectPartnerResponse]
             The rejected partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1965,9 +2014,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RejectPartnersResponse,
+                    RejectPartnerResponse,
                     parse_obj_as(
-                        type_=RejectPartnersResponse,  # type: ignore
+                        type_=RejectPartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1976,9 +2025,9 @@ class AsyncRawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1987,9 +2036,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1998,9 +2047,9 @@ class AsyncRawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2009,9 +2058,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2020,9 +2069,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2042,7 +2091,7 @@ class AsyncRawPartnersClient:
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[SuspendPartnersResponse]:
+    ) -> AsyncHttpResponse[SuspendPartnerResponse]:
         """
         Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
 
@@ -2058,7 +2107,7 @@ class AsyncRawPartnersClient:
 
         Returns
         -------
-        AsyncHttpResponse[SuspendPartnersResponse]
+        AsyncHttpResponse[SuspendPartnerResponse]
             The suspended partner
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -2076,9 +2125,9 @@ class AsyncRawPartnersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    SuspendPartnersResponse,
+                    SuspendPartnerResponse,
                     parse_obj_as(
-                        type_=SuspendPartnersResponse,  # type: ignore
+                        type_=SuspendPartnerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -2087,9 +2136,9 @@ class AsyncRawPartnersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2098,9 +2147,9 @@ class AsyncRawPartnersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2109,9 +2158,9 @@ class AsyncRawPartnersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2120,9 +2169,9 @@ class AsyncRawPartnersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2131,9 +2180,9 @@ class AsyncRawPartnersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

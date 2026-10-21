@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -17,9 +18,9 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.get_groups_response import GetGroupsResponse
-from .types.list_groups_request_default import ListGroupsRequestDefault
+from ..types.error_response import ErrorResponse
+from ..types.group import Group
+from .types.get_group_response import GetGroupResponse
 from .types.list_groups_request_order import ListGroupsRequestOrder
 from .types.list_groups_request_sort import ListGroupsRequestSort
 from .types.list_groups_response import ListGroupsResponse
@@ -44,9 +45,9 @@ class RawGroupsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
-        default: typing.Optional[ListGroupsRequestDefault] = None,
+        default: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListGroupsResponse]:
+    ) -> SyncPager[Group, ListGroupsResponse]:
         """
         Lists partner groups. Filter by program or by the default group, and page with cursors.
 
@@ -85,7 +86,7 @@ class RawGroupsClient:
         search : typing.Optional[str]
             Text matched anywhere in the group's name, description or public key, ignoring case.
 
-        default : typing.Optional[ListGroupsRequestDefault]
+        default : typing.Optional[bool]
             true lists only default groups, where new partners are placed unless another group is chosen; false lists the others.
 
         request_options : typing.Optional[RequestOptions]
@@ -93,7 +94,7 @@ class RawGroupsClient:
 
         Returns
         -------
-        HttpResponse[ListGroupsResponse]
+        SyncPager[Group, ListGroupsResponse]
             A page of groups
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -117,21 +118,39 @@ class RawGroupsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListGroupsResponse,
                     parse_obj_as(
                         type_=ListGroupsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    program_id=program_id,
+                    search=search,
+                    default=default,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -140,9 +159,9 @@ class RawGroupsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -151,9 +170,9 @@ class RawGroupsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -162,9 +181,9 @@ class RawGroupsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -180,7 +199,7 @@ class RawGroupsClient:
 
     def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetGroupsResponse]:
+    ) -> HttpResponse[GetGroupResponse]:
         """
         Gets a partner group by ID, with the program it belongs to and whether it is the program's default group.
 
@@ -193,7 +212,7 @@ class RawGroupsClient:
 
         Returns
         -------
-        HttpResponse[GetGroupsResponse]
+        HttpResponse[GetGroupResponse]
             The requested group
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -204,9 +223,9 @@ class RawGroupsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetGroupsResponse,
+                    GetGroupResponse,
                     parse_obj_as(
-                        type_=GetGroupsResponse,  # type: ignore
+                        type_=GetGroupResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -215,9 +234,9 @@ class RawGroupsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -226,9 +245,9 @@ class RawGroupsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -237,9 +256,9 @@ class RawGroupsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -248,9 +267,9 @@ class RawGroupsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -283,9 +302,9 @@ class AsyncRawGroupsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
-        default: typing.Optional[ListGroupsRequestDefault] = None,
+        default: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListGroupsResponse]:
+    ) -> AsyncPager[Group, ListGroupsResponse]:
         """
         Lists partner groups. Filter by program or by the default group, and page with cursors.
 
@@ -324,7 +343,7 @@ class AsyncRawGroupsClient:
         search : typing.Optional[str]
             Text matched anywhere in the group's name, description or public key, ignoring case.
 
-        default : typing.Optional[ListGroupsRequestDefault]
+        default : typing.Optional[bool]
             true lists only default groups, where new partners are placed unless another group is chosen; false lists the others.
 
         request_options : typing.Optional[RequestOptions]
@@ -332,7 +351,7 @@ class AsyncRawGroupsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListGroupsResponse]
+        AsyncPager[Group, ListGroupsResponse]
             A page of groups
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -356,21 +375,42 @@ class AsyncRawGroupsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListGroupsResponse,
                     parse_obj_as(
                         type_=ListGroupsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        program_id=program_id,
+                        search=search,
+                        default=default,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -379,9 +419,9 @@ class AsyncRawGroupsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -390,9 +430,9 @@ class AsyncRawGroupsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -401,9 +441,9 @@ class AsyncRawGroupsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -419,7 +459,7 @@ class AsyncRawGroupsClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetGroupsResponse]:
+    ) -> AsyncHttpResponse[GetGroupResponse]:
         """
         Gets a partner group by ID, with the program it belongs to and whether it is the program's default group.
 
@@ -432,7 +472,7 @@ class AsyncRawGroupsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetGroupsResponse]
+        AsyncHttpResponse[GetGroupResponse]
             The requested group
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -443,9 +483,9 @@ class AsyncRawGroupsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetGroupsResponse,
+                    GetGroupResponse,
                     parse_obj_as(
-                        type_=GetGroupsResponse,  # type: ignore
+                        type_=GetGroupResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -454,9 +494,9 @@ class AsyncRawGroupsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -465,9 +505,9 @@ class AsyncRawGroupsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -476,9 +516,9 @@ class AsyncRawGroupsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -487,9 +527,9 @@ class AsyncRawGroupsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

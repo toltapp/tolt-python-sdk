@@ -7,28 +7,28 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        CreatePromotionCodesRequestType,
-        CreatePromotionCodesResponse,
-        DeletePromotionCodesResponse,
-        GetPromotionCodesResponse,
+        CreatePromotionCodeRequestType,
+        CreatePromotionCodeResponse,
+        DeletePromotionCodeResponse,
+        GetPromotionCodeResponse,
         ListPromotionCodesRequestOrder,
         ListPromotionCodesRequestSort,
         ListPromotionCodesRequestType,
         ListPromotionCodesResponse,
-        UpdatePromotionCodesRequestType,
-        UpdatePromotionCodesResponse,
+        UpdatePromotionCodeRequestType,
+        UpdatePromotionCodeResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreatePromotionCodesRequestType": ".types",
-    "CreatePromotionCodesResponse": ".types",
-    "DeletePromotionCodesResponse": ".types",
-    "GetPromotionCodesResponse": ".types",
+    "CreatePromotionCodeRequestType": ".types",
+    "CreatePromotionCodeResponse": ".types",
+    "DeletePromotionCodeResponse": ".types",
+    "GetPromotionCodeResponse": ".types",
     "ListPromotionCodesRequestOrder": ".types",
     "ListPromotionCodesRequestSort": ".types",
     "ListPromotionCodesRequestType": ".types",
     "ListPromotionCodesResponse": ".types",
-    "UpdatePromotionCodesRequestType": ".types",
-    "UpdatePromotionCodesResponse": ".types",
+    "UpdatePromotionCodeRequestType": ".types",
+    "UpdatePromotionCodeResponse": ".types",
 }
 
 
@@ -54,14 +54,14 @@ def __dir__():
 
 
 __all__ = [
-    "CreatePromotionCodesRequestType",
-    "CreatePromotionCodesResponse",
-    "DeletePromotionCodesResponse",
-    "GetPromotionCodesResponse",
+    "CreatePromotionCodeRequestType",
+    "CreatePromotionCodeResponse",
+    "DeletePromotionCodeResponse",
+    "GetPromotionCodeResponse",
     "ListPromotionCodesRequestOrder",
     "ListPromotionCodesRequestSort",
     "ListPromotionCodesRequestType",
     "ListPromotionCodesResponse",
-    "UpdatePromotionCodesRequestType",
-    "UpdatePromotionCodesResponse",
+    "UpdatePromotionCodeRequestType",
+    "UpdatePromotionCodeResponse",
 ]

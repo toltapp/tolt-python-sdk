@@ -4,18 +4,21 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.reports_link_row import ReportsLinkRow
+from ..types.reports_partner_row import ReportsPartnerRow
 from .raw_client import AsyncRawReportsClient, RawReportsClient
-from .types.customer_stats_reports_response import CustomerStatsReportsResponse
 from .types.links_reports_request_order import LinksReportsRequestOrder
 from .types.links_reports_request_sort import LinksReportsRequestSort
-from .types.links_reports_response import LinksReportsResponse
-from .types.overview_reports_response import OverviewReportsResponse
 from .types.partners_reports_request_order import PartnersReportsRequestOrder
 from .types.partners_reports_request_sort import PartnersReportsRequestSort
-from .types.partners_reports_response import PartnersReportsResponse
+from .types.reports_customers_response import ReportsCustomersResponse
+from .types.reports_links_response import ReportsLinksResponse
+from .types.reports_overview_response import ReportsOverviewResponse
+from .types.reports_partners_response import ReportsPartnersResponse
+from .types.reports_timeseries_response import ReportsTimeseriesResponse
 from .types.timeseries_reports_request_granularity import TimeseriesReportsRequestGranularity
-from .types.timeseries_reports_response import TimeseriesReportsResponse
 
 
 class ReportsClient:
@@ -40,7 +43,7 @@ class ReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> OverviewReportsResponse:
+    ) -> ReportsOverviewResponse:
         """
         Returns revenue, commission, customer and partner totals for the organization or one program over a date range.
 
@@ -60,7 +63,7 @@ class ReportsClient:
 
         Returns
         -------
-        OverviewReportsResponse
+        ReportsOverviewResponse
             Aggregate totals for the organization
 
         Examples
@@ -89,7 +92,7 @@ class ReportsClient:
         sort: typing.Optional[PartnersReportsRequestSort] = None,
         order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> PartnersReportsResponse:
+    ) -> SyncPager[ReportsPartnerRow, ReportsPartnersResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per partner over a date range, sorted and paged by offset.
 
@@ -124,7 +127,7 @@ class ReportsClient:
 
         Returns
         -------
-        PartnersReportsResponse
+        SyncPager[ReportsPartnerRow, ReportsPartnersResponse]
             A page of partner breakdown rows
 
         Examples
@@ -134,9 +137,14 @@ class ReportsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.reports.partners()
+        response = client.reports.partners()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.partners(
+        return self._raw_client.partners(
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
@@ -147,7 +155,6 @@ class ReportsClient:
             order=order,
             request_options=request_options,
         )
-        return _response.data
 
     def links(
         self,
@@ -161,7 +168,7 @@ class ReportsClient:
         sort: typing.Optional[LinksReportsRequestSort] = None,
         order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> LinksReportsResponse:
+    ) -> SyncPager[ReportsLinkRow, ReportsLinksResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per link over a date range, sorted and paged by offset.
 
@@ -196,7 +203,7 @@ class ReportsClient:
 
         Returns
         -------
-        LinksReportsResponse
+        SyncPager[ReportsLinkRow, ReportsLinksResponse]
             A page of link breakdown rows
 
         Examples
@@ -206,9 +213,14 @@ class ReportsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.reports.links()
+        response = client.reports.links()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.links(
+        return self._raw_client.links(
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
@@ -219,7 +231,6 @@ class ReportsClient:
             order=order,
             request_options=request_options,
         )
-        return _response.data
 
     def timeseries(
         self,
@@ -230,7 +241,7 @@ class ReportsClient:
         granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
         currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> TimeseriesReportsResponse:
+    ) -> ReportsTimeseriesResponse:
         """
         Returns revenue, commissions, customers and clicks per day, week or month over a date range, ready to chart.
 
@@ -256,7 +267,7 @@ class ReportsClient:
 
         Returns
         -------
-        TimeseriesReportsResponse
+        ReportsTimeseriesResponse
             One point per non-empty period
 
         Examples
@@ -278,14 +289,14 @@ class ReportsClient:
         )
         return _response.data
 
-    def customer_stats(
+    def customers(
         self,
         *,
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CustomerStatsReportsResponse:
+    ) -> ReportsCustomersResponse:
         """
         Returns how many customers are in each subscription status for the organization or one program.
 
@@ -305,7 +316,7 @@ class ReportsClient:
 
         Returns
         -------
-        CustomerStatsReportsResponse
+        ReportsCustomersResponse
             Customer status counts for the organization
 
         Examples
@@ -315,9 +326,9 @@ class ReportsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.reports.customer_stats()
+        client.reports.customers()
         """
-        _response = self._raw_client.customer_stats(
+        _response = self._raw_client.customers(
             program_id=program_id, start_date=start_date, end_date=end_date, request_options=request_options
         )
         return _response.data
@@ -345,7 +356,7 @@ class AsyncReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> OverviewReportsResponse:
+    ) -> ReportsOverviewResponse:
         """
         Returns revenue, commission, customer and partner totals for the organization or one program over a date range.
 
@@ -365,7 +376,7 @@ class AsyncReportsClient:
 
         Returns
         -------
-        OverviewReportsResponse
+        ReportsOverviewResponse
             Aggregate totals for the organization
 
         Examples
@@ -402,7 +413,7 @@ class AsyncReportsClient:
         sort: typing.Optional[PartnersReportsRequestSort] = None,
         order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> PartnersReportsResponse:
+    ) -> AsyncPager[ReportsPartnerRow, ReportsPartnersResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per partner over a date range, sorted and paged by offset.
 
@@ -437,7 +448,7 @@ class AsyncReportsClient:
 
         Returns
         -------
-        PartnersReportsResponse
+        AsyncPager[ReportsPartnerRow, ReportsPartnersResponse]
             A page of partner breakdown rows
 
         Examples
@@ -452,12 +463,18 @@ class AsyncReportsClient:
 
 
         async def main() -> None:
-            await client.reports.partners()
+            response = await client.reports.partners()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.partners(
+        return await self._raw_client.partners(
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
@@ -468,7 +485,6 @@ class AsyncReportsClient:
             order=order,
             request_options=request_options,
         )
-        return _response.data
 
     async def links(
         self,
@@ -482,7 +498,7 @@ class AsyncReportsClient:
         sort: typing.Optional[LinksReportsRequestSort] = None,
         order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> LinksReportsResponse:
+    ) -> AsyncPager[ReportsLinkRow, ReportsLinksResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per link over a date range, sorted and paged by offset.
 
@@ -517,7 +533,7 @@ class AsyncReportsClient:
 
         Returns
         -------
-        LinksReportsResponse
+        AsyncPager[ReportsLinkRow, ReportsLinksResponse]
             A page of link breakdown rows
 
         Examples
@@ -532,12 +548,18 @@ class AsyncReportsClient:
 
 
         async def main() -> None:
-            await client.reports.links()
+            response = await client.reports.links()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.links(
+        return await self._raw_client.links(
             program_id=program_id,
             start_date=start_date,
             end_date=end_date,
@@ -548,7 +570,6 @@ class AsyncReportsClient:
             order=order,
             request_options=request_options,
         )
-        return _response.data
 
     async def timeseries(
         self,
@@ -559,7 +580,7 @@ class AsyncReportsClient:
         granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
         currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> TimeseriesReportsResponse:
+    ) -> ReportsTimeseriesResponse:
         """
         Returns revenue, commissions, customers and clicks per day, week or month over a date range, ready to chart.
 
@@ -585,7 +606,7 @@ class AsyncReportsClient:
 
         Returns
         -------
-        TimeseriesReportsResponse
+        ReportsTimeseriesResponse
             One point per non-empty period
 
         Examples
@@ -615,14 +636,14 @@ class AsyncReportsClient:
         )
         return _response.data
 
-    async def customer_stats(
+    async def customers(
         self,
         *,
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CustomerStatsReportsResponse:
+    ) -> ReportsCustomersResponse:
         """
         Returns how many customers are in each subscription status for the organization or one program.
 
@@ -642,7 +663,7 @@ class AsyncReportsClient:
 
         Returns
         -------
-        CustomerStatsReportsResponse
+        ReportsCustomersResponse
             Customer status counts for the organization
 
         Examples
@@ -657,12 +678,12 @@ class AsyncReportsClient:
 
 
         async def main() -> None:
-            await client.reports.customer_stats()
+            await client.reports.customers()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.customer_stats(
+        _response = await self._raw_client.customers(
             program_id=program_id, start_date=start_date, end_date=end_date, request_options=request_options
         )
         return _response.data

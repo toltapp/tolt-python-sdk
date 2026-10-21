@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -18,17 +19,18 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.create_promotion_codes_request_type import CreatePromotionCodesRequestType
-from .types.create_promotion_codes_response import CreatePromotionCodesResponse
-from .types.delete_promotion_codes_response import DeletePromotionCodesResponse
-from .types.get_promotion_codes_response import GetPromotionCodesResponse
+from ..types.error_response import ErrorResponse
+from ..types.promotion_code import PromotionCode
+from .types.create_promotion_code_request_type import CreatePromotionCodeRequestType
+from .types.create_promotion_code_response import CreatePromotionCodeResponse
+from .types.delete_promotion_code_response import DeletePromotionCodeResponse
+from .types.get_promotion_code_response import GetPromotionCodeResponse
 from .types.list_promotion_codes_request_order import ListPromotionCodesRequestOrder
 from .types.list_promotion_codes_request_sort import ListPromotionCodesRequestSort
 from .types.list_promotion_codes_request_type import ListPromotionCodesRequestType
 from .types.list_promotion_codes_response import ListPromotionCodesResponse
-from .types.update_promotion_codes_request_type import UpdatePromotionCodesRequestType
-from .types.update_promotion_codes_response import UpdatePromotionCodesResponse
+from .types.update_promotion_code_request_type import UpdatePromotionCodeRequestType
+from .types.update_promotion_code_response import UpdatePromotionCodeResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -56,7 +58,7 @@ class RawPromotionCodesClient:
         type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListPromotionCodesResponse]:
+    ) -> SyncPager[PromotionCode, ListPromotionCodesResponse]:
         """
         Lists promotion codes. Filter by program, partner or type, and page with cursors.
 
@@ -106,7 +108,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[ListPromotionCodesResponse]
+        SyncPager[PromotionCode, ListPromotionCodesResponse]
             A page of promotion codes
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -131,21 +133,40 @@ class RawPromotionCodesClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListPromotionCodesResponse,
                     parse_obj_as(
                         type_=ListPromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    program_id=program_id,
+                    partner_id=partner_id,
+                    type=type,
+                    search=search,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -154,9 +175,9 @@ class RawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -165,9 +186,9 @@ class RawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -176,9 +197,9 @@ class RawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -197,10 +218,10 @@ class RawPromotionCodesClient:
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[CreatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreatePromotionCodesResponse]:
+    ) -> HttpResponse[CreatePromotionCodeResponse]:
         """
         Creates a promotion code for a partner, so customers who use it are credited to them. A partner cannot have the same code twice.
 
@@ -212,7 +233,7 @@ class RawPromotionCodesClient:
         partner_id : str
             Id of the partner the code belongs to (part_...), as returned when listing partners. The code is created in that partner's program.
 
-        type : typing.Optional[CreatePromotionCodesRequestType]
+        type : typing.Optional[CreatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -223,9 +244,12 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[CreatePromotionCodesResponse]
+        HttpResponse[CreatePromotionCodeResponse]
             The created promotion code
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = self._client_wrapper.httpx_client.request(
             "v2/promotion-codes",
             method="POST",
@@ -238,15 +262,15 @@ class RawPromotionCodesClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePromotionCodesResponse,
+                    CreatePromotionCodeResponse,
                     parse_obj_as(
-                        type_=CreatePromotionCodesResponse,  # type: ignore
+                        type_=CreatePromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -255,9 +279,9 @@ class RawPromotionCodesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -266,9 +290,9 @@ class RawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -277,9 +301,9 @@ class RawPromotionCodesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -288,9 +312,9 @@ class RawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -299,9 +323,9 @@ class RawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -317,7 +341,7 @@ class RawPromotionCodesClient:
 
     def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetPromotionCodesResponse]:
+    ) -> HttpResponse[GetPromotionCodeResponse]:
         """
         Gets a promotion code by ID, with its discount type and value and the partner, group or program it belongs to.
 
@@ -330,7 +354,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[GetPromotionCodesResponse]
+        HttpResponse[GetPromotionCodeResponse]
             The requested promotion code
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -341,9 +365,9 @@ class RawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPromotionCodesResponse,
+                    GetPromotionCodeResponse,
                     parse_obj_as(
-                        type_=GetPromotionCodesResponse,  # type: ignore
+                        type_=GetPromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -352,9 +376,9 @@ class RawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -363,9 +387,9 @@ class RawPromotionCodesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -374,9 +398,9 @@ class RawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -385,9 +409,9 @@ class RawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -406,10 +430,10 @@ class RawPromotionCodesClient:
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[UpdatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdatePromotionCodesResponse]:
+    ) -> HttpResponse[UpdatePromotionCodeResponse]:
         """
         Updates a promotion code's code, discount type or value.
 
@@ -420,7 +444,7 @@ class RawPromotionCodesClient:
         code : typing.Optional[str]
             The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case.
 
-        type : typing.Optional[UpdatePromotionCodesRequestType]
+        type : typing.Optional[UpdatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -431,7 +455,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[UpdatePromotionCodesResponse]
+        HttpResponse[UpdatePromotionCodeResponse]
             The updated promotion code
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -451,9 +475,9 @@ class RawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePromotionCodesResponse,
+                    UpdatePromotionCodeResponse,
                     parse_obj_as(
-                        type_=UpdatePromotionCodesResponse,  # type: ignore
+                        type_=UpdatePromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -462,9 +486,9 @@ class RawPromotionCodesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -473,9 +497,9 @@ class RawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -484,9 +508,9 @@ class RawPromotionCodesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -495,9 +519,9 @@ class RawPromotionCodesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -506,9 +530,9 @@ class RawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -517,9 +541,9 @@ class RawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -535,7 +559,7 @@ class RawPromotionCodesClient:
 
     def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeletePromotionCodesResponse]:
+    ) -> HttpResponse[DeletePromotionCodeResponse]:
         """
         Deletes a promotion code, so customers who use it afterwards are no longer attributed through it.
 
@@ -548,7 +572,7 @@ class RawPromotionCodesClient:
 
         Returns
         -------
-        HttpResponse[DeletePromotionCodesResponse]
+        HttpResponse[DeletePromotionCodeResponse]
             The deleted promotion code
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -559,9 +583,9 @@ class RawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeletePromotionCodesResponse,
+                    DeletePromotionCodeResponse,
                     parse_obj_as(
-                        type_=DeletePromotionCodesResponse,  # type: ignore
+                        type_=DeletePromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -570,9 +594,9 @@ class RawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -581,9 +605,9 @@ class RawPromotionCodesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -592,9 +616,9 @@ class RawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -603,9 +627,9 @@ class RawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -641,7 +665,7 @@ class AsyncRawPromotionCodesClient:
         type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListPromotionCodesResponse]:
+    ) -> AsyncPager[PromotionCode, ListPromotionCodesResponse]:
         """
         Lists promotion codes. Filter by program, partner or type, and page with cursors.
 
@@ -691,7 +715,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListPromotionCodesResponse]
+        AsyncPager[PromotionCode, ListPromotionCodesResponse]
             A page of promotion codes
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -716,21 +740,43 @@ class AsyncRawPromotionCodesClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListPromotionCodesResponse,
                     parse_obj_as(
                         type_=ListPromotionCodesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        program_id=program_id,
+                        partner_id=partner_id,
+                        type=type,
+                        search=search,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -739,9 +785,9 @@ class AsyncRawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -750,9 +796,9 @@ class AsyncRawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -761,9 +807,9 @@ class AsyncRawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -782,10 +828,10 @@ class AsyncRawPromotionCodesClient:
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[CreatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreatePromotionCodesResponse]:
+    ) -> AsyncHttpResponse[CreatePromotionCodeResponse]:
         """
         Creates a promotion code for a partner, so customers who use it are credited to them. A partner cannot have the same code twice.
 
@@ -797,7 +843,7 @@ class AsyncRawPromotionCodesClient:
         partner_id : str
             Id of the partner the code belongs to (part_...), as returned when listing partners. The code is created in that partner's program.
 
-        type : typing.Optional[CreatePromotionCodesRequestType]
+        type : typing.Optional[CreatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -808,9 +854,12 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreatePromotionCodesResponse]
+        AsyncHttpResponse[CreatePromotionCodeResponse]
             The created promotion code
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = await self._client_wrapper.httpx_client.request(
             "v2/promotion-codes",
             method="POST",
@@ -823,15 +872,15 @@ class AsyncRawPromotionCodesClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreatePromotionCodesResponse,
+                    CreatePromotionCodeResponse,
                     parse_obj_as(
-                        type_=CreatePromotionCodesResponse,  # type: ignore
+                        type_=CreatePromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -840,9 +889,9 @@ class AsyncRawPromotionCodesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -851,9 +900,9 @@ class AsyncRawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -862,9 +911,9 @@ class AsyncRawPromotionCodesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -873,9 +922,9 @@ class AsyncRawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -884,9 +933,9 @@ class AsyncRawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -902,7 +951,7 @@ class AsyncRawPromotionCodesClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetPromotionCodesResponse]:
+    ) -> AsyncHttpResponse[GetPromotionCodeResponse]:
         """
         Gets a promotion code by ID, with its discount type and value and the partner, group or program it belongs to.
 
@@ -915,7 +964,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetPromotionCodesResponse]
+        AsyncHttpResponse[GetPromotionCodeResponse]
             The requested promotion code
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -926,9 +975,9 @@ class AsyncRawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetPromotionCodesResponse,
+                    GetPromotionCodeResponse,
                     parse_obj_as(
-                        type_=GetPromotionCodesResponse,  # type: ignore
+                        type_=GetPromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -937,9 +986,9 @@ class AsyncRawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -948,9 +997,9 @@ class AsyncRawPromotionCodesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -959,9 +1008,9 @@ class AsyncRawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -970,9 +1019,9 @@ class AsyncRawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -991,10 +1040,10 @@ class AsyncRawPromotionCodesClient:
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[UpdatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdatePromotionCodesResponse]:
+    ) -> AsyncHttpResponse[UpdatePromotionCodeResponse]:
         """
         Updates a promotion code's code, discount type or value.
 
@@ -1005,7 +1054,7 @@ class AsyncRawPromotionCodesClient:
         code : typing.Optional[str]
             The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case.
 
-        type : typing.Optional[UpdatePromotionCodesRequestType]
+        type : typing.Optional[UpdatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -1016,7 +1065,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdatePromotionCodesResponse]
+        AsyncHttpResponse[UpdatePromotionCodeResponse]
             The updated promotion code
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1036,9 +1085,9 @@ class AsyncRawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdatePromotionCodesResponse,
+                    UpdatePromotionCodeResponse,
                     parse_obj_as(
-                        type_=UpdatePromotionCodesResponse,  # type: ignore
+                        type_=UpdatePromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1047,9 +1096,9 @@ class AsyncRawPromotionCodesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1058,9 +1107,9 @@ class AsyncRawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1069,9 +1118,9 @@ class AsyncRawPromotionCodesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1080,9 +1129,9 @@ class AsyncRawPromotionCodesClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1091,9 +1140,9 @@ class AsyncRawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1102,9 +1151,9 @@ class AsyncRawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1120,7 +1169,7 @@ class AsyncRawPromotionCodesClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeletePromotionCodesResponse]:
+    ) -> AsyncHttpResponse[DeletePromotionCodeResponse]:
         """
         Deletes a promotion code, so customers who use it afterwards are no longer attributed through it.
 
@@ -1133,7 +1182,7 @@ class AsyncRawPromotionCodesClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeletePromotionCodesResponse]
+        AsyncHttpResponse[DeletePromotionCodeResponse]
             The deleted promotion code
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1144,9 +1193,9 @@ class AsyncRawPromotionCodesClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeletePromotionCodesResponse,
+                    DeletePromotionCodeResponse,
                     parse_obj_as(
-                        type_=DeletePromotionCodesResponse,  # type: ignore
+                        type_=DeletePromotionCodeResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1155,9 +1204,9 @@ class AsyncRawPromotionCodesClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1166,9 +1215,9 @@ class AsyncRawPromotionCodesClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1177,9 +1226,9 @@ class AsyncRawPromotionCodesClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1188,9 +1237,9 @@ class AsyncRawPromotionCodesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

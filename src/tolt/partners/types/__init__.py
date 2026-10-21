@@ -6,35 +6,35 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .approve_partners_response import ApprovePartnersResponse
+    from .approve_partner_response import ApprovePartnerResponse
     from .bulk_approve_partners_response import BulkApprovePartnersResponse
     from .bulk_reject_partners_response import BulkRejectPartnersResponse
-    from .create_partners_request_link import CreatePartnersRequestLink
-    from .create_partners_request_status import CreatePartnersRequestStatus
-    from .create_partners_response import CreatePartnersResponse
-    from .get_partners_response import GetPartnersResponse
+    from .create_partner_request_link import CreatePartnerRequestLink
+    from .create_partner_request_status import CreatePartnerRequestStatus
+    from .create_partner_response import CreatePartnerResponse
+    from .get_partner_response import GetPartnerResponse
     from .list_partners_request_order import ListPartnersRequestOrder
     from .list_partners_request_sort import ListPartnersRequestSort
     from .list_partners_request_status import ListPartnersRequestStatus
     from .list_partners_response import ListPartnersResponse
-    from .reject_partners_response import RejectPartnersResponse
-    from .suspend_partners_response import SuspendPartnersResponse
-    from .update_partners_response import UpdatePartnersResponse
+    from .reject_partner_response import RejectPartnerResponse
+    from .suspend_partner_response import SuspendPartnerResponse
+    from .update_partner_response import UpdatePartnerResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "ApprovePartnersResponse": ".approve_partners_response",
+    "ApprovePartnerResponse": ".approve_partner_response",
     "BulkApprovePartnersResponse": ".bulk_approve_partners_response",
     "BulkRejectPartnersResponse": ".bulk_reject_partners_response",
-    "CreatePartnersRequestLink": ".create_partners_request_link",
-    "CreatePartnersRequestStatus": ".create_partners_request_status",
-    "CreatePartnersResponse": ".create_partners_response",
-    "GetPartnersResponse": ".get_partners_response",
+    "CreatePartnerRequestLink": ".create_partner_request_link",
+    "CreatePartnerRequestStatus": ".create_partner_request_status",
+    "CreatePartnerResponse": ".create_partner_response",
+    "GetPartnerResponse": ".get_partner_response",
     "ListPartnersRequestOrder": ".list_partners_request_order",
     "ListPartnersRequestSort": ".list_partners_request_sort",
     "ListPartnersRequestStatus": ".list_partners_request_status",
     "ListPartnersResponse": ".list_partners_response",
-    "RejectPartnersResponse": ".reject_partners_response",
-    "SuspendPartnersResponse": ".suspend_partners_response",
-    "UpdatePartnersResponse": ".update_partners_response",
+    "RejectPartnerResponse": ".reject_partner_response",
+    "SuspendPartnerResponse": ".suspend_partner_response",
+    "UpdatePartnerResponse": ".update_partner_response",
 }
 
 
@@ -60,18 +60,18 @@ def __dir__():
 
 
 __all__ = [
-    "ApprovePartnersResponse",
+    "ApprovePartnerResponse",
     "BulkApprovePartnersResponse",
     "BulkRejectPartnersResponse",
-    "CreatePartnersRequestLink",
-    "CreatePartnersRequestStatus",
-    "CreatePartnersResponse",
-    "GetPartnersResponse",
+    "CreatePartnerRequestLink",
+    "CreatePartnerRequestStatus",
+    "CreatePartnerResponse",
+    "GetPartnerResponse",
     "ListPartnersRequestOrder",
     "ListPartnersRequestSort",
     "ListPartnersRequestStatus",
     "ListPartnersResponse",
-    "RejectPartnersResponse",
-    "SuspendPartnersResponse",
-    "UpdatePartnersResponse",
+    "RejectPartnerResponse",
+    "SuspendPartnerResponse",
+    "UpdatePartnerResponse",
 ]

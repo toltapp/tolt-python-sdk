@@ -4,9 +4,11 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.program import Program
 from .raw_client import AsyncRawProgramsClient, RawProgramsClient
-from .types.get_programs_response import GetProgramsResponse
+from .types.get_program_response import GetProgramResponse
 from .types.list_programs_request_order import ListProgramsRequestOrder
 from .types.list_programs_request_sort import ListProgramsRequestSort
 from .types.list_programs_response import ListProgramsResponse
@@ -41,7 +43,7 @@ class ProgramsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListProgramsResponse:
+    ) -> SyncPager[Program, ListProgramsResponse]:
         """
         Lists the programs in your organization, with search, date filters and cursor pagination.
 
@@ -82,7 +84,7 @@ class ProgramsClient:
 
         Returns
         -------
-        ListProgramsResponse
+        SyncPager[Program, ListProgramsResponse]
             A page of programs
 
         Examples
@@ -92,9 +94,14 @@ class ProgramsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.programs.list()
+        response = client.programs.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -107,9 +114,8 @@ class ProgramsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramsResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramResponse:
         """
         Gets a program by ID, with its name, currency, website, cookie duration and payout terms.
 
@@ -122,7 +128,7 @@ class ProgramsClient:
 
         Returns
         -------
-        GetProgramsResponse
+        GetProgramResponse
             The requested program
 
         Examples
@@ -169,7 +175,7 @@ class AsyncProgramsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListProgramsResponse:
+    ) -> AsyncPager[Program, ListProgramsResponse]:
         """
         Lists the programs in your organization, with search, date filters and cursor pagination.
 
@@ -210,7 +216,7 @@ class AsyncProgramsClient:
 
         Returns
         -------
-        ListProgramsResponse
+        AsyncPager[Program, ListProgramsResponse]
             A page of programs
 
         Examples
@@ -225,12 +231,18 @@ class AsyncProgramsClient:
 
 
         async def main() -> None:
-            await client.programs.list()
+            response = await client.programs.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -243,9 +255,8 @@ class AsyncProgramsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramsResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramResponse:
         """
         Gets a program by ID, with its name, currency, website, cookie duration and payout terms.
 
@@ -258,7 +269,7 @@ class AsyncProgramsClient:
 
         Returns
         -------
-        GetProgramsResponse
+        GetProgramResponse
             The requested program
 
         Examples

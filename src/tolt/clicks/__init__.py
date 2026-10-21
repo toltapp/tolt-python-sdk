@@ -7,17 +7,15 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        CreateClicksRequest,
-        CreateClicksResponse,
-        GetClicksResponse,
+        CreateClickResponse,
+        GetClickResponse,
         ListClicksRequestOrder,
         ListClicksRequestSort,
         ListClicksResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "CreateClicksRequest": ".types",
-    "CreateClicksResponse": ".types",
-    "GetClicksResponse": ".types",
+    "CreateClickResponse": ".types",
+    "GetClickResponse": ".types",
     "ListClicksRequestOrder": ".types",
     "ListClicksRequestSort": ".types",
     "ListClicksResponse": ".types",
@@ -46,9 +44,8 @@ def __dir__():
 
 
 __all__ = [
-    "CreateClicksRequest",
-    "CreateClicksResponse",
-    "GetClicksResponse",
+    "CreateClickResponse",
+    "GetClickResponse",
     "ListClicksRequestOrder",
     "ListClicksRequestSort",
     "ListClicksResponse",

@@ -9,30 +9,31 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
-from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.approve_commissions_response import ApproveCommissionsResponse
+from ..types.commission import Commission
+from ..types.error_response import ErrorResponse
+from .types.approve_commission_response import ApproveCommissionResponse
 from .types.bulk_approve_commissions_response import BulkApproveCommissionsResponse
 from .types.bulk_decline_commissions_response import BulkDeclineCommissionsResponse
-from .types.create_commissions_request import CreateCommissionsRequest
-from .types.create_commissions_response import CreateCommissionsResponse
-from .types.decline_commissions_response import DeclineCommissionsResponse
-from .types.delete_commissions_response import DeleteCommissionsResponse
-from .types.get_commissions_response import GetCommissionsResponse
+from .types.create_commission_request_status import CreateCommissionRequestStatus
+from .types.create_commission_response import CreateCommissionResponse
+from .types.decline_commission_response import DeclineCommissionResponse
+from .types.delete_commission_response import DeleteCommissionResponse
+from .types.get_commission_response import GetCommissionResponse
 from .types.list_commissions_request_order import ListCommissionsRequestOrder
 from .types.list_commissions_request_sort import ListCommissionsRequestSort
 from .types.list_commissions_response import ListCommissionsResponse
-from .types.update_commissions_request_status import UpdateCommissionsRequestStatus
-from .types.update_commissions_response import UpdateCommissionsResponse
+from .types.update_commission_request_status import UpdateCommissionRequestStatus
+from .types.update_commission_response import UpdateCommissionResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -88,9 +89,9 @@ class RawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -99,9 +100,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -110,9 +111,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -121,9 +122,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -182,9 +183,9 @@ class RawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -193,9 +194,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -204,9 +205,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -215,9 +216,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -251,7 +252,7 @@ class RawCommissionsClient:
         type: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListCommissionsResponse]:
+    ) -> SyncPager[Commission, ListCommissionsResponse]:
         """
         Lists commissions. Filter by program, partner, customer, transaction, status or type, and page with cursors.
 
@@ -310,7 +311,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[ListCommissionsResponse]
+        SyncPager[Commission, ListCommissionsResponse]
             A page of commissions
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -338,21 +339,43 @@ class RawCommissionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListCommissionsResponse,
                     parse_obj_as(
                         type_=ListCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    program_id=program_id,
+                    partner_id=partner_id,
+                    customer_id=customer_id,
+                    transaction_id=transaction_id,
+                    status=status,
+                    type=type,
+                    search=search,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -361,9 +384,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -372,9 +395,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -383,9 +406,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -400,38 +423,92 @@ class RawCommissionsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create(
-        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[CreateCommissionsResponse]:
+        self,
+        *,
+        amount: int,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        program_id: typing.Optional[str] = OMIT,
+        revenue: typing.Optional[int] = OMIT,
+        status: typing.Optional[CreateCommissionRequestStatus] = OMIT,
+        source: typing.Optional[str] = OMIT,
+        charge_id: typing.Optional[str] = OMIT,
+        transaction_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[CreateCommissionResponse]:
         """
         Supports historical created_at values. Status defaults to approved when omitted.
 
         Parameters
         ----------
-        request : CreateCommissionsRequest
+        amount : int
+            What the partner earns for this commission, in minor units of the program currency (cents for USD).
+
+        created_at : typing.Optional[dt.datetime]
+            When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change. Defaults to now.
+
+        customer_id : typing.Optional[str]
+            Id of the customer the commission is for (cus_...), as returned when listing customers. The commission goes to the customer's partner and program; partner_id and program_id can be left out, and when given they must match the customer's.
+
+        partner_id : typing.Optional[str]
+            Id of the partner who earns the commission (part_...), as returned when listing partners. Used with program_id when no customer_id is given.
+
+        program_id : typing.Optional[str]
+            Id of the partner's program (prg_...). Required with partner_id when no customer_id is given.
+
+        revenue : typing.Optional[int]
+            The sale amount the commission is based on, in minor units of the program currency.
+
+        status : typing.Optional[CreateCommissionRequestStatus]
+
+        source : typing.Optional[str]
+            Free-form label for where the commission came from, such as stripe or api.
+
+        charge_id : typing.Optional[str]
+            Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
+
+        transaction_id : typing.Optional[str]
+            Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[CreateCommissionsResponse]
+        HttpResponse[CreateCommissionResponse]
             The created commission
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = self._client_wrapper.httpx_client.request(
             "v2/commissions",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=CreateCommissionsRequest, direction="write"
-            ),
-            request_options=request_options,
+            json={
+                "created_at": created_at,
+                "amount": amount,
+                "customer_id": customer_id,
+                "partner_id": partner_id,
+                "program_id": program_id,
+                "revenue": revenue,
+                "status": status,
+                "source": source,
+                "charge_id": charge_id,
+                "transaction_id": transaction_id,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCommissionsResponse,
+                    CreateCommissionResponse,
                     parse_obj_as(
-                        type_=CreateCommissionsResponse,  # type: ignore
+                        type_=CreateCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -440,9 +517,9 @@ class RawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -451,9 +528,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -462,9 +539,9 @@ class RawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -473,9 +550,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -484,9 +561,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -502,7 +579,7 @@ class RawCommissionsClient:
 
     def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetCommissionsResponse]:
+    ) -> HttpResponse[GetCommissionResponse]:
         """
         Gets a commission by ID, with its amount, status, type and partner, plus its customer and transaction when it has them.
 
@@ -515,7 +592,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[GetCommissionsResponse]
+        HttpResponse[GetCommissionResponse]
             The requested commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -526,9 +603,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCommissionsResponse,
+                    GetCommissionResponse,
                     parse_obj_as(
-                        type_=GetCommissionsResponse,  # type: ignore
+                        type_=GetCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -537,9 +614,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -548,9 +625,9 @@ class RawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -559,9 +636,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -570,9 +647,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -592,13 +669,13 @@ class RawCommissionsClient:
         *,
         amount: typing.Optional[int] = OMIT,
         revenue: typing.Optional[int] = OMIT,
-        status: typing.Optional[UpdateCommissionsRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCommissionRequestStatus] = OMIT,
         source: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateCommissionsResponse]:
+    ) -> HttpResponse[UpdateCommissionResponse]:
         """
         Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
 
@@ -612,7 +689,7 @@ class RawCommissionsClient:
         revenue : typing.Optional[int]
             The sale amount the commission is based on, in minor units of the program currency.
 
-        status : typing.Optional[UpdateCommissionsRequestStatus]
+        status : typing.Optional[UpdateCommissionRequestStatus]
 
         source : typing.Optional[str]
             Free-form label for where the commission came from, such as stripe or api.
@@ -631,7 +708,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[UpdateCommissionsResponse]
+        HttpResponse[UpdateCommissionResponse]
             The updated commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -655,9 +732,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCommissionsResponse,
+                    UpdateCommissionResponse,
                     parse_obj_as(
-                        type_=UpdateCommissionsResponse,  # type: ignore
+                        type_=UpdateCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -666,9 +743,9 @@ class RawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -677,9 +754,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -688,9 +765,9 @@ class RawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -699,9 +776,9 @@ class RawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -710,9 +787,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -721,9 +798,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -739,7 +816,7 @@ class RawCommissionsClient:
 
     def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteCommissionsResponse]:
+    ) -> HttpResponse[DeleteCommissionResponse]:
         """
         Deletes a commission. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -752,7 +829,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[DeleteCommissionsResponse]
+        HttpResponse[DeleteCommissionResponse]
             The deleted commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -763,9 +840,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCommissionsResponse,
+                    DeleteCommissionResponse,
                     parse_obj_as(
-                        type_=DeleteCommissionsResponse,  # type: ignore
+                        type_=DeleteCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -774,9 +851,9 @@ class RawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -785,9 +862,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -796,9 +873,9 @@ class RawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -807,9 +884,9 @@ class RawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -818,9 +895,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -829,9 +906,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -847,7 +924,7 @@ class RawCommissionsClient:
 
     def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[ApproveCommissionsResponse]:
+    ) -> HttpResponse[ApproveCommissionResponse]:
         """
         Marks a commission approved so it is included in the next payout. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -860,7 +937,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[ApproveCommissionsResponse]
+        HttpResponse[ApproveCommissionResponse]
             The approved commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -871,9 +948,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApproveCommissionsResponse,
+                    ApproveCommissionResponse,
                     parse_obj_as(
-                        type_=ApproveCommissionsResponse,  # type: ignore
+                        type_=ApproveCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -882,9 +959,9 @@ class RawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -893,9 +970,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -904,9 +981,9 @@ class RawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -915,9 +992,9 @@ class RawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -926,9 +1003,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -937,9 +1014,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -955,7 +1032,7 @@ class RawCommissionsClient:
 
     def decline(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeclineCommissionsResponse]:
+    ) -> HttpResponse[DeclineCommissionResponse]:
         """
         Marks a commission declined so it is left out of payouts until it is approved again. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -968,7 +1045,7 @@ class RawCommissionsClient:
 
         Returns
         -------
-        HttpResponse[DeclineCommissionsResponse]
+        HttpResponse[DeclineCommissionResponse]
             The declined commission
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -979,9 +1056,9 @@ class RawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeclineCommissionsResponse,
+                    DeclineCommissionResponse,
                     parse_obj_as(
-                        type_=DeclineCommissionsResponse,  # type: ignore
+                        type_=DeclineCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -990,9 +1067,9 @@ class RawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1001,9 +1078,9 @@ class RawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1012,9 +1089,9 @@ class RawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1023,9 +1100,9 @@ class RawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1034,9 +1111,9 @@ class RawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1045,9 +1122,9 @@ class RawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1111,9 +1188,9 @@ class AsyncRawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1122,9 +1199,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1133,9 +1210,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1144,9 +1221,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1205,9 +1282,9 @@ class AsyncRawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1216,9 +1293,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1227,9 +1304,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1238,9 +1315,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1274,7 +1351,7 @@ class AsyncRawCommissionsClient:
         type: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListCommissionsResponse]:
+    ) -> AsyncPager[Commission, ListCommissionsResponse]:
         """
         Lists commissions. Filter by program, partner, customer, transaction, status or type, and page with cursors.
 
@@ -1333,7 +1410,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListCommissionsResponse]
+        AsyncPager[Commission, ListCommissionsResponse]
             A page of commissions
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1361,21 +1438,46 @@ class AsyncRawCommissionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListCommissionsResponse,
                     parse_obj_as(
                         type_=ListCommissionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        program_id=program_id,
+                        partner_id=partner_id,
+                        customer_id=customer_id,
+                        transaction_id=transaction_id,
+                        status=status,
+                        type=type,
+                        search=search,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1384,9 +1486,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1395,9 +1497,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1406,9 +1508,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1423,38 +1525,92 @@ class AsyncRawCommissionsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create(
-        self, *, request: CreateCommissionsRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[CreateCommissionsResponse]:
+        self,
+        *,
+        amount: int,
+        created_at: typing.Optional[dt.datetime] = OMIT,
+        customer_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        program_id: typing.Optional[str] = OMIT,
+        revenue: typing.Optional[int] = OMIT,
+        status: typing.Optional[CreateCommissionRequestStatus] = OMIT,
+        source: typing.Optional[str] = OMIT,
+        charge_id: typing.Optional[str] = OMIT,
+        transaction_id: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[CreateCommissionResponse]:
         """
         Supports historical created_at values. Status defaults to approved when omitted.
 
         Parameters
         ----------
-        request : CreateCommissionsRequest
+        amount : int
+            What the partner earns for this commission, in minor units of the program currency (cents for USD).
+
+        created_at : typing.Optional[dt.datetime]
+            When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change. Defaults to now.
+
+        customer_id : typing.Optional[str]
+            Id of the customer the commission is for (cus_...), as returned when listing customers. The commission goes to the customer's partner and program; partner_id and program_id can be left out, and when given they must match the customer's.
+
+        partner_id : typing.Optional[str]
+            Id of the partner who earns the commission (part_...), as returned when listing partners. Used with program_id when no customer_id is given.
+
+        program_id : typing.Optional[str]
+            Id of the partner's program (prg_...). Required with partner_id when no customer_id is given.
+
+        revenue : typing.Optional[int]
+            The sale amount the commission is based on, in minor units of the program currency.
+
+        status : typing.Optional[CreateCommissionRequestStatus]
+
+        source : typing.Optional[str]
+            Free-form label for where the commission came from, such as stripe or api.
+
+        charge_id : typing.Optional[str]
+            Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
+
+        transaction_id : typing.Optional[str]
+            Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[CreateCommissionsResponse]
+        AsyncHttpResponse[CreateCommissionResponse]
             The created commission
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = await self._client_wrapper.httpx_client.request(
             "v2/commissions",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=CreateCommissionsRequest, direction="write"
-            ),
-            request_options=request_options,
+            json={
+                "created_at": created_at,
+                "amount": amount,
+                "customer_id": customer_id,
+                "partner_id": partner_id,
+                "program_id": program_id,
+                "revenue": revenue,
+                "status": status,
+                "source": source,
+                "charge_id": charge_id,
+                "transaction_id": transaction_id,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCommissionsResponse,
+                    CreateCommissionResponse,
                     parse_obj_as(
-                        type_=CreateCommissionsResponse,  # type: ignore
+                        type_=CreateCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1463,9 +1619,9 @@ class AsyncRawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1474,9 +1630,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1485,9 +1641,9 @@ class AsyncRawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1496,9 +1652,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1507,9 +1663,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1525,7 +1681,7 @@ class AsyncRawCommissionsClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetCommissionsResponse]:
+    ) -> AsyncHttpResponse[GetCommissionResponse]:
         """
         Gets a commission by ID, with its amount, status, type and partner, plus its customer and transaction when it has them.
 
@@ -1538,7 +1694,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetCommissionsResponse]
+        AsyncHttpResponse[GetCommissionResponse]
             The requested commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1549,9 +1705,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCommissionsResponse,
+                    GetCommissionResponse,
                     parse_obj_as(
-                        type_=GetCommissionsResponse,  # type: ignore
+                        type_=GetCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1560,9 +1716,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1571,9 +1727,9 @@ class AsyncRawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1582,9 +1738,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1593,9 +1749,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1615,13 +1771,13 @@ class AsyncRawCommissionsClient:
         *,
         amount: typing.Optional[int] = OMIT,
         revenue: typing.Optional[int] = OMIT,
-        status: typing.Optional[UpdateCommissionsRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCommissionRequestStatus] = OMIT,
         source: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         transaction_id: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateCommissionsResponse]:
+    ) -> AsyncHttpResponse[UpdateCommissionResponse]:
         """
         Unpaid commissions can be changed unless linked to a confirmed invoice or legacy autopayout invoice. Affected draft invoice totals are recalculated.
 
@@ -1635,7 +1791,7 @@ class AsyncRawCommissionsClient:
         revenue : typing.Optional[int]
             The sale amount the commission is based on, in minor units of the program currency.
 
-        status : typing.Optional[UpdateCommissionsRequestStatus]
+        status : typing.Optional[UpdateCommissionRequestStatus]
 
         source : typing.Optional[str]
             Free-form label for where the commission came from, such as stripe or api.
@@ -1654,7 +1810,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateCommissionsResponse]
+        AsyncHttpResponse[UpdateCommissionResponse]
             The updated commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1678,9 +1834,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCommissionsResponse,
+                    UpdateCommissionResponse,
                     parse_obj_as(
-                        type_=UpdateCommissionsResponse,  # type: ignore
+                        type_=UpdateCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1689,9 +1845,9 @@ class AsyncRawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1700,9 +1856,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1711,9 +1867,9 @@ class AsyncRawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1722,9 +1878,9 @@ class AsyncRawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1733,9 +1889,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1744,9 +1900,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1762,7 +1918,7 @@ class AsyncRawCommissionsClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteCommissionsResponse]:
+    ) -> AsyncHttpResponse[DeleteCommissionResponse]:
         """
         Deletes a commission. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -1775,7 +1931,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteCommissionsResponse]
+        AsyncHttpResponse[DeleteCommissionResponse]
             The deleted commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1786,9 +1942,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCommissionsResponse,
+                    DeleteCommissionResponse,
                     parse_obj_as(
-                        type_=DeleteCommissionsResponse,  # type: ignore
+                        type_=DeleteCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1797,9 +1953,9 @@ class AsyncRawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1808,9 +1964,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1819,9 +1975,9 @@ class AsyncRawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1830,9 +1986,9 @@ class AsyncRawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1841,9 +1997,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1852,9 +2008,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1870,7 +2026,7 @@ class AsyncRawCommissionsClient:
 
     async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[ApproveCommissionsResponse]:
+    ) -> AsyncHttpResponse[ApproveCommissionResponse]:
         """
         Marks a commission approved so it is included in the next payout. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -1883,7 +2039,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ApproveCommissionsResponse]
+        AsyncHttpResponse[ApproveCommissionResponse]
             The approved commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1894,9 +2050,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    ApproveCommissionsResponse,
+                    ApproveCommissionResponse,
                     parse_obj_as(
-                        type_=ApproveCommissionsResponse,  # type: ignore
+                        type_=ApproveCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1905,9 +2061,9 @@ class AsyncRawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1916,9 +2072,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1927,9 +2083,9 @@ class AsyncRawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1938,9 +2094,9 @@ class AsyncRawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1949,9 +2105,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1960,9 +2116,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1978,7 +2134,7 @@ class AsyncRawCommissionsClient:
 
     async def decline(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeclineCommissionsResponse]:
+    ) -> AsyncHttpResponse[DeclineCommissionResponse]:
         """
         Marks a commission declined so it is left out of payouts until it is approved again. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
 
@@ -1991,7 +2147,7 @@ class AsyncRawCommissionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeclineCommissionsResponse]
+        AsyncHttpResponse[DeclineCommissionResponse]
             The declined commission
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -2002,9 +2158,9 @@ class AsyncRawCommissionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeclineCommissionsResponse,
+                    DeclineCommissionResponse,
                     parse_obj_as(
-                        type_=DeclineCommissionsResponse,  # type: ignore
+                        type_=DeclineCommissionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -2013,9 +2169,9 @@ class AsyncRawCommissionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2024,9 +2180,9 @@ class AsyncRawCommissionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2035,9 +2191,9 @@ class AsyncRawCommissionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2046,9 +2202,9 @@ class AsyncRawCommissionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2057,9 +2213,9 @@ class AsyncRawCommissionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -2068,9 +2224,9 @@ class AsyncRawCommissionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

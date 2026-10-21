@@ -7,6 +7,7 @@ from json.decoder import JSONDecodeError
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -14,17 +15,19 @@ from ..errors.bad_request_error import BadRequestError
 from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.customer_stats_reports_response import CustomerStatsReportsResponse
+from ..types.error_response import ErrorResponse
+from ..types.reports_link_row import ReportsLinkRow
+from ..types.reports_partner_row import ReportsPartnerRow
 from .types.links_reports_request_order import LinksReportsRequestOrder
 from .types.links_reports_request_sort import LinksReportsRequestSort
-from .types.links_reports_response import LinksReportsResponse
-from .types.overview_reports_response import OverviewReportsResponse
 from .types.partners_reports_request_order import PartnersReportsRequestOrder
 from .types.partners_reports_request_sort import PartnersReportsRequestSort
-from .types.partners_reports_response import PartnersReportsResponse
+from .types.reports_customers_response import ReportsCustomersResponse
+from .types.reports_links_response import ReportsLinksResponse
+from .types.reports_overview_response import ReportsOverviewResponse
+from .types.reports_partners_response import ReportsPartnersResponse
+from .types.reports_timeseries_response import ReportsTimeseriesResponse
 from .types.timeseries_reports_request_granularity import TimeseriesReportsRequestGranularity
-from .types.timeseries_reports_response import TimeseriesReportsResponse
 from pydantic import ValidationError
 
 
@@ -39,7 +42,7 @@ class RawReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[OverviewReportsResponse]:
+    ) -> HttpResponse[ReportsOverviewResponse]:
         """
         Returns revenue, commission, customer and partner totals for the organization or one program over a date range.
 
@@ -59,7 +62,7 @@ class RawReportsClient:
 
         Returns
         -------
-        HttpResponse[OverviewReportsResponse]
+        HttpResponse[ReportsOverviewResponse]
             Aggregate totals for the organization
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -75,9 +78,9 @@ class RawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    OverviewReportsResponse,
+                    ReportsOverviewResponse,
                     parse_obj_as(
-                        type_=OverviewReportsResponse,  # type: ignore
+                        type_=ReportsOverviewResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -86,9 +89,9 @@ class RawReportsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -97,9 +100,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -108,9 +111,9 @@ class RawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -119,9 +122,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -147,7 +150,7 @@ class RawReportsClient:
         sort: typing.Optional[PartnersReportsRequestSort] = None,
         order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[PartnersReportsResponse]:
+    ) -> SyncPager[ReportsPartnerRow, ReportsPartnersResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per partner over a date range, sorted and paged by offset.
 
@@ -182,9 +185,11 @@ class RawReportsClient:
 
         Returns
         -------
-        HttpResponse[PartnersReportsResponse]
+        SyncPager[ReportsPartnerRow, ReportsPartnersResponse]
             A page of partner breakdown rows
         """
+        offset = offset if offset is not None else 0
+
         _response = self._client_wrapper.httpx_client.request(
             "v2/reports/partners",
             method="GET",
@@ -202,21 +207,34 @@ class RawReportsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    PartnersReportsResponse,
+                _parsed_response = typing.cast(
+                    ReportsPartnersResponse,
                     parse_obj_as(
-                        type_=PartnersReportsResponse,  # type: ignore
+                        type_=ReportsPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = bool(_parsed_response.has_more)
+                _get_next = lambda: self.partners(
+                    program_id=program_id,
+                    start_date=start_date,
+                    end_date=end_date,
+                    currency=currency,
+                    limit=limit,
+                    offset=offset + len(_items or []),
+                    sort=sort,
+                    order=order,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -225,9 +243,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -236,9 +254,9 @@ class RawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -247,9 +265,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -275,7 +293,7 @@ class RawReportsClient:
         sort: typing.Optional[LinksReportsRequestSort] = None,
         order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[LinksReportsResponse]:
+    ) -> SyncPager[ReportsLinkRow, ReportsLinksResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per link over a date range, sorted and paged by offset.
 
@@ -310,9 +328,11 @@ class RawReportsClient:
 
         Returns
         -------
-        HttpResponse[LinksReportsResponse]
+        SyncPager[ReportsLinkRow, ReportsLinksResponse]
             A page of link breakdown rows
         """
+        offset = offset if offset is not None else 0
+
         _response = self._client_wrapper.httpx_client.request(
             "v2/reports/links",
             method="GET",
@@ -330,21 +350,34 @@ class RawReportsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    LinksReportsResponse,
+                _parsed_response = typing.cast(
+                    ReportsLinksResponse,
                     parse_obj_as(
-                        type_=LinksReportsResponse,  # type: ignore
+                        type_=ReportsLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = bool(_parsed_response.has_more)
+                _get_next = lambda: self.links(
+                    program_id=program_id,
+                    start_date=start_date,
+                    end_date=end_date,
+                    currency=currency,
+                    limit=limit,
+                    offset=offset + len(_items or []),
+                    sort=sort,
+                    order=order,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -353,9 +386,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -364,9 +397,9 @@ class RawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -375,9 +408,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -400,7 +433,7 @@ class RawReportsClient:
         granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
         currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[TimeseriesReportsResponse]:
+    ) -> HttpResponse[ReportsTimeseriesResponse]:
         """
         Returns revenue, commissions, customers and clicks per day, week or month over a date range, ready to chart.
 
@@ -426,7 +459,7 @@ class RawReportsClient:
 
         Returns
         -------
-        HttpResponse[TimeseriesReportsResponse]
+        HttpResponse[ReportsTimeseriesResponse]
             One point per non-empty period
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -444,9 +477,9 @@ class RawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    TimeseriesReportsResponse,
+                    ReportsTimeseriesResponse,
                     parse_obj_as(
-                        type_=TimeseriesReportsResponse,  # type: ignore
+                        type_=ReportsTimeseriesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -455,9 +488,9 @@ class RawReportsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -466,9 +499,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -477,9 +510,9 @@ class RawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -488,9 +521,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -504,14 +537,14 @@ class RawReportsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def customer_stats(
+    def customers(
         self,
         *,
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CustomerStatsReportsResponse]:
+    ) -> HttpResponse[ReportsCustomersResponse]:
         """
         Returns how many customers are in each subscription status for the organization or one program.
 
@@ -531,7 +564,7 @@ class RawReportsClient:
 
         Returns
         -------
-        HttpResponse[CustomerStatsReportsResponse]
+        HttpResponse[ReportsCustomersResponse]
             Customer status counts for the organization
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -547,9 +580,9 @@ class RawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CustomerStatsReportsResponse,
+                    ReportsCustomersResponse,
                     parse_obj_as(
-                        type_=CustomerStatsReportsResponse,  # type: ignore
+                        type_=ReportsCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -558,9 +591,9 @@ class RawReportsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -569,9 +602,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -580,9 +613,9 @@ class RawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -591,9 +624,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -619,7 +652,7 @@ class AsyncRawReportsClient:
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[OverviewReportsResponse]:
+    ) -> AsyncHttpResponse[ReportsOverviewResponse]:
         """
         Returns revenue, commission, customer and partner totals for the organization or one program over a date range.
 
@@ -639,7 +672,7 @@ class AsyncRawReportsClient:
 
         Returns
         -------
-        AsyncHttpResponse[OverviewReportsResponse]
+        AsyncHttpResponse[ReportsOverviewResponse]
             Aggregate totals for the organization
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -655,9 +688,9 @@ class AsyncRawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    OverviewReportsResponse,
+                    ReportsOverviewResponse,
                     parse_obj_as(
-                        type_=OverviewReportsResponse,  # type: ignore
+                        type_=ReportsOverviewResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -666,9 +699,9 @@ class AsyncRawReportsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -677,9 +710,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -688,9 +721,9 @@ class AsyncRawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -699,9 +732,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -727,7 +760,7 @@ class AsyncRawReportsClient:
         sort: typing.Optional[PartnersReportsRequestSort] = None,
         order: typing.Optional[PartnersReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[PartnersReportsResponse]:
+    ) -> AsyncPager[ReportsPartnerRow, ReportsPartnersResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per partner over a date range, sorted and paged by offset.
 
@@ -762,9 +795,11 @@ class AsyncRawReportsClient:
 
         Returns
         -------
-        AsyncHttpResponse[PartnersReportsResponse]
+        AsyncPager[ReportsPartnerRow, ReportsPartnersResponse]
             A page of partner breakdown rows
         """
+        offset = offset if offset is not None else 0
+
         _response = await self._client_wrapper.httpx_client.request(
             "v2/reports/partners",
             method="GET",
@@ -782,21 +817,37 @@ class AsyncRawReportsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    PartnersReportsResponse,
+                _parsed_response = typing.cast(
+                    ReportsPartnersResponse,
                     parse_obj_as(
-                        type_=PartnersReportsResponse,  # type: ignore
+                        type_=ReportsPartnersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = bool(_parsed_response.has_more)
+
+                async def _get_next():
+                    return await self.partners(
+                        program_id=program_id,
+                        start_date=start_date,
+                        end_date=end_date,
+                        currency=currency,
+                        limit=limit,
+                        offset=offset + len(_items or []),
+                        sort=sort,
+                        order=order,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -805,9 +856,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -816,9 +867,9 @@ class AsyncRawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -827,9 +878,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -855,7 +906,7 @@ class AsyncRawReportsClient:
         sort: typing.Optional[LinksReportsRequestSort] = None,
         order: typing.Optional[LinksReportsRequestOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[LinksReportsResponse]:
+    ) -> AsyncPager[ReportsLinkRow, ReportsLinksResponse]:
         """
         Returns one row of revenue, commissions, customers and clicks per link over a date range, sorted and paged by offset.
 
@@ -890,9 +941,11 @@ class AsyncRawReportsClient:
 
         Returns
         -------
-        AsyncHttpResponse[LinksReportsResponse]
+        AsyncPager[ReportsLinkRow, ReportsLinksResponse]
             A page of link breakdown rows
         """
+        offset = offset if offset is not None else 0
+
         _response = await self._client_wrapper.httpx_client.request(
             "v2/reports/links",
             method="GET",
@@ -910,21 +963,37 @@ class AsyncRawReportsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    LinksReportsResponse,
+                _parsed_response = typing.cast(
+                    ReportsLinksResponse,
                     parse_obj_as(
-                        type_=LinksReportsResponse,  # type: ignore
+                        type_=ReportsLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = bool(_parsed_response.has_more)
+
+                async def _get_next():
+                    return await self.links(
+                        program_id=program_id,
+                        start_date=start_date,
+                        end_date=end_date,
+                        currency=currency,
+                        limit=limit,
+                        offset=offset + len(_items or []),
+                        sort=sort,
+                        order=order,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -933,9 +1002,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -944,9 +1013,9 @@ class AsyncRawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -955,9 +1024,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -980,7 +1049,7 @@ class AsyncRawReportsClient:
         granularity: typing.Optional[TimeseriesReportsRequestGranularity] = None,
         currency: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[TimeseriesReportsResponse]:
+    ) -> AsyncHttpResponse[ReportsTimeseriesResponse]:
         """
         Returns revenue, commissions, customers and clicks per day, week or month over a date range, ready to chart.
 
@@ -1006,7 +1075,7 @@ class AsyncRawReportsClient:
 
         Returns
         -------
-        AsyncHttpResponse[TimeseriesReportsResponse]
+        AsyncHttpResponse[ReportsTimeseriesResponse]
             One point per non-empty period
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1024,9 +1093,9 @@ class AsyncRawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    TimeseriesReportsResponse,
+                    ReportsTimeseriesResponse,
                     parse_obj_as(
-                        type_=TimeseriesReportsResponse,  # type: ignore
+                        type_=ReportsTimeseriesResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1035,9 +1104,9 @@ class AsyncRawReportsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1046,9 +1115,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1057,9 +1126,9 @@ class AsyncRawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1068,9 +1137,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1084,14 +1153,14 @@ class AsyncRawReportsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def customer_stats(
+    async def customers(
         self,
         *,
         program_id: typing.Optional[str] = None,
         start_date: typing.Optional[dt.date] = None,
         end_date: typing.Optional[dt.date] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CustomerStatsReportsResponse]:
+    ) -> AsyncHttpResponse[ReportsCustomersResponse]:
         """
         Returns how many customers are in each subscription status for the organization or one program.
 
@@ -1111,7 +1180,7 @@ class AsyncRawReportsClient:
 
         Returns
         -------
-        AsyncHttpResponse[CustomerStatsReportsResponse]
+        AsyncHttpResponse[ReportsCustomersResponse]
             Customer status counts for the organization
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1127,9 +1196,9 @@ class AsyncRawReportsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CustomerStatsReportsResponse,
+                    ReportsCustomersResponse,
                     parse_obj_as(
-                        type_=CustomerStatsReportsResponse,  # type: ignore
+                        type_=ReportsCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1138,9 +1207,9 @@ class AsyncRawReportsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1149,9 +1218,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1160,9 +1229,9 @@ class AsyncRawReportsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1171,9 +1240,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

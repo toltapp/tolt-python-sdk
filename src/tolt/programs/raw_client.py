@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -17,8 +18,9 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.get_programs_response import GetProgramsResponse
+from ..types.error_response import ErrorResponse
+from ..types.program import Program
+from .types.get_program_response import GetProgramResponse
 from .types.list_programs_request_order import ListProgramsRequestOrder
 from .types.list_programs_request_sort import ListProgramsRequestSort
 from .types.list_programs_response import ListProgramsResponse
@@ -43,7 +45,7 @@ class RawProgramsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListProgramsResponse]:
+    ) -> SyncPager[Program, ListProgramsResponse]:
         """
         Lists the programs in your organization, with search, date filters and cursor pagination.
 
@@ -84,7 +86,7 @@ class RawProgramsClient:
 
         Returns
         -------
-        HttpResponse[ListProgramsResponse]
+        SyncPager[Program, ListProgramsResponse]
             A page of programs
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -106,21 +108,37 @@ class RawProgramsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListProgramsResponse,
                     parse_obj_as(
                         type_=ListProgramsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    search=search,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -129,9 +147,9 @@ class RawProgramsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -140,9 +158,9 @@ class RawProgramsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -151,9 +169,9 @@ class RawProgramsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -169,7 +187,7 @@ class RawProgramsClient:
 
     def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetProgramsResponse]:
+    ) -> HttpResponse[GetProgramResponse]:
         """
         Gets a program by ID, with its name, currency, website, cookie duration and payout terms.
 
@@ -182,7 +200,7 @@ class RawProgramsClient:
 
         Returns
         -------
-        HttpResponse[GetProgramsResponse]
+        HttpResponse[GetProgramResponse]
             The requested program
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -193,9 +211,9 @@ class RawProgramsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetProgramsResponse,
+                    GetProgramResponse,
                     parse_obj_as(
-                        type_=GetProgramsResponse,  # type: ignore
+                        type_=GetProgramResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -204,9 +222,9 @@ class RawProgramsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -215,9 +233,9 @@ class RawProgramsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -226,9 +244,9 @@ class RawProgramsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -237,9 +255,9 @@ class RawProgramsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -272,7 +290,7 @@ class AsyncRawProgramsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListProgramsResponse]:
+    ) -> AsyncPager[Program, ListProgramsResponse]:
         """
         Lists the programs in your organization, with search, date filters and cursor pagination.
 
@@ -313,7 +331,7 @@ class AsyncRawProgramsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListProgramsResponse]
+        AsyncPager[Program, ListProgramsResponse]
             A page of programs
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -335,21 +353,40 @@ class AsyncRawProgramsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListProgramsResponse,
                     parse_obj_as(
                         type_=ListProgramsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        search=search,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -358,9 +395,9 @@ class AsyncRawProgramsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -369,9 +406,9 @@ class AsyncRawProgramsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -380,9 +417,9 @@ class AsyncRawProgramsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -398,7 +435,7 @@ class AsyncRawProgramsClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetProgramsResponse]:
+    ) -> AsyncHttpResponse[GetProgramResponse]:
         """
         Gets a program by ID, with its name, currency, website, cookie duration and payout terms.
 
@@ -411,7 +448,7 @@ class AsyncRawProgramsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetProgramsResponse]
+        AsyncHttpResponse[GetProgramResponse]
             The requested program
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -422,9 +459,9 @@ class AsyncRawProgramsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetProgramsResponse,
+                    GetProgramResponse,
                     parse_obj_as(
-                        type_=GetProgramsResponse,  # type: ignore
+                        type_=GetProgramResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -433,9 +470,9 @@ class AsyncRawProgramsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -444,9 +481,9 @@ class AsyncRawProgramsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -455,9 +492,9 @@ class AsyncRawProgramsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -466,9 +503,9 @@ class AsyncRawProgramsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

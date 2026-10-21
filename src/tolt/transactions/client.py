@@ -4,17 +4,19 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.transaction import Transaction
 from .raw_client import AsyncRawTransactionsClient, RawTransactionsClient
-from .types.create_transactions_response import CreateTransactionsResponse
-from .types.delete_transactions_response import DeleteTransactionsResponse
-from .types.get_transactions_response import GetTransactionsResponse
+from .types.create_transaction_response import CreateTransactionResponse
+from .types.delete_transaction_response import DeleteTransactionResponse
+from .types.get_transaction_response import GetTransactionResponse
 from .types.list_transactions_request_order import ListTransactionsRequestOrder
 from .types.list_transactions_request_sort import ListTransactionsRequestSort
 from .types.list_transactions_response import ListTransactionsResponse
-from .types.refund_transactions_response import RefundTransactionsResponse
-from .types.rerun_flows_transactions_response import RerunFlowsTransactionsResponse
-from .types.update_transactions_response import UpdateTransactionsResponse
+from .types.refund_transaction_response import RefundTransactionResponse
+from .types.rerun_transaction_flows_response import RerunTransactionFlowsResponse
+from .types.update_transaction_response import UpdateTransactionResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -53,7 +55,7 @@ class TransactionsClient:
         status: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListTransactionsResponse:
+    ) -> SyncPager[Transaction, ListTransactionsResponse]:
         """
         Lists transactions. Filter by program, partner, customer or status, and page with cursors.
 
@@ -106,7 +108,7 @@ class TransactionsClient:
 
         Returns
         -------
-        ListTransactionsResponse
+        SyncPager[Transaction, ListTransactionsResponse]
             A page of transactions
 
         Examples
@@ -116,9 +118,14 @@ class TransactionsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.transactions.list()
+        response = client.transactions.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -135,7 +142,6 @@ class TransactionsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
         self,
@@ -151,7 +157,7 @@ class TransactionsClient:
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateTransactionsResponse:
+    ) -> CreateTransactionResponse:
         """
         Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
 
@@ -192,7 +198,7 @@ class TransactionsClient:
 
         Returns
         -------
-        CreateTransactionsResponse
+        CreateTransactionResponse
             The created transaction
 
         Examples
@@ -227,7 +233,7 @@ class TransactionsClient:
         )
         return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionsResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionResponse:
         """
         Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
 
@@ -240,7 +246,7 @@ class TransactionsClient:
 
         Returns
         -------
-        GetTransactionsResponse
+        GetTransactionResponse
             The requested transaction
 
         Examples
@@ -272,7 +278,7 @@ class TransactionsClient:
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateTransactionsResponse:
+    ) -> UpdateTransactionResponse:
         """
         Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
 
@@ -315,7 +321,7 @@ class TransactionsClient:
 
         Returns
         -------
-        UpdateTransactionsResponse
+        UpdateTransactionResponse
             The updated transaction
 
         Examples
@@ -347,7 +353,7 @@ class TransactionsClient:
         )
         return _response.data
 
-    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteTransactionsResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteTransactionResponse:
         """
         Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
 
@@ -360,7 +366,7 @@ class TransactionsClient:
 
         Returns
         -------
-        DeleteTransactionsResponse
+        DeleteTransactionResponse
             The deleted transaction
 
         Examples
@@ -377,7 +383,7 @@ class TransactionsClient:
         _response = self._raw_client.delete(id, request_options=request_options)
         return _response.data
 
-    def refund(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> RefundTransactionsResponse:
+    def refund(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> RefundTransactionResponse:
         """
         Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
 
@@ -390,7 +396,7 @@ class TransactionsClient:
 
         Returns
         -------
-        RefundTransactionsResponse
+        RefundTransactionResponse
             The refunded transaction
 
         Examples
@@ -409,7 +415,7 @@ class TransactionsClient:
 
     def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RerunFlowsTransactionsResponse:
+    ) -> RerunTransactionFlowsResponse:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -422,7 +428,7 @@ class TransactionsClient:
 
         Returns
         -------
-        RerunFlowsTransactionsResponse
+        RerunTransactionFlowsResponse
             Flow reprocessing queued
 
         Examples
@@ -473,7 +479,7 @@ class AsyncTransactionsClient:
         status: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListTransactionsResponse:
+    ) -> AsyncPager[Transaction, ListTransactionsResponse]:
         """
         Lists transactions. Filter by program, partner, customer or status, and page with cursors.
 
@@ -526,7 +532,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        ListTransactionsResponse
+        AsyncPager[Transaction, ListTransactionsResponse]
             A page of transactions
 
         Examples
@@ -541,12 +547,18 @@ class AsyncTransactionsClient:
 
 
         async def main() -> None:
-            await client.transactions.list()
+            response = await client.transactions.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -563,7 +575,6 @@ class AsyncTransactionsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
         self,
@@ -579,7 +590,7 @@ class AsyncTransactionsClient:
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateTransactionsResponse:
+    ) -> CreateTransactionResponse:
         """
         Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
 
@@ -620,7 +631,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        CreateTransactionsResponse
+        CreateTransactionResponse
             The created transaction
 
         Examples
@@ -663,7 +674,7 @@ class AsyncTransactionsClient:
         )
         return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionsResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionResponse:
         """
         Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
 
@@ -676,7 +687,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        GetTransactionsResponse
+        GetTransactionResponse
             The requested transaction
 
         Examples
@@ -716,7 +727,7 @@ class AsyncTransactionsClient:
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateTransactionsResponse:
+    ) -> UpdateTransactionResponse:
         """
         Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
 
@@ -759,7 +770,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        UpdateTransactionsResponse
+        UpdateTransactionResponse
             The updated transaction
 
         Examples
@@ -801,7 +812,7 @@ class AsyncTransactionsClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteTransactionsResponse:
+    ) -> DeleteTransactionResponse:
         """
         Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
 
@@ -814,7 +825,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        DeleteTransactionsResponse
+        DeleteTransactionResponse
             The deleted transaction
 
         Examples
@@ -841,7 +852,7 @@ class AsyncTransactionsClient:
 
     async def refund(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RefundTransactionsResponse:
+    ) -> RefundTransactionResponse:
         """
         Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
 
@@ -854,7 +865,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        RefundTransactionsResponse
+        RefundTransactionResponse
             The refunded transaction
 
         Examples
@@ -881,7 +892,7 @@ class AsyncTransactionsClient:
 
     async def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> RerunFlowsTransactionsResponse:
+    ) -> RerunTransactionFlowsResponse:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -894,7 +905,7 @@ class AsyncTransactionsClient:
 
         Returns
         -------
-        RerunFlowsTransactionsResponse
+        RerunTransactionFlowsResponse
             Flow reprocessing queued
 
         Examples

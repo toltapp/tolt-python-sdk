@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -18,16 +19,17 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.create_transactions_response import CreateTransactionsResponse
-from .types.delete_transactions_response import DeleteTransactionsResponse
-from .types.get_transactions_response import GetTransactionsResponse
+from ..types.error_response import ErrorResponse
+from ..types.transaction import Transaction
+from .types.create_transaction_response import CreateTransactionResponse
+from .types.delete_transaction_response import DeleteTransactionResponse
+from .types.get_transaction_response import GetTransactionResponse
 from .types.list_transactions_request_order import ListTransactionsRequestOrder
 from .types.list_transactions_request_sort import ListTransactionsRequestSort
 from .types.list_transactions_response import ListTransactionsResponse
-from .types.refund_transactions_response import RefundTransactionsResponse
-from .types.rerun_flows_transactions_response import RerunFlowsTransactionsResponse
-from .types.update_transactions_response import UpdateTransactionsResponse
+from .types.refund_transaction_response import RefundTransactionResponse
+from .types.rerun_transaction_flows_response import RerunTransactionFlowsResponse
+from .types.update_transaction_response import UpdateTransactionResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -56,7 +58,7 @@ class RawTransactionsClient:
         status: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListTransactionsResponse]:
+    ) -> SyncPager[Transaction, ListTransactionsResponse]:
         """
         Lists transactions. Filter by program, partner, customer or status, and page with cursors.
 
@@ -109,7 +111,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[ListTransactionsResponse]
+        SyncPager[Transaction, ListTransactionsResponse]
             A page of transactions
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -135,21 +137,41 @@ class RawTransactionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListTransactionsResponse,
                     parse_obj_as(
                         type_=ListTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    program_id=program_id,
+                    partner_id=partner_id,
+                    customer_id=customer_id,
+                    status=status,
+                    search=search,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -158,9 +180,9 @@ class RawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -169,9 +191,9 @@ class RawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -180,9 +202,9 @@ class RawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -210,7 +232,7 @@ class RawTransactionsClient:
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreateTransactionsResponse]:
+    ) -> HttpResponse[CreateTransactionResponse]:
         """
         Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
 
@@ -251,9 +273,12 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[CreateTransactionsResponse]
+        HttpResponse[CreateTransactionResponse]
             The created transaction
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = self._client_wrapper.httpx_client.request(
             "v2/transactions",
             method="POST",
@@ -272,15 +297,15 @@ class RawTransactionsClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateTransactionsResponse,
+                    CreateTransactionResponse,
                     parse_obj_as(
-                        type_=CreateTransactionsResponse,  # type: ignore
+                        type_=CreateTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -289,9 +314,9 @@ class RawTransactionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -300,9 +325,9 @@ class RawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -311,9 +336,9 @@ class RawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -322,9 +347,9 @@ class RawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -333,9 +358,9 @@ class RawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -351,7 +376,7 @@ class RawTransactionsClient:
 
     def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetTransactionsResponse]:
+    ) -> HttpResponse[GetTransactionResponse]:
         """
         Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
 
@@ -364,7 +389,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[GetTransactionsResponse]
+        HttpResponse[GetTransactionResponse]
             The requested transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -375,9 +400,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetTransactionsResponse,
+                    GetTransactionResponse,
                     parse_obj_as(
-                        type_=GetTransactionsResponse,  # type: ignore
+                        type_=GetTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -386,9 +411,9 @@ class RawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -397,9 +422,9 @@ class RawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -408,9 +433,9 @@ class RawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -419,9 +444,9 @@ class RawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -450,7 +475,7 @@ class RawTransactionsClient:
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateTransactionsResponse]:
+    ) -> HttpResponse[UpdateTransactionResponse]:
         """
         Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
 
@@ -493,7 +518,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[UpdateTransactionsResponse]
+        HttpResponse[UpdateTransactionResponse]
             The updated transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -520,9 +545,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateTransactionsResponse,
+                    UpdateTransactionResponse,
                     parse_obj_as(
-                        type_=UpdateTransactionsResponse,  # type: ignore
+                        type_=UpdateTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -531,9 +556,9 @@ class RawTransactionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -542,9 +567,9 @@ class RawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -553,9 +578,9 @@ class RawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -564,9 +589,9 @@ class RawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -575,9 +600,9 @@ class RawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -586,9 +611,9 @@ class RawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -604,7 +629,7 @@ class RawTransactionsClient:
 
     def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteTransactionsResponse]:
+    ) -> HttpResponse[DeleteTransactionResponse]:
         """
         Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
 
@@ -617,7 +642,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[DeleteTransactionsResponse]
+        HttpResponse[DeleteTransactionResponse]
             The deleted transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -628,9 +653,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteTransactionsResponse,
+                    DeleteTransactionResponse,
                     parse_obj_as(
-                        type_=DeleteTransactionsResponse,  # type: ignore
+                        type_=DeleteTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -639,9 +664,9 @@ class RawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -650,9 +675,9 @@ class RawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -661,9 +686,9 @@ class RawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -672,9 +697,9 @@ class RawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -683,9 +708,9 @@ class RawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -701,7 +726,7 @@ class RawTransactionsClient:
 
     def refund(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[RefundTransactionsResponse]:
+    ) -> HttpResponse[RefundTransactionResponse]:
         """
         Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
 
@@ -714,7 +739,7 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[RefundTransactionsResponse]
+        HttpResponse[RefundTransactionResponse]
             The refunded transaction
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -725,9 +750,9 @@ class RawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RefundTransactionsResponse,
+                    RefundTransactionResponse,
                     parse_obj_as(
-                        type_=RefundTransactionsResponse,  # type: ignore
+                        type_=RefundTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -736,9 +761,9 @@ class RawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -747,9 +772,9 @@ class RawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -758,9 +783,9 @@ class RawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -769,9 +794,9 @@ class RawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -780,9 +805,9 @@ class RawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -798,7 +823,7 @@ class RawTransactionsClient:
 
     def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[RerunFlowsTransactionsResponse]:
+    ) -> HttpResponse[RerunTransactionFlowsResponse]:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -811,20 +836,23 @@ class RawTransactionsClient:
 
         Returns
         -------
-        HttpResponse[RerunFlowsTransactionsResponse]
+        HttpResponse[RerunTransactionFlowsResponse]
             Flow reprocessing queued
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = self._client_wrapper.httpx_client.request(
             f"v2/transactions/{encode_path_param(id)}/rerun-flows",
             method="POST",
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RerunFlowsTransactionsResponse,
+                    RerunTransactionFlowsResponse,
                     parse_obj_as(
-                        type_=RerunFlowsTransactionsResponse,  # type: ignore
+                        type_=RerunTransactionFlowsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -833,9 +861,9 @@ class RawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -844,9 +872,9 @@ class RawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -855,9 +883,9 @@ class RawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -866,9 +894,9 @@ class RawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -877,9 +905,9 @@ class RawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -916,7 +944,7 @@ class AsyncRawTransactionsClient:
         status: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListTransactionsResponse]:
+    ) -> AsyncPager[Transaction, ListTransactionsResponse]:
         """
         Lists transactions. Filter by program, partner, customer or status, and page with cursors.
 
@@ -969,7 +997,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListTransactionsResponse]
+        AsyncPager[Transaction, ListTransactionsResponse]
             A page of transactions
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -995,21 +1023,44 @@ class AsyncRawTransactionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListTransactionsResponse,
                     parse_obj_as(
                         type_=ListTransactionsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        program_id=program_id,
+                        partner_id=partner_id,
+                        customer_id=customer_id,
+                        status=status,
+                        search=search,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1018,9 +1069,9 @@ class AsyncRawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1029,9 +1080,9 @@ class AsyncRawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1040,9 +1091,9 @@ class AsyncRawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1070,7 +1121,7 @@ class AsyncRawTransactionsClient:
         interval: typing.Optional[str] = OMIT,
         source: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreateTransactionsResponse]:
+    ) -> AsyncHttpResponse[CreateTransactionResponse]:
         """
         Supports historical created_at values. product_id and product_name are stored and returned in product_ids and product_names arrays.
 
@@ -1111,9 +1162,12 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreateTransactionsResponse]
+        AsyncHttpResponse[CreateTransactionResponse]
             The created transaction
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = await self._client_wrapper.httpx_client.request(
             "v2/transactions",
             method="POST",
@@ -1132,15 +1186,15 @@ class AsyncRawTransactionsClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateTransactionsResponse,
+                    CreateTransactionResponse,
                     parse_obj_as(
-                        type_=CreateTransactionsResponse,  # type: ignore
+                        type_=CreateTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1149,9 +1203,9 @@ class AsyncRawTransactionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1160,9 +1214,9 @@ class AsyncRawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1171,9 +1225,9 @@ class AsyncRawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1182,9 +1236,9 @@ class AsyncRawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1193,9 +1247,9 @@ class AsyncRawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1211,7 +1265,7 @@ class AsyncRawTransactionsClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetTransactionsResponse]:
+    ) -> AsyncHttpResponse[GetTransactionResponse]:
         """
         Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
 
@@ -1224,7 +1278,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetTransactionsResponse]
+        AsyncHttpResponse[GetTransactionResponse]
             The requested transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1235,9 +1289,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetTransactionsResponse,
+                    GetTransactionResponse,
                     parse_obj_as(
-                        type_=GetTransactionsResponse,  # type: ignore
+                        type_=GetTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1246,9 +1300,9 @@ class AsyncRawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1257,9 +1311,9 @@ class AsyncRawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1268,9 +1322,9 @@ class AsyncRawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1279,9 +1333,9 @@ class AsyncRawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1310,7 +1364,7 @@ class AsyncRawTransactionsClient:
         interval: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateTransactionsResponse]:
+    ) -> AsyncHttpResponse[UpdateTransactionResponse]:
         """
         Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
 
@@ -1353,7 +1407,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateTransactionsResponse]
+        AsyncHttpResponse[UpdateTransactionResponse]
             The updated transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1380,9 +1434,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateTransactionsResponse,
+                    UpdateTransactionResponse,
                     parse_obj_as(
-                        type_=UpdateTransactionsResponse,  # type: ignore
+                        type_=UpdateTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1391,9 +1445,9 @@ class AsyncRawTransactionsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1402,9 +1456,9 @@ class AsyncRawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1413,9 +1467,9 @@ class AsyncRawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1424,9 +1478,9 @@ class AsyncRawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1435,9 +1489,9 @@ class AsyncRawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1446,9 +1500,9 @@ class AsyncRawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1464,7 +1518,7 @@ class AsyncRawTransactionsClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteTransactionsResponse]:
+    ) -> AsyncHttpResponse[DeleteTransactionResponse]:
         """
         Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
 
@@ -1477,7 +1531,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteTransactionsResponse]
+        AsyncHttpResponse[DeleteTransactionResponse]
             The deleted transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1488,9 +1542,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteTransactionsResponse,
+                    DeleteTransactionResponse,
                     parse_obj_as(
-                        type_=DeleteTransactionsResponse,  # type: ignore
+                        type_=DeleteTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1499,9 +1553,9 @@ class AsyncRawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1510,9 +1564,9 @@ class AsyncRawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1521,9 +1575,9 @@ class AsyncRawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1532,9 +1586,9 @@ class AsyncRawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1543,9 +1597,9 @@ class AsyncRawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1561,7 +1615,7 @@ class AsyncRawTransactionsClient:
 
     async def refund(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[RefundTransactionsResponse]:
+    ) -> AsyncHttpResponse[RefundTransactionResponse]:
         """
         Unpaid commissions are zeroed while preserving their original deducted commission amount, and affected draft invoices are recalculated. Paid commissions and commissions linked to legacy autopayout invoices receive a negative reversal.
 
@@ -1574,7 +1628,7 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[RefundTransactionsResponse]
+        AsyncHttpResponse[RefundTransactionResponse]
             The refunded transaction
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1585,9 +1639,9 @@ class AsyncRawTransactionsClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RefundTransactionsResponse,
+                    RefundTransactionResponse,
                     parse_obj_as(
-                        type_=RefundTransactionsResponse,  # type: ignore
+                        type_=RefundTransactionResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1596,9 +1650,9 @@ class AsyncRawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1607,9 +1661,9 @@ class AsyncRawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1618,9 +1672,9 @@ class AsyncRawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1629,9 +1683,9 @@ class AsyncRawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1640,9 +1694,9 @@ class AsyncRawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1658,7 +1712,7 @@ class AsyncRawTransactionsClient:
 
     async def rerun_flows(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[RerunFlowsTransactionsResponse]:
+    ) -> AsyncHttpResponse[RerunTransactionFlowsResponse]:
         """
         Re-queues the transaction for asynchronous flow processing. Only transactions without an existing commission are eligible, so a rerun cannot create a duplicate commission.
 
@@ -1671,20 +1725,23 @@ class AsyncRawTransactionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[RerunFlowsTransactionsResponse]
+        AsyncHttpResponse[RerunTransactionFlowsResponse]
             Flow reprocessing queued
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = await self._client_wrapper.httpx_client.request(
             f"v2/transactions/{encode_path_param(id)}/rerun-flows",
             method="POST",
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    RerunFlowsTransactionsResponse,
+                    RerunTransactionFlowsResponse,
                     parse_obj_as(
-                        type_=RerunFlowsTransactionsResponse,  # type: ignore
+                        type_=RerunTransactionFlowsResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1693,9 +1750,9 @@ class AsyncRawTransactionsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1704,9 +1761,9 @@ class AsyncRawTransactionsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1715,9 +1772,9 @@ class AsyncRawTransactionsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1726,9 +1783,9 @@ class AsyncRawTransactionsClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1737,9 +1794,9 @@ class AsyncRawTransactionsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

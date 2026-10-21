@@ -4,22 +4,24 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.partner_details import PartnerDetails
 from .raw_client import AsyncRawPartnersClient, RawPartnersClient
-from .types.approve_partners_response import ApprovePartnersResponse
+from .types.approve_partner_response import ApprovePartnerResponse
 from .types.bulk_approve_partners_response import BulkApprovePartnersResponse
 from .types.bulk_reject_partners_response import BulkRejectPartnersResponse
-from .types.create_partners_request_link import CreatePartnersRequestLink
-from .types.create_partners_request_status import CreatePartnersRequestStatus
-from .types.create_partners_response import CreatePartnersResponse
-from .types.get_partners_response import GetPartnersResponse
+from .types.create_partner_request_link import CreatePartnerRequestLink
+from .types.create_partner_request_status import CreatePartnerRequestStatus
+from .types.create_partner_response import CreatePartnerResponse
+from .types.get_partner_response import GetPartnerResponse
 from .types.list_partners_request_order import ListPartnersRequestOrder
 from .types.list_partners_request_sort import ListPartnersRequestSort
 from .types.list_partners_request_status import ListPartnersRequestStatus
 from .types.list_partners_response import ListPartnersResponse
-from .types.reject_partners_response import RejectPartnersResponse
-from .types.suspend_partners_response import SuspendPartnersResponse
-from .types.update_partners_response import UpdatePartnersResponse
+from .types.reject_partner_response import RejectPartnerResponse
+from .types.suspend_partner_response import SuspendPartnerResponse
+from .types.update_partner_response import UpdatePartnerResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -133,7 +135,7 @@ class PartnersClient:
         group_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListPartnersResponse:
+    ) -> SyncPager[PartnerDetails, ListPartnersResponse]:
         """
         Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
 
@@ -183,7 +185,7 @@ class PartnersClient:
 
         Returns
         -------
-        ListPartnersResponse
+        SyncPager[PartnerDetails, ListPartnersResponse]
             A page of partners
 
         Examples
@@ -193,9 +195,14 @@ class PartnersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.partners.list()
+        response = client.partners.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -211,7 +218,6 @@ class PartnersClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
         self,
@@ -226,11 +232,11 @@ class PartnersClient:
         website_url: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePartnersResponse:
+    ) -> CreatePartnerResponse:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -266,10 +272,10 @@ class PartnersClient:
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnersRequestStatus]
+        status : typing.Optional[CreatePartnerRequestStatus]
             Use pending to add the partner as an application that still needs approval instead of an active partner.
 
-        link : typing.Optional[CreatePartnersRequestLink]
+        link : typing.Optional[CreatePartnerRequestLink]
             The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
@@ -280,13 +286,13 @@ class PartnersClient:
 
         Returns
         -------
-        CreatePartnersResponse
+        CreatePartnerResponse
             The created partner with its referral link
 
         Examples
         --------
         from tolt import ToltApi
-        from tolt.partners import CreatePartnersRequestLink
+        from tolt.partners import CreatePartnerRequestLink
 
         client = ToltApi(
             token="YOUR_TOKEN",
@@ -297,7 +303,7 @@ class PartnersClient:
             first_name="Sam",
             last_name="Taylor",
             group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
-            link=CreatePartnersRequestLink(
+            link=CreatePartnerRequestLink(
                 value="sam",
                 param="ref",
             ),
@@ -321,7 +327,7 @@ class PartnersClient:
         )
         return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnersResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnerResponse:
         """
         Gets a partner by ID, with their profile, status, group and program.
 
@@ -334,7 +340,7 @@ class PartnersClient:
 
         Returns
         -------
-        GetPartnersResponse
+        GetPartnerResponse
             The requested partner
 
         Examples
@@ -362,7 +368,7 @@ class PartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePartnersResponse:
+    ) -> UpdatePartnerResponse:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -393,7 +399,7 @@ class PartnersClient:
 
         Returns
         -------
-        UpdatePartnersResponse
+        UpdatePartnerResponse
             The updated partner
 
         Examples
@@ -422,7 +428,7 @@ class PartnersClient:
         )
         return _response.data
 
-    def approve(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ApprovePartnersResponse:
+    def approve(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ApprovePartnerResponse:
         """
         Makes the partner active. A partner who was not already active is sent the program's approval email.
 
@@ -435,7 +441,7 @@ class PartnersClient:
 
         Returns
         -------
-        ApprovePartnersResponse
+        ApprovePartnerResponse
             The approved partner
 
         Examples
@@ -458,7 +464,7 @@ class PartnersClient:
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> RejectPartnersResponse:
+    ) -> RejectPartnerResponse:
         """
         Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
 
@@ -474,7 +480,7 @@ class PartnersClient:
 
         Returns
         -------
-        RejectPartnersResponse
+        RejectPartnerResponse
             The rejected partner
 
         Examples
@@ -497,7 +503,7 @@ class PartnersClient:
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> SuspendPartnersResponse:
+    ) -> SuspendPartnerResponse:
         """
         Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
 
@@ -513,7 +519,7 @@ class PartnersClient:
 
         Returns
         -------
-        SuspendPartnersResponse
+        SuspendPartnerResponse
             The suspended partner
 
         Examples
@@ -655,7 +661,7 @@ class AsyncPartnersClient:
         group_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListPartnersResponse:
+    ) -> AsyncPager[PartnerDetails, ListPartnersResponse]:
         """
         Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
 
@@ -705,7 +711,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        ListPartnersResponse
+        AsyncPager[PartnerDetails, ListPartnersResponse]
             A page of partners
 
         Examples
@@ -720,12 +726,18 @@ class AsyncPartnersClient:
 
 
         async def main() -> None:
-            await client.partners.list()
+            response = await client.partners.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -741,7 +753,6 @@ class AsyncPartnersClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
         self,
@@ -756,11 +767,11 @@ class AsyncPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         group_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreatePartnersRequestStatus] = OMIT,
-        link: typing.Optional[CreatePartnersRequestLink] = OMIT,
+        status: typing.Optional[CreatePartnerRequestStatus] = OMIT,
+        link: typing.Optional[CreatePartnerRequestLink] = OMIT,
         notify_partner: typing.Optional[bool] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePartnersResponse:
+    ) -> CreatePartnerResponse:
         """
         Creates an onboarded partner together with their referral link. The link value defaults to a slug of the partner's name or email and the parameter to the program's first link parameter. Omit group_id to place the partner in the program's default group.
 
@@ -796,10 +807,10 @@ class AsyncPartnersClient:
         group_id : typing.Optional[str]
             Group in the program. Defaults to the program's default group.
 
-        status : typing.Optional[CreatePartnersRequestStatus]
+        status : typing.Optional[CreatePartnerRequestStatus]
             Use pending to add the partner as an application that still needs approval instead of an active partner.
 
-        link : typing.Optional[CreatePartnersRequestLink]
+        link : typing.Optional[CreatePartnerRequestLink]
             The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
@@ -810,7 +821,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        CreatePartnersResponse
+        CreatePartnerResponse
             The created partner with its referral link
 
         Examples
@@ -818,7 +829,7 @@ class AsyncPartnersClient:
         import asyncio
 
         from tolt import AsyncToltApi
-        from tolt.partners import CreatePartnersRequestLink
+        from tolt.partners import CreatePartnerRequestLink
 
         client = AsyncToltApi(
             token="YOUR_TOKEN",
@@ -832,7 +843,7 @@ class AsyncPartnersClient:
                 first_name="Sam",
                 last_name="Taylor",
                 group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
-                link=CreatePartnersRequestLink(
+                link=CreatePartnerRequestLink(
                     value="sam",
                     param="ref",
                 ),
@@ -859,7 +870,7 @@ class AsyncPartnersClient:
         )
         return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnersResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnerResponse:
         """
         Gets a partner by ID, with their profile, status, group and program.
 
@@ -872,7 +883,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        GetPartnersResponse
+        GetPartnerResponse
             The requested partner
 
         Examples
@@ -908,7 +919,7 @@ class AsyncPartnersClient:
         website_url: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePartnersResponse:
+    ) -> UpdatePartnerResponse:
         """
         Edits profile fields and group membership. Status changes go through the approve, reject and suspend actions.
 
@@ -939,7 +950,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        UpdatePartnersResponse
+        UpdatePartnerResponse
             The updated partner
 
         Examples
@@ -978,7 +989,7 @@ class AsyncPartnersClient:
 
     async def approve(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ApprovePartnersResponse:
+    ) -> ApprovePartnerResponse:
         """
         Makes the partner active. A partner who was not already active is sent the program's approval email.
 
@@ -991,7 +1002,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        ApprovePartnersResponse
+        ApprovePartnerResponse
             The approved partner
 
         Examples
@@ -1022,7 +1033,7 @@ class AsyncPartnersClient:
         *,
         rejection_note: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> RejectPartnersResponse:
+    ) -> RejectPartnerResponse:
         """
         Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
 
@@ -1038,7 +1049,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        RejectPartnersResponse
+        RejectPartnerResponse
             The rejected partner
 
         Examples
@@ -1069,7 +1080,7 @@ class AsyncPartnersClient:
         *,
         suspension_reason: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> SuspendPartnersResponse:
+    ) -> SuspendPartnerResponse:
         """
         Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
 
@@ -1085,7 +1096,7 @@ class AsyncPartnersClient:
 
         Returns
         -------
-        SuspendPartnersResponse
+        SuspendPartnerResponse
             The suspended partner
 
         Examples
