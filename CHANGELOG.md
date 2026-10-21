@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v1.2.0 (2026-10-21)
+
+### Documentation
+
+- Rewrite the README for 1.0 ([#13](https://github.com/toltapp/tolt-python-sdk/pull/13),
+  [`24564ac`](https://github.com/toltapp/tolt-python-sdk/commit/24564ac1e4451ed290e6fd8dc7b806241e3db998))
+
+The README was the generator's template: it used ToltApiEnvironment.PRODUCTION (an AttributeError),
+  linked a reference.md that isn't in the repo, and described generator settings rather than this
+  package. It now shows 1.0 usage, paging, async, errors and timeouts, retries, the default host,
+  the mypy caveat, and how the generated source is maintained.
+
+### Features
+
+- Regenerate SDK from the latest OpenAPI spec
+  ([#15](https://github.com/toltapp/tolt-python-sdk/pull/15),
+  [`8c741a0`](https://github.com/toltapp/tolt-python-sdk/commit/8c741a0fc4b87ab82c28dee8b8b9cef48e264f95))
+
+
 ## v1.1.0 (2026-10-21)
 
 ### Features
