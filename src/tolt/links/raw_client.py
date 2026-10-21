@@ -13,6 +13,8 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
+from ..errors.conflict_error import ConflictError
+from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
@@ -60,11 +62,13 @@ class RawLinksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListLinksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListLinksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -73,26 +77,31 @@ class RawLinksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         param : typing.Optional[str]
+            Only links using this URL parameter name exactly, such as `ref` in `?ref=sam`.
 
         value : typing.Optional[str]
+            Only links with this exact slug, such as `sam` in `?ref=sam`.
 
         search : typing.Optional[str]
+            Text matched anywhere in the link's slug (value) or parameter name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -155,6 +164,17 @@ class RawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -184,13 +204,18 @@ class RawLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreateLinksResponse]:
         """
+        Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
+
         Parameters
         ----------
         value : str
+            Slug that identifies the partner in referral URLs, such as `sam` in `?ref=sam`, saved in lowercase. Pick one that no other link uses with the same parameter; a taken slug returns an error.
 
         partner_id : str
+            Id of the partner who owns the link (part_...), as returned when listing partners. The link is created in that partner's program.
 
         param : typing.Optional[str]
+            Query parameter of the link, e.g. `ref` in `?ref=sam`. Leave it out or send an empty string to use the program's first link parameter, which is what gets stored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -237,6 +262,28 @@ class RawLinksClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -339,6 +386,17 @@ class RawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -414,6 +472,17 @@ class RawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -450,8 +519,10 @@ class RawLinksClient:
         id : str
 
         param : typing.Optional[str]
+            New query parameter of the link, e.g. `ref` in `?ref=sam`. URLs with the old parameter stop matching this link.
 
         value : typing.Optional[str]
+            New slug, e.g. `sam` in `?ref=sam`, stored lowercased. URLs using the old slug stop matching this link.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -508,6 +579,17 @@ class RawLinksClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -603,6 +685,17 @@ class RawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -653,11 +746,13 @@ class AsyncRawLinksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListLinksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListLinksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -666,26 +761,31 @@ class AsyncRawLinksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         param : typing.Optional[str]
+            Only links using this URL parameter name exactly, such as `ref` in `?ref=sam`.
 
         value : typing.Optional[str]
+            Only links with this exact slug, such as `sam` in `?ref=sam`.
 
         search : typing.Optional[str]
+            Text matched anywhere in the link's slug (value) or parameter name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -748,6 +848,17 @@ class AsyncRawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -777,13 +888,18 @@ class AsyncRawLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreateLinksResponse]:
         """
+        Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
+
         Parameters
         ----------
         value : str
+            Slug that identifies the partner in referral URLs, such as `sam` in `?ref=sam`, saved in lowercase. Pick one that no other link uses with the same parameter; a taken slug returns an error.
 
         partner_id : str
+            Id of the partner who owns the link (part_...), as returned when listing partners. The link is created in that partner's program.
 
         param : typing.Optional[str]
+            Query parameter of the link, e.g. `ref` in `?ref=sam`. Leave it out or send an empty string to use the program's first link parameter, which is what gets stored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -830,6 +946,28 @@ class AsyncRawLinksClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -932,6 +1070,17 @@ class AsyncRawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1007,6 +1156,17 @@ class AsyncRawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1043,8 +1203,10 @@ class AsyncRawLinksClient:
         id : str
 
         param : typing.Optional[str]
+            New query parameter of the link, e.g. `ref` in `?ref=sam`. URLs with the old parameter stop matching this link.
 
         value : typing.Optional[str]
+            New slug, e.g. `sam` in `?ref=sam`, stored lowercased. URLs using the old slug stop matching this link.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1101,6 +1263,17 @@ class AsyncRawLinksClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1187,6 +1360,17 @@ class AsyncRawLinksClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

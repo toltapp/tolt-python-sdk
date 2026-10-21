@@ -14,6 +14,7 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
+from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
@@ -60,14 +61,18 @@ class RawCustomersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListCustomersResponse]:
         """
+        Lists customers. Filter by program, partner, link, click, status or your own customer_id, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListCustomersRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListCustomersRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -76,30 +81,37 @@ class RawCustomersClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Exact match on the customer's customer_id field, the id the customer has in your own system or billing provider; not the Tolt customer id.
 
         status : typing.Optional[ListCustomersRequestStatus]
+            Keep only customers at this lifecycle stage, from signed-up leads through trials to paying, canceled or suspended customers. Leave it out to include every stage.
 
         search : typing.Optional[str]
+            Text matched anywhere in the customer's email, name, identifier or customer_id, ignoring case.
 
         click_id : typing.Optional[str]
+            Only the customers attributed to this click, by its id (clk_...).
 
         link_id : typing.Optional[str]
+            Only customers attributed to this referral link (lnk_...), directly or through one of its clicks.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -164,6 +176,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -202,32 +225,45 @@ class RawCustomersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreateCustomersResponse]:
         """
+        Creates a customer attributed to a partner. Pass partner_id or link_id, and optionally the click_id that brought them in.
+
         Parameters
         ----------
         email : typing.Optional[str]
+            Customer's email, stored lowercased and used as their identifier. It must not belong to another customer. Provide this or customer_id.
 
         promotion_code : typing.Optional[str]
-            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+            Resolve a code in the partner’s program, ignoring case, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
 
         created_at : typing.Optional[dt.datetime]
+            When the customer was created, for backdating. Defaults to now; lead_at, and active_at for active customers, default to it.
 
         name : typing.Optional[str]
+            Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
         customer_id : typing.Optional[str]
+            Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it. Provide this or email.
 
         status : typing.Optional[CreateCustomersRequestStatus]
+            Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
 
         subscription_id : typing.Optional[str]
+            Customer's subscription id in your billing system, such as a Stripe subscription id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click the customer came from, as returned when listing clicks. It must belong to the partner, and its link is used when link_id is omitted.
 
         link_id : typing.Optional[str]
+            Id of the referral link the customer came through (lnk_...). Without partner_id the link's partner is used; with it, the link must belong to that partner.
 
         partner_id : typing.Optional[str]
+            Id of the partner who referred the customer (part_...), as returned when listing partners. The customer joins that partner's program. Provide this or link_id.
 
         lead_at : typing.Optional[dt.datetime]
+            When the customer signed up as a lead, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Defaults to created_at.
 
         active_at : typing.Optional[dt.datetime]
+            When the customer became a paying customer, as a timestamp with a time zone. Defaults to created_at when status is active, otherwise it is set when a transaction is recorded for the customer.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -303,6 +339,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -327,6 +374,8 @@ class RawCustomersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[GetCustomersResponse]:
         """
+        Gets a customer by ID, with its status, the partner it is attributed to and your own customer and subscription IDs.
+
         Parameters
         ----------
         id : str
@@ -376,6 +425,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -414,32 +474,44 @@ class RawCustomersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[UpdateCustomersResponse]:
         """
+        Updates a customer's name, email, status, your own IDs, or the click and link the customer came from.
+
         Parameters
         ----------
         id : str
 
         email : typing.Optional[str]
+            New email, stored lowercased and used as the customer's identifier. It must not belong to another customer.
 
         promotion_code : typing.Optional[str]
-            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+            Resolve a code in the partner’s program, ignoring case, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
 
         created_at : typing.Optional[dt.datetime]
+            When the customer was created, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters that date customers by creation use it; those that date them by conversion read active_at, which this does not change.
 
         name : typing.Optional[str]
+            Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
         status : typing.Optional[UpdateCustomersRequestStatus]
+            Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
 
         customer_id : typing.Optional[str]
+            Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it.
 
         subscription_id : typing.Optional[str]
+            Customer's subscription id in your billing system, such as a Stripe subscription id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click the customer came from, as returned when listing clicks. It must belong to the customer's partner; link_id is not changed.
 
         link_id : typing.Optional[str]
+            Id of the referral link the customer came through (lnk_...). It must belong to the customer's partner; a customer without a partner takes the link's partner and program.
 
         lead_at : typing.Optional[dt.datetime]
+            When the customer signed up as a lead, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z.
 
         active_at : typing.Optional[dt.datetime]
+            When the customer became a paying customer, as a timestamp with a time zone.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -525,6 +597,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -549,6 +632,8 @@ class RawCustomersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[DeleteCustomersResponse]:
         """
+        Deletes a customer. Fails when any of the customer's commissions is paid or already included in a payout.
+
         Parameters
         ----------
         id : str
@@ -609,6 +694,17 @@ class RawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -656,14 +752,18 @@ class AsyncRawCustomersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListCustomersResponse]:
         """
+        Lists customers. Filter by program, partner, link, click, status or your own customer_id, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListCustomersRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListCustomersRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -672,30 +772,37 @@ class AsyncRawCustomersClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Exact match on the customer's customer_id field, the id the customer has in your own system or billing provider; not the Tolt customer id.
 
         status : typing.Optional[ListCustomersRequestStatus]
+            Keep only customers at this lifecycle stage, from signed-up leads through trials to paying, canceled or suspended customers. Leave it out to include every stage.
 
         search : typing.Optional[str]
+            Text matched anywhere in the customer's email, name, identifier or customer_id, ignoring case.
 
         click_id : typing.Optional[str]
+            Only the customers attributed to this click, by its id (clk_...).
 
         link_id : typing.Optional[str]
+            Only customers attributed to this referral link (lnk_...), directly or through one of its clicks.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -760,6 +867,17 @@ class AsyncRawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -798,32 +916,45 @@ class AsyncRawCustomersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreateCustomersResponse]:
         """
+        Creates a customer attributed to a partner. Pass partner_id or link_id, and optionally the click_id that brought them in.
+
         Parameters
         ----------
         email : typing.Optional[str]
+            Customer's email, stored lowercased and used as their identifier. It must not belong to another customer. Provide this or customer_id.
 
         promotion_code : typing.Optional[str]
-            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+            Resolve a code in the partner’s program, ignoring case, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
 
         created_at : typing.Optional[dt.datetime]
+            When the customer was created, for backdating. Defaults to now; lead_at, and active_at for active customers, default to it.
 
         name : typing.Optional[str]
+            Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
         customer_id : typing.Optional[str]
+            Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it. Provide this or email.
 
         status : typing.Optional[CreateCustomersRequestStatus]
+            Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
 
         subscription_id : typing.Optional[str]
+            Customer's subscription id in your billing system, such as a Stripe subscription id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click the customer came from, as returned when listing clicks. It must belong to the partner, and its link is used when link_id is omitted.
 
         link_id : typing.Optional[str]
+            Id of the referral link the customer came through (lnk_...). Without partner_id the link's partner is used; with it, the link must belong to that partner.
 
         partner_id : typing.Optional[str]
+            Id of the partner who referred the customer (part_...), as returned when listing partners. The customer joins that partner's program. Provide this or link_id.
 
         lead_at : typing.Optional[dt.datetime]
+            When the customer signed up as a lead, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Defaults to created_at.
 
         active_at : typing.Optional[dt.datetime]
+            When the customer became a paying customer, as a timestamp with a time zone. Defaults to created_at when status is active, otherwise it is set when a transaction is recorded for the customer.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -899,6 +1030,17 @@ class AsyncRawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -923,6 +1065,8 @@ class AsyncRawCustomersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[GetCustomersResponse]:
         """
+        Gets a customer by ID, with its status, the partner it is attributed to and your own customer and subscription IDs.
+
         Parameters
         ----------
         id : str
@@ -972,6 +1116,17 @@ class AsyncRawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1010,32 +1165,44 @@ class AsyncRawCustomersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[UpdateCustomersResponse]:
         """
+        Updates a customer's name, email, status, your own IDs, or the click and link the customer came from.
+
         Parameters
         ----------
         id : str
 
         email : typing.Optional[str]
+            New email, stored lowercased and used as the customer's identifier. It must not belong to another customer.
 
         promotion_code : typing.Optional[str]
-            Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+            Resolve a code in the partner’s program, ignoring case, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
 
         created_at : typing.Optional[dt.datetime]
+            When the customer was created, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters that date customers by creation use it; those that date them by conversion read active_at, which this does not change.
 
         name : typing.Optional[str]
+            Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
         status : typing.Optional[UpdateCustomersRequestStatus]
+            Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
 
         customer_id : typing.Optional[str]
+            Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it.
 
         subscription_id : typing.Optional[str]
+            Customer's subscription id in your billing system, such as a Stripe subscription id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click the customer came from, as returned when listing clicks. It must belong to the customer's partner; link_id is not changed.
 
         link_id : typing.Optional[str]
+            Id of the referral link the customer came through (lnk_...). It must belong to the customer's partner; a customer without a partner takes the link's partner and program.
 
         lead_at : typing.Optional[dt.datetime]
+            When the customer signed up as a lead, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z.
 
         active_at : typing.Optional[dt.datetime]
+            When the customer became a paying customer, as a timestamp with a time zone.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1121,6 +1288,17 @@ class AsyncRawCustomersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1145,6 +1323,8 @@ class AsyncRawCustomersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[DeleteCustomersResponse]:
         """
+        Deletes a customer. Fails when any of the customer's commissions is paid or already included in a payout.
+
         Parameters
         ----------
         id : str
@@ -1196,6 +1376,17 @@ class AsyncRawCustomersClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

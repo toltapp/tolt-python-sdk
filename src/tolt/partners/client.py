@@ -49,7 +49,7 @@ class PartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -67,7 +67,7 @@ class PartnersClient:
             token="YOUR_TOKEN",
         )
         client.partners.bulk_approve(
-            ids=["part_9fQ2xLL", "part_3RtV9k"],
+            ids=["part_NLYzgNKuSuASvrvoxNtau6SY", "part_9fQ2xLLmN3kP8dRvT1wYbHcS"],
         )
         """
         _response = self._raw_client.bulk_approve(ids=ids, request_options=request_options)
@@ -86,9 +86,10 @@ class PartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -106,7 +107,8 @@ class PartnersClient:
             token="YOUR_TOKEN",
         )
         client.partners.bulk_reject(
-            ids=["part_9fQ2xLL", "part_3RtV9k"],
+            ids=["part_NLYzgNKuSuASvrvoxNtau6SY", "part_9fQ2xLLmN3kP8dRvT1wYbHcS"],
+            rejection_note="Site does not match our audience.",
         )
         """
         _response = self._raw_client.bulk_reject(
@@ -133,14 +135,18 @@ class PartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListPartnersResponse:
         """
+        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListPartnersRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListPartnersRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -149,24 +155,28 @@ class PartnersClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         status : typing.Optional[ListPartnersRequestStatus]
+            Keep only partners at this review stage; approved partners appear as active.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         group_id : typing.Optional[str]
+            Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
 
         search : typing.Optional[str]
+            Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -227,23 +237,28 @@ class PartnersClient:
         Parameters
         ----------
         email : str
-            Unique within the program, compared case-insensitively.
+            Partner's email address, where program emails such as the welcome email go. It identifies the partner in the program, so it cannot match another partner's email there, ignoring case.
 
         program_id : str
+            Id of the program to add the partner to (prg_...), as returned when listing programs.
 
         first_name : typing.Optional[str]
+            Partner's first name. With last_name it is used for the default link value when link is omitted.
 
         last_name : typing.Optional[str]
+            Partner's last name. With first_name it makes up the name shown for the partner unless display_name is set.
 
         display_name : typing.Optional[str]
             Overrides the name shown for the partner; defaults to the first and last name.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through, if they are a company rather than a person. Leave it out for an individual.
 
         country_code : typing.Optional[str]
             Two-letter ISO country code.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://.
 
         created_at : typing.Optional[dt.datetime]
             Backdate the partner's creation time. Defaults to now.
@@ -252,9 +267,10 @@ class PartnersClient:
             Group in the program. Defaults to the program's default group.
 
         status : typing.Optional[CreatePartnersRequestStatus]
+            Use pending to add the partner as an application that still needs approval instead of an active partner.
 
         link : typing.Optional[CreatePartnersRequestLink]
-            The referral link created with the partner. Defaults to a slug of the name or email.
+            The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
             Send the partner the program's welcome email. Only goes out when the program's welcome email is enabled and the partner is active.
@@ -270,13 +286,21 @@ class PartnersClient:
         Examples
         --------
         from tolt import ToltApi
+        from tolt.partners import CreatePartnersRequestLink
 
         client = ToltApi(
             token="YOUR_TOKEN",
         )
         client.partners.create(
-            email="sam@acme.com",
-            program_id="prg_YRsbPDAK",
+            email="sam@example.com",
+            program_id="prg_T6z8aRW3XCmvFWP972RKxpAd",
+            first_name="Sam",
+            last_name="Taylor",
+            group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
+            link=CreatePartnersRequestLink(
+                value="sam",
+                param="ref",
+            ),
         )
         """
         _response = self._raw_client.create(
@@ -299,6 +323,8 @@ class PartnersClient:
 
     def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnersResponse:
         """
+        Gets a partner by ID, with their profile, status, group and program.
+
         Parameters
         ----------
         id : str
@@ -319,7 +345,7 @@ class PartnersClient:
             token="YOUR_TOKEN",
         )
         client.partners.get(
-            id="id",
+            id="part_NLYzgNKuSuASvrvoxNtau6SY",
         )
         """
         _response = self._raw_client.get(id, request_options=request_options)
@@ -329,7 +355,6 @@ class PartnersClient:
         self,
         id: str,
         *,
-        email: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
@@ -345,19 +370,23 @@ class PartnersClient:
         ----------
         id : str
 
-        email : typing.Optional[str]
-
         first_name : typing.Optional[str]
+            Partner's first name, part of the name shown for them unless they have a display name; null clears it.
 
         last_name : typing.Optional[str]
+            Partner's family name, shown with first_name in the dashboard and partner portal; null clears it.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through; null clears it.
 
         country_code : typing.Optional[str]
+            Partner's country as a two-letter ISO code. Commission flows can match on it.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://; null clears it.
 
         group_id : typing.Optional[str]
+            Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -375,12 +404,14 @@ class PartnersClient:
             token="YOUR_TOKEN",
         )
         client.partners.update(
-            id="id",
+            id="part_NLYzgNKuSuASvrvoxNtau6SY",
+            first_name="Sam",
+            last_name="Taylor",
+            group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
         )
         """
         _response = self._raw_client.update(
             id,
-            email=email,
             first_name=first_name,
             last_name=last_name,
             company_name=company_name,
@@ -393,6 +424,8 @@ class PartnersClient:
 
     def approve(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ApprovePartnersResponse:
         """
+        Makes the partner active. A partner who was not already active is sent the program's approval email.
+
         Parameters
         ----------
         id : str
@@ -413,7 +446,7 @@ class PartnersClient:
             token="YOUR_TOKEN",
         )
         client.partners.approve(
-            id="id",
+            id="part_NLYzgNKuSuASvrvoxNtau6SY",
         )
         """
         _response = self._raw_client.approve(id, request_options=request_options)
@@ -427,11 +460,14 @@ class PartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> RejectPartnersResponse:
         """
+        Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
+
         Parameters
         ----------
         id : str
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -449,7 +485,7 @@ class PartnersClient:
             token="YOUR_TOKEN",
         )
         client.partners.reject(
-            id="id",
+            id="part_NLYzgNKuSuASvrvoxNtau6SY",
         )
         """
         _response = self._raw_client.reject(id, rejection_note=rejection_note, request_options=request_options)
@@ -463,11 +499,14 @@ class PartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SuspendPartnersResponse:
         """
+        Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
+
         Parameters
         ----------
         id : str
 
         suspension_reason : typing.Optional[str]
+            Reason for the suspension, shown to the partner in the partner portal. Null clears an earlier reason.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -485,7 +524,7 @@ class PartnersClient:
             token="YOUR_TOKEN",
         )
         client.partners.suspend(
-            id="id",
+            id="part_NLYzgNKuSuASvrvoxNtau6SY",
         )
         """
         _response = self._raw_client.suspend(id, suspension_reason=suspension_reason, request_options=request_options)
@@ -516,7 +555,7 @@ class AsyncPartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -539,7 +578,7 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.bulk_approve(
-                ids=["part_9fQ2xLL", "part_3RtV9k"],
+                ids=["part_NLYzgNKuSuASvrvoxNtau6SY", "part_9fQ2xLLmN3kP8dRvT1wYbHcS"],
             )
 
 
@@ -561,9 +600,10 @@ class AsyncPartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -586,7 +626,8 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.bulk_reject(
-                ids=["part_9fQ2xLL", "part_3RtV9k"],
+                ids=["part_NLYzgNKuSuASvrvoxNtau6SY", "part_9fQ2xLLmN3kP8dRvT1wYbHcS"],
+                rejection_note="Site does not match our audience.",
             )
 
 
@@ -616,14 +657,18 @@ class AsyncPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListPartnersResponse:
         """
+        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListPartnersRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListPartnersRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -632,24 +677,28 @@ class AsyncPartnersClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         status : typing.Optional[ListPartnersRequestStatus]
+            Keep only partners at this review stage; approved partners appear as active.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         group_id : typing.Optional[str]
+            Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
 
         search : typing.Optional[str]
+            Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -718,23 +767,28 @@ class AsyncPartnersClient:
         Parameters
         ----------
         email : str
-            Unique within the program, compared case-insensitively.
+            Partner's email address, where program emails such as the welcome email go. It identifies the partner in the program, so it cannot match another partner's email there, ignoring case.
 
         program_id : str
+            Id of the program to add the partner to (prg_...), as returned when listing programs.
 
         first_name : typing.Optional[str]
+            Partner's first name. With last_name it is used for the default link value when link is omitted.
 
         last_name : typing.Optional[str]
+            Partner's last name. With first_name it makes up the name shown for the partner unless display_name is set.
 
         display_name : typing.Optional[str]
             Overrides the name shown for the partner; defaults to the first and last name.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through, if they are a company rather than a person. Leave it out for an individual.
 
         country_code : typing.Optional[str]
             Two-letter ISO country code.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://.
 
         created_at : typing.Optional[dt.datetime]
             Backdate the partner's creation time. Defaults to now.
@@ -743,9 +797,10 @@ class AsyncPartnersClient:
             Group in the program. Defaults to the program's default group.
 
         status : typing.Optional[CreatePartnersRequestStatus]
+            Use pending to add the partner as an application that still needs approval instead of an active partner.
 
         link : typing.Optional[CreatePartnersRequestLink]
-            The referral link created with the partner. Defaults to a slug of the name or email.
+            The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
             Send the partner the program's welcome email. Only goes out when the program's welcome email is enabled and the partner is active.
@@ -763,6 +818,7 @@ class AsyncPartnersClient:
         import asyncio
 
         from tolt import AsyncToltApi
+        from tolt.partners import CreatePartnersRequestLink
 
         client = AsyncToltApi(
             token="YOUR_TOKEN",
@@ -771,8 +827,15 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.create(
-                email="sam@acme.com",
-                program_id="prg_YRsbPDAK",
+                email="sam@example.com",
+                program_id="prg_T6z8aRW3XCmvFWP972RKxpAd",
+                first_name="Sam",
+                last_name="Taylor",
+                group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
+                link=CreatePartnersRequestLink(
+                    value="sam",
+                    param="ref",
+                ),
             )
 
 
@@ -798,6 +861,8 @@ class AsyncPartnersClient:
 
     async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPartnersResponse:
         """
+        Gets a partner by ID, with their profile, status, group and program.
+
         Parameters
         ----------
         id : str
@@ -823,7 +888,7 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.get(
-                id="id",
+                id="part_NLYzgNKuSuASvrvoxNtau6SY",
             )
 
 
@@ -836,7 +901,6 @@ class AsyncPartnersClient:
         self,
         id: str,
         *,
-        email: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
@@ -852,19 +916,23 @@ class AsyncPartnersClient:
         ----------
         id : str
 
-        email : typing.Optional[str]
-
         first_name : typing.Optional[str]
+            Partner's first name, part of the name shown for them unless they have a display name; null clears it.
 
         last_name : typing.Optional[str]
+            Partner's family name, shown with first_name in the dashboard and partner portal; null clears it.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through; null clears it.
 
         country_code : typing.Optional[str]
+            Partner's country as a two-letter ISO code. Commission flows can match on it.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://; null clears it.
 
         group_id : typing.Optional[str]
+            Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -887,7 +955,10 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.update(
-                id="id",
+                id="part_NLYzgNKuSuASvrvoxNtau6SY",
+                first_name="Sam",
+                last_name="Taylor",
+                group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
             )
 
 
@@ -895,7 +966,6 @@ class AsyncPartnersClient:
         """
         _response = await self._raw_client.update(
             id,
-            email=email,
             first_name=first_name,
             last_name=last_name,
             company_name=company_name,
@@ -910,6 +980,8 @@ class AsyncPartnersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> ApprovePartnersResponse:
         """
+        Makes the partner active. A partner who was not already active is sent the program's approval email.
+
         Parameters
         ----------
         id : str
@@ -935,7 +1007,7 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.approve(
-                id="id",
+                id="part_NLYzgNKuSuASvrvoxNtau6SY",
             )
 
 
@@ -952,11 +1024,14 @@ class AsyncPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> RejectPartnersResponse:
         """
+        Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
+
         Parameters
         ----------
         id : str
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -979,7 +1054,7 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.reject(
-                id="id",
+                id="part_NLYzgNKuSuASvrvoxNtau6SY",
             )
 
 
@@ -996,11 +1071,14 @@ class AsyncPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SuspendPartnersResponse:
         """
+        Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
+
         Parameters
         ----------
         id : str
 
         suspension_reason : typing.Optional[str]
+            Reason for the suspension, shown to the partner in the partner portal. Null clears an earlier reason.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1023,7 +1101,7 @@ class AsyncPartnersClient:
 
         async def main() -> None:
             await client.partners.suspend(
-                id="id",
+                id="part_NLYzgNKuSuASvrvoxNtau6SY",
             )
 
 

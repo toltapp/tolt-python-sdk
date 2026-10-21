@@ -15,6 +15,7 @@ from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
+from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
@@ -52,7 +53,7 @@ class RawPartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -106,6 +107,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -139,9 +151,10 @@ class RawPartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -196,6 +209,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -235,14 +259,18 @@ class RawPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListPartnersResponse]:
         """
+        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListPartnersRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListPartnersRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -251,24 +279,28 @@ class RawPartnersClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         status : typing.Optional[ListPartnersRequestStatus]
+            Keep only partners at this review stage; approved partners appear as active.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         group_id : typing.Optional[str]
+            Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
 
         search : typing.Optional[str]
+            Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -330,6 +362,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -374,23 +417,28 @@ class RawPartnersClient:
         Parameters
         ----------
         email : str
-            Unique within the program, compared case-insensitively.
+            Partner's email address, where program emails such as the welcome email go. It identifies the partner in the program, so it cannot match another partner's email there, ignoring case.
 
         program_id : str
+            Id of the program to add the partner to (prg_...), as returned when listing programs.
 
         first_name : typing.Optional[str]
+            Partner's first name. With last_name it is used for the default link value when link is omitted.
 
         last_name : typing.Optional[str]
+            Partner's last name. With first_name it makes up the name shown for the partner unless display_name is set.
 
         display_name : typing.Optional[str]
             Overrides the name shown for the partner; defaults to the first and last name.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through, if they are a company rather than a person. Leave it out for an individual.
 
         country_code : typing.Optional[str]
             Two-letter ISO country code.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://.
 
         created_at : typing.Optional[dt.datetime]
             Backdate the partner's creation time. Defaults to now.
@@ -399,9 +447,10 @@ class RawPartnersClient:
             Group in the program. Defaults to the program's default group.
 
         status : typing.Optional[CreatePartnersRequestStatus]
+            Use pending to add the partner as an application that still needs approval instead of an active partner.
 
         link : typing.Optional[CreatePartnersRequestLink]
-            The referral link created with the partner. Defaults to a slug of the name or email.
+            The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
             Send the partner the program's welcome email. Only goes out when the program's welcome email is enabled and the partner is active.
@@ -483,6 +532,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -507,6 +567,8 @@ class RawPartnersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[GetPartnersResponse]:
         """
+        Gets a partner by ID, with their profile, status, group and program.
+
         Parameters
         ----------
         id : str
@@ -556,6 +618,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -580,7 +653,6 @@ class RawPartnersClient:
         self,
         id: str,
         *,
-        email: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
@@ -596,19 +668,23 @@ class RawPartnersClient:
         ----------
         id : str
 
-        email : typing.Optional[str]
-
         first_name : typing.Optional[str]
+            Partner's first name, part of the name shown for them unless they have a display name; null clears it.
 
         last_name : typing.Optional[str]
+            Partner's family name, shown with first_name in the dashboard and partner portal; null clears it.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through; null clears it.
 
         country_code : typing.Optional[str]
+            Partner's country as a two-letter ISO code. Commission flows can match on it.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://; null clears it.
 
         group_id : typing.Optional[str]
+            Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -622,7 +698,6 @@ class RawPartnersClient:
             f"v2/partners/{encode_path_param(id)}",
             method="PUT",
             json={
-                "email": email,
                 "first_name": first_name,
                 "last_name": last_name,
                 "company_name": company_name,
@@ -679,8 +754,8 @@ class RawPartnersClient:
                         ),
                     ),
                 )
-            if _response.status_code == 409:
-                raise ConflictError(
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -714,6 +789,8 @@ class RawPartnersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ApprovePartnersResponse]:
         """
+        Makes the partner active. A partner who was not already active is sent the program's approval email.
+
         Parameters
         ----------
         id : str
@@ -763,6 +840,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -791,11 +879,14 @@ class RawPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[RejectPartnersResponse]:
         """
+        Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
+
         Parameters
         ----------
         id : str
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -860,6 +951,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -888,11 +990,14 @@ class RawPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[SuspendPartnersResponse]:
         """
+        Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
+
         Parameters
         ----------
         id : str
 
         suspension_reason : typing.Optional[str]
+            Reason for the suspension, shown to the partner in the partner portal. Null clears an earlier reason.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -957,6 +1062,17 @@ class RawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -991,7 +1107,7 @@ class AsyncRawPartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1045,6 +1161,17 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1078,9 +1205,10 @@ class AsyncRawPartnersClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1135,6 +1263,17 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1174,14 +1313,18 @@ class AsyncRawPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListPartnersResponse]:
         """
+        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListPartnersRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListPartnersRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -1190,24 +1333,28 @@ class AsyncRawPartnersClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         status : typing.Optional[ListPartnersRequestStatus]
+            Keep only partners at this review stage; approved partners appear as active.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         group_id : typing.Optional[str]
+            Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
 
         search : typing.Optional[str]
+            Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1269,6 +1416,17 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1313,23 +1471,28 @@ class AsyncRawPartnersClient:
         Parameters
         ----------
         email : str
-            Unique within the program, compared case-insensitively.
+            Partner's email address, where program emails such as the welcome email go. It identifies the partner in the program, so it cannot match another partner's email there, ignoring case.
 
         program_id : str
+            Id of the program to add the partner to (prg_...), as returned when listing programs.
 
         first_name : typing.Optional[str]
+            Partner's first name. With last_name it is used for the default link value when link is omitted.
 
         last_name : typing.Optional[str]
+            Partner's last name. With first_name it makes up the name shown for the partner unless display_name is set.
 
         display_name : typing.Optional[str]
             Overrides the name shown for the partner; defaults to the first and last name.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through, if they are a company rather than a person. Leave it out for an individual.
 
         country_code : typing.Optional[str]
             Two-letter ISO country code.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://.
 
         created_at : typing.Optional[dt.datetime]
             Backdate the partner's creation time. Defaults to now.
@@ -1338,9 +1501,10 @@ class AsyncRawPartnersClient:
             Group in the program. Defaults to the program's default group.
 
         status : typing.Optional[CreatePartnersRequestStatus]
+            Use pending to add the partner as an application that still needs approval instead of an active partner.
 
         link : typing.Optional[CreatePartnersRequestLink]
-            The referral link created with the partner. Defaults to a slug of the name or email.
+            The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
 
         notify_partner : typing.Optional[bool]
             Send the partner the program's welcome email. Only goes out when the program's welcome email is enabled and the partner is active.
@@ -1422,6 +1586,17 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1446,6 +1621,8 @@ class AsyncRawPartnersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[GetPartnersResponse]:
         """
+        Gets a partner by ID, with their profile, status, group and program.
+
         Parameters
         ----------
         id : str
@@ -1495,6 +1672,17 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1519,7 +1707,6 @@ class AsyncRawPartnersClient:
         self,
         id: str,
         *,
-        email: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         company_name: typing.Optional[str] = OMIT,
@@ -1535,19 +1722,23 @@ class AsyncRawPartnersClient:
         ----------
         id : str
 
-        email : typing.Optional[str]
-
         first_name : typing.Optional[str]
+            Partner's first name, part of the name shown for them unless they have a display name; null clears it.
 
         last_name : typing.Optional[str]
+            Partner's family name, shown with first_name in the dashboard and partner portal; null clears it.
 
         company_name : typing.Optional[str]
+            Business the partner promotes through; null clears it.
 
         country_code : typing.Optional[str]
+            Partner's country as a two-letter ISO code. Commission flows can match on it.
 
         website_url : typing.Optional[str]
+            URL of the partner's website, starting with http:// or https://; null clears it.
 
         group_id : typing.Optional[str]
+            Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1561,7 +1752,6 @@ class AsyncRawPartnersClient:
             f"v2/partners/{encode_path_param(id)}",
             method="PUT",
             json={
-                "email": email,
                 "first_name": first_name,
                 "last_name": last_name,
                 "company_name": company_name,
@@ -1618,8 +1808,8 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
-            if _response.status_code == 409:
-                raise ConflictError(
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1653,6 +1843,8 @@ class AsyncRawPartnersClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ApprovePartnersResponse]:
         """
+        Makes the partner active. A partner who was not already active is sent the program's approval email.
+
         Parameters
         ----------
         id : str
@@ -1702,6 +1894,17 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1730,11 +1933,14 @@ class AsyncRawPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[RejectPartnersResponse]:
         """
+        Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
+
         Parameters
         ----------
         id : str
 
         rejection_note : typing.Optional[str]
+            Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1799,6 +2005,17 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1827,11 +2044,14 @@ class AsyncRawPartnersClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[SuspendPartnersResponse]:
         """
+        Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
+
         Parameters
         ----------
         id : str
 
         suspension_reason : typing.Optional[str]
+            Reason for the suspension, shown to the partner in the partner portal. Null clears an earlier reason.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1887,6 +2107,17 @@ class AsyncRawPartnersClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

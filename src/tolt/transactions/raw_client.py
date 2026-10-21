@@ -14,6 +14,7 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
+from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
@@ -57,14 +58,18 @@ class RawTransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListTransactionsResponse]:
         """
+        Lists transactions. Filter by program, partner, customer or status, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListTransactionsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListTransactionsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -73,26 +78,31 @@ class RawTransactionsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Only transactions from this customer, by Tolt customer id (cus_...) as returned when listing customers.
 
         status : typing.Optional[str]
+            Only transactions in this status, matched exactly, such as paid or refunded.
 
         search : typing.Optional[str]
+            Text matched anywhere in the transaction id or its charge_id, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -155,6 +165,17 @@ class RawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -196,25 +217,34 @@ class RawTransactionsClient:
         Parameters
         ----------
         amount : int
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         customer_id : str
+            Id of the customer who paid (cus_...), as returned when listing customers. The transaction goes to that customer's partner and program, and the customer becomes active.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date. Defaults to now.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system. Commission flows can match on it.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time. Commission flows can match on it.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id. A customer can have only one transaction per charge_id, so retrying a create with the same value returns 409 instead of booking the payment twice. An empty or whitespace-only charge_id is stored as no charge id and is not checked; any other value is stored and compared exactly as sent.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks. Commission flows use its link before falling back to the customer's link.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year. Commission flows can match on it. Flows can also split a yearly payment into monthly commissions.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api. Commissions that flows create from it copy this value.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -277,6 +307,28 @@ class RawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -301,6 +353,8 @@ class RawTransactionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[GetTransactionsResponse]:
         """
+        Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
+
         Parameters
         ----------
         id : str
@@ -350,6 +404,17 @@ class RawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -387,30 +452,41 @@ class RawTransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[UpdateTransactionsResponse]:
         """
+        Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
+
         Parameters
         ----------
         id : str
 
         amount : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         status : typing.Optional[str]
+            Payment status text, such as paid, which is what new transactions get. refunded is not accepted here: refund a transaction with the refund action. null clears the status.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name. null clears it.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -495,6 +571,17 @@ class RawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -519,6 +606,8 @@ class RawTransactionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[DeleteTransactionsResponse]:
         """
+        Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
+
         Parameters
         ----------
         id : str
@@ -570,6 +659,17 @@ class RawTransactionsClient:
                 )
             if _response.status_code == 409:
                 raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -665,6 +765,17 @@ class RawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -751,6 +862,17 @@ class RawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -796,14 +918,18 @@ class AsyncRawTransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListTransactionsResponse]:
         """
+        Lists transactions. Filter by program, partner, customer or status, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListTransactionsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListTransactionsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -812,26 +938,31 @@ class AsyncRawTransactionsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Only transactions from this customer, by Tolt customer id (cus_...) as returned when listing customers.
 
         status : typing.Optional[str]
+            Only transactions in this status, matched exactly, such as paid or refunded.
 
         search : typing.Optional[str]
+            Text matched anywhere in the transaction id or its charge_id, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -894,6 +1025,17 @@ class AsyncRawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -935,25 +1077,34 @@ class AsyncRawTransactionsClient:
         Parameters
         ----------
         amount : int
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         customer_id : str
+            Id of the customer who paid (cus_...), as returned when listing customers. The transaction goes to that customer's partner and program, and the customer becomes active.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date. Defaults to now.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system. Commission flows can match on it.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time. Commission flows can match on it.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id. A customer can have only one transaction per charge_id, so retrying a create with the same value returns 409 instead of booking the payment twice. An empty or whitespace-only charge_id is stored as no charge id and is not checked; any other value is stored and compared exactly as sent.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks. Commission flows use its link before falling back to the customer's link.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year. Commission flows can match on it. Flows can also split a yearly payment into monthly commissions.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api. Commissions that flows create from it copy this value.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1016,6 +1167,28 @@ class AsyncRawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1040,6 +1213,8 @@ class AsyncRawTransactionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[GetTransactionsResponse]:
         """
+        Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
+
         Parameters
         ----------
         id : str
@@ -1089,6 +1264,17 @@ class AsyncRawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1126,30 +1312,41 @@ class AsyncRawTransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[UpdateTransactionsResponse]:
         """
+        Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
+
         Parameters
         ----------
         id : str
 
         amount : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         status : typing.Optional[str]
+            Payment status text, such as paid, which is what new transactions get. refunded is not accepted here: refund a transaction with the refund action. null clears the status.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name. null clears it.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1234,6 +1431,17 @@ class AsyncRawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1258,6 +1466,8 @@ class AsyncRawTransactionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[DeleteTransactionsResponse]:
         """
+        Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
+
         Parameters
         ----------
         id : str
@@ -1309,6 +1519,17 @@ class AsyncRawTransactionsClient:
                 )
             if _response.status_code == 409:
                 raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1404,6 +1625,17 @@ class AsyncRawTransactionsClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -1481,6 +1713,17 @@ class AsyncRawTransactionsClient:
                 )
             if _response.status_code == 409:
                 raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

@@ -8,17 +8,17 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 class CreatePartnersRequestLink(UniversalBaseModel):
     """
-    The referral link created with the partner. Defaults to a slug of the name or email.
+    The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
     """
 
     value: str = pydantic.Field()
     """
-    The slug after the parameter, e.g. `sam` in `?ref=sam`.
+    Slug that identifies the partner in referral URLs, such as `sam` in `?ref=sam`. Pick one that no other link uses with the same parameter.
     """
 
     param: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Defaults to the program's first link parameter.
+    Query parameter of the link, such as `ref` in `?ref=sam`. Leave it out to use the program's first link parameter.
     """
 
     if IS_PYDANTIC_V2:

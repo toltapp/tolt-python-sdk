@@ -57,11 +57,13 @@ class ClicksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListClicksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListClicksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -70,22 +72,25 @@ class ClicksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         link_id : typing.Optional[str]
+            Limit to one referral link, by its id (lnk_...) as returned when listing links.
 
         country : typing.Optional[str]
             Filter by the click's stored country, matched exactly (values are not normalized). Clicks recorded by the tracking script store a country name (e.g. `Canada`); clicks created through the API store a 2-letter ISO code (e.g. `CA`). Filter by the exact form you expect.
@@ -166,6 +171,8 @@ class ClicksClient:
 
     def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClicksResponse:
         """
+        Gets a recorded click by ID, with the partner, link, page, referrer, country, device and browser it came from.
+
         Parameters
         ----------
         id : str
@@ -186,7 +193,7 @@ class ClicksClient:
             token="YOUR_TOKEN",
         )
         client.clicks.get(
-            id="id",
+            id="clk_mEsbFYv6ZjqXjAoFwokjS6v6",
         )
         """
         _response = self._raw_client.get(id, request_options=request_options)
@@ -233,11 +240,13 @@ class AsyncClicksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListClicksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListClicksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -246,22 +255,25 @@ class AsyncClicksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         link_id : typing.Optional[str]
+            Limit to one referral link, by its id (lnk_...) as returned when listing links.
 
         country : typing.Optional[str]
             Filter by the click's stored country, matched exactly (values are not normalized). Clicks recorded by the tracking script store a country name (e.g. `Canada`); clicks created through the API store a 2-letter ISO code (e.g. `CA`). Filter by the exact form you expect.
@@ -358,6 +370,8 @@ class AsyncClicksClient:
 
     async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClicksResponse:
         """
+        Gets a recorded click by ID, with the partner, link, page, referrer, country, device and browser it came from.
+
         Parameters
         ----------
         id : str
@@ -383,7 +397,7 @@ class AsyncClicksClient:
 
         async def main() -> None:
             await client.clicks.get(
-                id="id",
+                id="clk_mEsbFYv6ZjqXjAoFwokjS6v6",
             )
 
 

@@ -42,13 +42,18 @@ class ReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> OverviewReportsResponse:
         """
+        Returns revenue, commission, customer and partner totals for the organization or one program over a date range.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date. Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date; the whole day counts. Leave it out for no upper bound.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -86,23 +91,33 @@ class ReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> PartnersReportsResponse:
         """
+        Returns one row of revenue, commissions, customers and clicks per partner over a date range, sorted and paged by offset.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
 
         currency : typing.Optional[str]
+            Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
 
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         offset : typing.Optional[int]
+            How many rows to skip before this page begins.
 
         sort : typing.Optional[PartnersReportsRequestSort]
+            Metric to rank by, computed over the date window.
 
         order : typing.Optional[PartnersReportsRequestOrder]
+            Ranking direction: desc puts the highest values first.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -148,23 +163,33 @@ class ReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> LinksReportsResponse:
         """
+        Returns one row of revenue, commissions, customers and clicks per link over a date range, sorted and paged by offset.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
 
         currency : typing.Optional[str]
+            Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
 
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         offset : typing.Optional[int]
+            How many rows to skip before this page begins.
 
         sort : typing.Optional[LinksReportsRequestSort]
+            Metric to rank by, computed over the date window.
 
         order : typing.Optional[LinksReportsRequestOrder]
+            Ranking direction: desc puts the highest values first.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -207,17 +232,24 @@ class ReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TimeseriesReportsResponse:
         """
+        Returns revenue, commissions, customers and clicks per day, week or month over a date range, ready to chart.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
 
         granularity : typing.Optional[TimeseriesReportsRequestGranularity]
+            Bucket size of the series; weeks start on Monday, months on the 1st, and each bucket is labeled with its first day.
 
         currency : typing.Optional[str]
+            Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -255,13 +287,18 @@ class ReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CustomerStatsReportsResponse:
         """
+        Returns how many customers are in each subscription status for the organization or one program.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by the day customers became active. Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by the day customers became active; the whole day counts. Leave it out for no upper bound.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -310,13 +347,18 @@ class AsyncReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> OverviewReportsResponse:
         """
+        Returns revenue, commission, customer and partner totals for the organization or one program over a date range.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date. Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date; the whole day counts. Leave it out for no upper bound.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -362,23 +404,33 @@ class AsyncReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> PartnersReportsResponse:
         """
+        Returns one row of revenue, commissions, customers and clicks per partner over a date range, sorted and paged by offset.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
 
         currency : typing.Optional[str]
+            Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
 
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         offset : typing.Optional[int]
+            How many rows to skip before this page begins.
 
         sort : typing.Optional[PartnersReportsRequestSort]
+            Metric to rank by, computed over the date window.
 
         order : typing.Optional[PartnersReportsRequestOrder]
+            Ranking direction: desc puts the highest values first.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -432,23 +484,33 @@ class AsyncReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> LinksReportsResponse:
         """
+        Returns one row of revenue, commissions, customers and clicks per link over a date range, sorted and paged by offset.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
 
         currency : typing.Optional[str]
+            Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
 
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         offset : typing.Optional[int]
+            How many rows to skip before this page begins.
 
         sort : typing.Optional[LinksReportsRequestSort]
+            Metric to rank by, computed over the date window.
 
         order : typing.Optional[LinksReportsRequestOrder]
+            Ranking direction: desc puts the highest values first.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -499,17 +561,24 @@ class AsyncReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TimeseriesReportsResponse:
         """
+        Returns revenue, commissions, customers and clicks per day, week or month over a date range, ready to chart.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
 
         granularity : typing.Optional[TimeseriesReportsRequestGranularity]
+            Bucket size of the series; weeks start on Monday, months on the 1st, and each bucket is labeled with its first day.
 
         currency : typing.Optional[str]
+            Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -555,13 +624,18 @@ class AsyncReportsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CustomerStatsReportsResponse:
         """
+        Returns how many customers are in each subscription status for the organization or one program.
+
         Parameters
         ----------
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         start_date : typing.Optional[dt.date]
+            Earliest day to include, by the day customers became active. Leave it out for no lower bound.
 
         end_date : typing.Optional[dt.date]
+            Latest day to include, by the day customers became active; the whole day counts. Leave it out for no upper bound.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

@@ -17,6 +17,7 @@ from .types.get_commissions_response import GetCommissionsResponse
 from .types.list_commissions_request_order import ListCommissionsRequestOrder
 from .types.list_commissions_request_sort import ListCommissionsRequestSort
 from .types.list_commissions_response import ListCommissionsResponse
+from .types.update_commissions_request_status import UpdateCommissionsRequestStatus
 from .types.update_commissions_response import UpdateCommissionsResponse
 
 # this is used as the default value for optional parameters
@@ -47,7 +48,7 @@ class CommissionsClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the commissions to act on, as returned when listing commissions. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -65,7 +66,7 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.bulk_approve(
-            ids=["part_9fQ2xLL", "part_3RtV9k"],
+            ids=["comm_X85RLnefjTCNrypH4MA1PdSp", "comm_3RtV9kQ2mW8nX5pL1sB7cD4f"],
         )
         """
         _response = self._raw_client.bulk_approve(ids=ids, request_options=request_options)
@@ -80,7 +81,7 @@ class CommissionsClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the commissions to act on, as returned when listing commissions. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -98,7 +99,7 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.bulk_decline(
-            ids=["part_9fQ2xLL", "part_3RtV9k"],
+            ids=["comm_X85RLnefjTCNrypH4MA1PdSp", "comm_3RtV9kQ2mW8nX5pL1sB7cD4f"],
         )
         """
         _response = self._raw_client.bulk_decline(ids=ids, request_options=request_options)
@@ -126,14 +127,18 @@ class CommissionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListCommissionsResponse:
         """
+        Lists commissions. Filter by program, partner, customer, transaction, status or type, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListCommissionsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListCommissionsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -142,30 +147,37 @@ class CommissionsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Only commissions for this customer, by Tolt customer id (cus_...) as returned when listing customers.
 
         transaction_id : typing.Optional[str]
+            Only commissions linked to this transaction, by its id (txn_...).
 
         status : typing.Optional[str]
+            Only commissions in this status, matched exactly, such as pending, approved or paid.
 
         type : typing.Optional[str]
+            Only commissions whose type equals this stored value exactly.
 
         search : typing.Optional[str]
+            Text matched anywhere in the commission id or its charge_id, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -239,6 +251,8 @@ class CommissionsClient:
 
     def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionsResponse:
         """
+        Gets a commission by ID, with its amount, status, type and partner, plus its customer and transaction when it has them.
+
         Parameters
         ----------
         id : str
@@ -259,7 +273,7 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.get(
-            id="id",
+            id="comm_X85RLnefjTCNrypH4MA1PdSp",
         )
         """
         _response = self._raw_client.get(id, request_options=request_options)
@@ -271,7 +285,7 @@ class CommissionsClient:
         *,
         amount: typing.Optional[int] = OMIT,
         revenue: typing.Optional[int] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[UpdateCommissionsRequestStatus] = OMIT,
         source: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         transaction_id: typing.Optional[str] = OMIT,
@@ -286,20 +300,24 @@ class CommissionsClient:
         id : str
 
         amount : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            What the partner earns for this commission, in minor units of the program currency (cents for USD).
 
         revenue : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The sale amount the commission is based on, in minor units of the program currency.
 
-        status : typing.Optional[str]
+        status : typing.Optional[UpdateCommissionsRequestStatus]
 
         source : typing.Optional[str]
+            Free-form label for where the commission came from, such as stripe or api.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
 
         transaction_id : typing.Optional[str]
+            Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
 
         created_at : typing.Optional[dt.datetime]
+            When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -317,7 +335,10 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.update(
-            id="id",
+            id="comm_X85RLnefjTCNrypH4MA1PdSp",
+            amount=1000,
+            revenue=5000,
+            status="approved",
         )
         """
         _response = self._raw_client.update(
@@ -335,6 +356,8 @@ class CommissionsClient:
 
     def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteCommissionsResponse:
         """
+        Deletes a commission. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+
         Parameters
         ----------
         id : str
@@ -355,7 +378,7 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.delete(
-            id="id",
+            id="comm_X85RLnefjTCNrypH4MA1PdSp",
         )
         """
         _response = self._raw_client.delete(id, request_options=request_options)
@@ -365,6 +388,8 @@ class CommissionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> ApproveCommissionsResponse:
         """
+        Marks a commission approved so it is included in the next payout. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+
         Parameters
         ----------
         id : str
@@ -385,7 +410,7 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.approve(
-            id="id",
+            id="comm_X85RLnefjTCNrypH4MA1PdSp",
         )
         """
         _response = self._raw_client.approve(id, request_options=request_options)
@@ -395,6 +420,8 @@ class CommissionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> DeclineCommissionsResponse:
         """
+        Marks a commission declined so it is left out of payouts until it is approved again. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+
         Parameters
         ----------
         id : str
@@ -415,7 +442,7 @@ class CommissionsClient:
             token="YOUR_TOKEN",
         )
         client.commissions.decline(
-            id="id",
+            id="comm_X85RLnefjTCNrypH4MA1PdSp",
         )
         """
         _response = self._raw_client.decline(id, request_options=request_options)
@@ -446,7 +473,7 @@ class AsyncCommissionsClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the commissions to act on, as returned when listing commissions. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -469,7 +496,7 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.bulk_approve(
-                ids=["part_9fQ2xLL", "part_3RtV9k"],
+                ids=["comm_X85RLnefjTCNrypH4MA1PdSp", "comm_3RtV9kQ2mW8nX5pL1sB7cD4f"],
             )
 
 
@@ -487,7 +514,7 @@ class AsyncCommissionsClient:
         Parameters
         ----------
         ids : typing.Sequence[str]
-            Up to 100 ids. Duplicates are processed once.
+            Ids of the commissions to act on, as returned when listing commissions. Each one succeeds or fails on its own and gets its own entry in results.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -510,7 +537,7 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.bulk_decline(
-                ids=["part_9fQ2xLL", "part_3RtV9k"],
+                ids=["comm_X85RLnefjTCNrypH4MA1PdSp", "comm_3RtV9kQ2mW8nX5pL1sB7cD4f"],
             )
 
 
@@ -541,14 +568,18 @@ class AsyncCommissionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListCommissionsResponse:
         """
+        Lists commissions. Filter by program, partner, customer, transaction, status or type, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListCommissionsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListCommissionsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -557,30 +588,37 @@ class AsyncCommissionsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Only commissions for this customer, by Tolt customer id (cus_...) as returned when listing customers.
 
         transaction_id : typing.Optional[str]
+            Only commissions linked to this transaction, by its id (txn_...).
 
         status : typing.Optional[str]
+            Only commissions in this status, matched exactly, such as pending, approved or paid.
 
         type : typing.Optional[str]
+            Only commissions whose type equals this stored value exactly.
 
         search : typing.Optional[str]
+            Text matched anywhere in the commission id or its charge_id, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -670,6 +708,8 @@ class AsyncCommissionsClient:
 
     async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCommissionsResponse:
         """
+        Gets a commission by ID, with its amount, status, type and partner, plus its customer and transaction when it has them.
+
         Parameters
         ----------
         id : str
@@ -695,7 +735,7 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.get(
-                id="id",
+                id="comm_X85RLnefjTCNrypH4MA1PdSp",
             )
 
 
@@ -710,7 +750,7 @@ class AsyncCommissionsClient:
         *,
         amount: typing.Optional[int] = OMIT,
         revenue: typing.Optional[int] = OMIT,
-        status: typing.Optional[str] = OMIT,
+        status: typing.Optional[UpdateCommissionsRequestStatus] = OMIT,
         source: typing.Optional[str] = OMIT,
         charge_id: typing.Optional[str] = OMIT,
         transaction_id: typing.Optional[str] = OMIT,
@@ -725,20 +765,24 @@ class AsyncCommissionsClient:
         id : str
 
         amount : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            What the partner earns for this commission, in minor units of the program currency (cents for USD).
 
         revenue : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The sale amount the commission is based on, in minor units of the program currency.
 
-        status : typing.Optional[str]
+        status : typing.Optional[UpdateCommissionsRequestStatus]
 
         source : typing.Optional[str]
+            Free-form label for where the commission came from, such as stripe or api.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
 
         transaction_id : typing.Optional[str]
+            Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
 
         created_at : typing.Optional[dt.datetime]
+            When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -761,7 +805,10 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.update(
-                id="id",
+                id="comm_X85RLnefjTCNrypH4MA1PdSp",
+                amount=1000,
+                revenue=5000,
+                status="approved",
             )
 
 
@@ -784,6 +831,8 @@ class AsyncCommissionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> DeleteCommissionsResponse:
         """
+        Deletes a commission. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+
         Parameters
         ----------
         id : str
@@ -809,7 +858,7 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.delete(
-                id="id",
+                id="comm_X85RLnefjTCNrypH4MA1PdSp",
             )
 
 
@@ -822,6 +871,8 @@ class AsyncCommissionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> ApproveCommissionsResponse:
         """
+        Marks a commission approved so it is included in the next payout. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+
         Parameters
         ----------
         id : str
@@ -847,7 +898,7 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.approve(
-                id="id",
+                id="comm_X85RLnefjTCNrypH4MA1PdSp",
             )
 
 
@@ -860,6 +911,8 @@ class AsyncCommissionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> DeclineCommissionsResponse:
         """
+        Marks a commission declined so it is left out of payouts until it is approved again. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+
         Parameters
         ----------
         id : str
@@ -885,7 +938,7 @@ class AsyncCommissionsClient:
 
         async def main() -> None:
             await client.commissions.decline(
-                id="id",
+                id="comm_X85RLnefjTCNrypH4MA1PdSp",
             )
 
 
