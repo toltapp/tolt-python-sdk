@@ -35,7 +35,7 @@ class EmbedTokensClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateEmbedTokenResponse:
         """
-        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
+        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id), the partner is created when the program has none with that email, so one call covers a user's first visit.
 
         Parameters
         ----------
@@ -43,7 +43,7 @@ class EmbedTokensClient:
             Id of an existing partner (part_...). Send this or partner, not both.
 
         partner : typing.Optional[CreateEmbedTokenRequestPartner]
-            Look up an onboarded partner by email within a program. Send this or partner_id, not both.
+            Find the partner by email within the program, or create them (active, with a referral link) when the program has no partner with that email. Send this or partner_id, not both.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -89,7 +89,7 @@ class AsyncEmbedTokensClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateEmbedTokenResponse:
         """
-        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
+        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id), the partner is created when the program has none with that email, so one call covers a user's first visit.
 
         Parameters
         ----------
@@ -97,7 +97,7 @@ class AsyncEmbedTokensClient:
             Id of an existing partner (part_...). Send this or partner, not both.
 
         partner : typing.Optional[CreateEmbedTokenRequestPartner]
-            Look up an onboarded partner by email within a program. Send this or partner_id, not both.
+            Find the partner by email within the program, or create them (active, with a referral link) when the program has no partner with that email. Send this or partner_id, not both.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

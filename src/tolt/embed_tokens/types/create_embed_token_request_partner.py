@@ -8,7 +8,7 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 class CreateEmbedTokenRequestPartner(UniversalBaseModel):
     """
-    Look up an onboarded partner by email within a program. Send this or partner_id, not both.
+    Find the partner by email within the program, or create them (active, with a referral link) when the program has no partner with that email. Send this or partner_id, not both.
     """
 
     email: str = pydantic.Field()
@@ -19,6 +19,21 @@ class CreateEmbedTokenRequestPartner(UniversalBaseModel):
     program_id: str = pydantic.Field()
     """
     Program the partner belongs to (prg_...).
+    """
+
+    first_name: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    First name, used only when the partner is created.
+    """
+
+    last_name: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Last name, used only when the partner is created.
+    """
+
+    group_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Group for a newly created partner. Defaults to the program's default group.
     """
 
     if IS_PYDANTIC_V2:
