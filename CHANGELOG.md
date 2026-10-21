@@ -1,6 +1,72 @@
 # CHANGELOG
 
 
+## v1.0.0 (2026-10-21)
+
+### Bug Fixes
+
+- Require Python 3.10 ([#10](https://github.com/toltapp/tolt-python-sdk/pull/10),
+  [`83e9ef9`](https://github.com/toltapp/tolt-python-sdk/commit/83e9ef9a1053f0050091dee5e3f085f91b8b4cf1))
+
+The SDK fails on Python 3.8 and 3.9 whenever it parses a response: the generated serializer
+  evaluates the type hints of pydantic's ConfigDict, which use X | None, and that syntax only
+  evaluates at runtime from Python 3.10. The package claimed >=3.8, so pip installed a client that
+  broke on its first call.
+
+### Chores
+
+- Let a breaking change release 1.0.0 ([#12](https://github.com/toltapp/tolt-python-sdk/pull/12),
+  [`9b61b78`](https://github.com/toltapp/tolt-python-sdk/commit/9b61b782037a98135ba20247bad2d5810a1450ec))
+
+With major_on_zero = false, python-semantic-release turns a breaking change on 0.x into a minor
+  bump, so the SDK 1.0 regen would have shipped as 0.8.0.
+
+- Sync the User-Agent version at release ([#9](https://github.com/toltapp/tolt-python-sdk/pull/9),
+  [`61f27a7`](https://github.com/toltapp/tolt-python-sdk/commit/61f27a7d4f3c7f9d7b64bee2698fc52c5fdc2683))
+
+* chore: sync the User-Agent version at release
+
+The generated client sends User-Agent: tolt-python/<version> with the version baked in at generation
+  time. The release build now rewrites it to the version being published and commits the file with
+  the release.
+
+* chore: fail the release if the User-Agent version isn't rewritten
+
+A sed with no match exits 0, so a release could ship a stale or missing User-Agent version without
+  anyone noticing. The build now checks that src/tolt/core/client_wrapper.py contains
+  tolt-python/<new version> after the rewrite and stops the release with a message if it doesn't.
+
+### Features
+
+- Regenerate SDK from the latest OpenAPI spec
+  ([#11](https://github.com/toltapp/tolt-python-sdk/pull/11),
+  [`6cd52e7`](https://github.com/toltapp/tolt-python-sdk/commit/6cd52e7bc34cbddf54369663bbf4479fe96227f1))
+
+SDK 1.0. Regenerated with the Fern Python generator 5.41.4 and the overrides in toltapp/tolt-sdks.
+
+- list() returns a pager: iterate it to walk every page. - clicks.create, commissions.create and
+  embed_tokens.create take typed arguments. - Creates and transactions.rerun_flows are not retried
+  automatically. - Requests send User-Agent: tolt-python/<version>.
+
+BREAKING CHANGE: Type and module names for single-item operations are singular (GetPartnerResponse,
+  create_partner_request_status). embed.create_token() is now embed_tokens.create(),
+  reports.customer_stats() is now reports.customers(), and the Error model is now ErrorResponse
+  (with ErrorCode and FieldError). list() returns a SyncPager or AsyncPager instead of the envelope:
+  rows are in .items rather than .data, and has_more and next_cursor move to .response.
+  groups.list(default=...) and flows.list(active=...) take booleans. Python 3.10 or newer is
+  required.
+
+### Breaking Changes
+
+- Type and module names for single-item operations are singular (GetPartnerResponse,
+  create_partner_request_status). embed.create_token() is now embed_tokens.create(),
+  reports.customer_stats() is now reports.customers(), and the Error model is now ErrorResponse
+  (with ErrorCode and FieldError). list() returns a SyncPager or AsyncPager instead of the envelope:
+  rows are in .items rather than .data, and has_more and next_cursor move to .response.
+  groups.list(default=...) and flows.list(active=...) take booleans. Python 3.10 or newer is
+  required.
+
+
 ## v0.7.1 (2026-10-21)
 
 ### Bug Fixes
