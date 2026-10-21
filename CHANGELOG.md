@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v1.1.0 (2026-10-21)
+
+### Features
+
+- Regenerate SDK from the latest OpenAPI spec
+  ([#14](https://github.com/toltapp/tolt-python-sdk/pull/14),
+  [`f3ac014`](https://github.com/toltapp/tolt-python-sdk/commit/f3ac0140ceed185fd4244fae9dbebde2f4b32855))
+
+
 ## v1.0.0 (2026-10-21)
 
 ### Bug Fixes
