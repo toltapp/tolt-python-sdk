@@ -4,18 +4,20 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.customer import Customer
 from .raw_client import AsyncRawCustomersClient, RawCustomersClient
-from .types.create_customers_request_status import CreateCustomersRequestStatus
-from .types.create_customers_response import CreateCustomersResponse
-from .types.delete_customers_response import DeleteCustomersResponse
-from .types.get_customers_response import GetCustomersResponse
+from .types.create_customer_request_status import CreateCustomerRequestStatus
+from .types.create_customer_response import CreateCustomerResponse
+from .types.delete_customer_response import DeleteCustomerResponse
+from .types.get_customer_response import GetCustomerResponse
 from .types.list_customers_request_order import ListCustomersRequestOrder
 from .types.list_customers_request_sort import ListCustomersRequestSort
 from .types.list_customers_request_status import ListCustomersRequestStatus
 from .types.list_customers_response import ListCustomersResponse
-from .types.update_customers_request_status import UpdateCustomersRequestStatus
-from .types.update_customers_response import UpdateCustomersResponse
+from .types.update_customer_request_status import UpdateCustomerRequestStatus
+from .types.update_customer_response import UpdateCustomerResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -56,7 +58,7 @@ class CustomersClient:
         click_id: typing.Optional[str] = None,
         link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListCustomersResponse:
+    ) -> SyncPager[Customer, ListCustomersResponse]:
         """
         Lists customers. Filter by program, partner, link, click, status or your own customer_id, and page with cursors.
 
@@ -115,7 +117,7 @@ class CustomersClient:
 
         Returns
         -------
-        ListCustomersResponse
+        SyncPager[Customer, ListCustomersResponse]
             A page of customers
 
         Examples
@@ -125,9 +127,14 @@ class CustomersClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.customers.list()
+        response = client.customers.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -146,7 +153,6 @@ class CustomersClient:
             link_id=link_id,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
         self,
@@ -156,7 +162,7 @@ class CustomersClient:
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[CreateCustomerRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
@@ -164,7 +170,7 @@ class CustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateCustomersResponse:
+    ) -> CreateCustomerResponse:
         """
         Creates a customer attributed to a partner. Pass partner_id or link_id, and optionally the click_id that brought them in.
 
@@ -185,7 +191,7 @@ class CustomersClient:
         customer_id : typing.Optional[str]
             Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it. Provide this or email.
 
-        status : typing.Optional[CreateCustomersRequestStatus]
+        status : typing.Optional[CreateCustomerRequestStatus]
             Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
 
         subscription_id : typing.Optional[str]
@@ -211,7 +217,7 @@ class CustomersClient:
 
         Returns
         -------
-        CreateCustomersResponse
+        CreateCustomerResponse
             The created customer
 
         Examples
@@ -246,7 +252,7 @@ class CustomersClient:
         )
         return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomersResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomerResponse:
         """
         Gets a customer by ID, with its status, the partner it is attributed to and your own customer and subscription IDs.
 
@@ -259,7 +265,7 @@ class CustomersClient:
 
         Returns
         -------
-        GetCustomersResponse
+        GetCustomerResponse
             The requested customer
 
         Examples
@@ -284,7 +290,7 @@ class CustomersClient:
         promotion_code: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCustomerRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -292,7 +298,7 @@ class CustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCustomersResponse:
+    ) -> UpdateCustomerResponse:
         """
         Updates a customer's name, email, status, your own IDs, or the click and link the customer came from.
 
@@ -312,7 +318,7 @@ class CustomersClient:
         name : typing.Optional[str]
             Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
-        status : typing.Optional[UpdateCustomersRequestStatus]
+        status : typing.Optional[UpdateCustomerRequestStatus]
             Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
 
         customer_id : typing.Optional[str]
@@ -338,7 +344,7 @@ class CustomersClient:
 
         Returns
         -------
-        UpdateCustomersResponse
+        UpdateCustomerResponse
             The updated customer
 
         Examples
@@ -371,7 +377,7 @@ class CustomersClient:
         )
         return _response.data
 
-    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteCustomersResponse:
+    def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteCustomerResponse:
         """
         Deletes a customer. Fails when any of the customer's commissions is paid or already included in a payout.
 
@@ -384,7 +390,7 @@ class CustomersClient:
 
         Returns
         -------
-        DeleteCustomersResponse
+        DeleteCustomerResponse
             The deleted customer
 
         Examples
@@ -437,7 +443,7 @@ class AsyncCustomersClient:
         click_id: typing.Optional[str] = None,
         link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListCustomersResponse:
+    ) -> AsyncPager[Customer, ListCustomersResponse]:
         """
         Lists customers. Filter by program, partner, link, click, status or your own customer_id, and page with cursors.
 
@@ -496,7 +502,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        ListCustomersResponse
+        AsyncPager[Customer, ListCustomersResponse]
             A page of customers
 
         Examples
@@ -511,12 +517,18 @@ class AsyncCustomersClient:
 
 
         async def main() -> None:
-            await client.customers.list()
+            response = await client.customers.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -535,7 +547,6 @@ class AsyncCustomersClient:
             link_id=link_id,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
         self,
@@ -545,7 +556,7 @@ class AsyncCustomersClient:
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[CreateCustomerRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
@@ -553,7 +564,7 @@ class AsyncCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreateCustomersResponse:
+    ) -> CreateCustomerResponse:
         """
         Creates a customer attributed to a partner. Pass partner_id or link_id, and optionally the click_id that brought them in.
 
@@ -574,7 +585,7 @@ class AsyncCustomersClient:
         customer_id : typing.Optional[str]
             Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it. Provide this or email.
 
-        status : typing.Optional[CreateCustomersRequestStatus]
+        status : typing.Optional[CreateCustomerRequestStatus]
             Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
 
         subscription_id : typing.Optional[str]
@@ -600,7 +611,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        CreateCustomersResponse
+        CreateCustomerResponse
             The created customer
 
         Examples
@@ -643,7 +654,7 @@ class AsyncCustomersClient:
         )
         return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomersResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetCustomerResponse:
         """
         Gets a customer by ID, with its status, the partner it is attributed to and your own customer and subscription IDs.
 
@@ -656,7 +667,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        GetCustomersResponse
+        GetCustomerResponse
             The requested customer
 
         Examples
@@ -689,7 +700,7 @@ class AsyncCustomersClient:
         promotion_code: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCustomerRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -697,7 +708,7 @@ class AsyncCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdateCustomersResponse:
+    ) -> UpdateCustomerResponse:
         """
         Updates a customer's name, email, status, your own IDs, or the click and link the customer came from.
 
@@ -717,7 +728,7 @@ class AsyncCustomersClient:
         name : typing.Optional[str]
             Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
-        status : typing.Optional[UpdateCustomersRequestStatus]
+        status : typing.Optional[UpdateCustomerRequestStatus]
             Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
 
         customer_id : typing.Optional[str]
@@ -743,7 +754,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        UpdateCustomersResponse
+        UpdateCustomerResponse
             The updated customer
 
         Examples
@@ -786,7 +797,7 @@ class AsyncCustomersClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeleteCustomersResponse:
+    ) -> DeleteCustomerResponse:
         """
         Deletes a customer. Fails when any of the customer's commissions is paid or already included in a payout.
 
@@ -799,7 +810,7 @@ class AsyncCustomersClient:
 
         Returns
         -------
-        DeleteCustomersResponse
+        DeleteCustomerResponse
             The deleted customer
 
         Examples

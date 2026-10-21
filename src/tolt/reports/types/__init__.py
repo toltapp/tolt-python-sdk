@@ -6,27 +6,27 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .customer_stats_reports_response import CustomerStatsReportsResponse
     from .links_reports_request_order import LinksReportsRequestOrder
     from .links_reports_request_sort import LinksReportsRequestSort
-    from .links_reports_response import LinksReportsResponse
-    from .overview_reports_response import OverviewReportsResponse
     from .partners_reports_request_order import PartnersReportsRequestOrder
     from .partners_reports_request_sort import PartnersReportsRequestSort
-    from .partners_reports_response import PartnersReportsResponse
+    from .reports_customers_response import ReportsCustomersResponse
+    from .reports_links_response import ReportsLinksResponse
+    from .reports_overview_response import ReportsOverviewResponse
+    from .reports_partners_response import ReportsPartnersResponse
+    from .reports_timeseries_response import ReportsTimeseriesResponse
     from .timeseries_reports_request_granularity import TimeseriesReportsRequestGranularity
-    from .timeseries_reports_response import TimeseriesReportsResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "CustomerStatsReportsResponse": ".customer_stats_reports_response",
     "LinksReportsRequestOrder": ".links_reports_request_order",
     "LinksReportsRequestSort": ".links_reports_request_sort",
-    "LinksReportsResponse": ".links_reports_response",
-    "OverviewReportsResponse": ".overview_reports_response",
     "PartnersReportsRequestOrder": ".partners_reports_request_order",
     "PartnersReportsRequestSort": ".partners_reports_request_sort",
-    "PartnersReportsResponse": ".partners_reports_response",
+    "ReportsCustomersResponse": ".reports_customers_response",
+    "ReportsLinksResponse": ".reports_links_response",
+    "ReportsOverviewResponse": ".reports_overview_response",
+    "ReportsPartnersResponse": ".reports_partners_response",
+    "ReportsTimeseriesResponse": ".reports_timeseries_response",
     "TimeseriesReportsRequestGranularity": ".timeseries_reports_request_granularity",
-    "TimeseriesReportsResponse": ".timeseries_reports_response",
 }
 
 
@@ -52,14 +52,14 @@ def __dir__():
 
 
 __all__ = [
-    "CustomerStatsReportsResponse",
     "LinksReportsRequestOrder",
     "LinksReportsRequestSort",
-    "LinksReportsResponse",
-    "OverviewReportsResponse",
     "PartnersReportsRequestOrder",
     "PartnersReportsRequestSort",
-    "PartnersReportsResponse",
+    "ReportsCustomersResponse",
+    "ReportsLinksResponse",
+    "ReportsOverviewResponse",
+    "ReportsPartnersResponse",
+    "ReportsTimeseriesResponse",
     "TimeseriesReportsRequestGranularity",
-    "TimeseriesReportsResponse",
 ]

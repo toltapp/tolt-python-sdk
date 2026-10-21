@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -18,17 +19,18 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.create_customers_request_status import CreateCustomersRequestStatus
-from .types.create_customers_response import CreateCustomersResponse
-from .types.delete_customers_response import DeleteCustomersResponse
-from .types.get_customers_response import GetCustomersResponse
+from ..types.customer import Customer
+from ..types.error_response import ErrorResponse
+from .types.create_customer_request_status import CreateCustomerRequestStatus
+from .types.create_customer_response import CreateCustomerResponse
+from .types.delete_customer_response import DeleteCustomerResponse
+from .types.get_customer_response import GetCustomerResponse
 from .types.list_customers_request_order import ListCustomersRequestOrder
 from .types.list_customers_request_sort import ListCustomersRequestSort
 from .types.list_customers_request_status import ListCustomersRequestStatus
 from .types.list_customers_response import ListCustomersResponse
-from .types.update_customers_request_status import UpdateCustomersRequestStatus
-from .types.update_customers_response import UpdateCustomersResponse
+from .types.update_customer_request_status import UpdateCustomerRequestStatus
+from .types.update_customer_response import UpdateCustomerResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -59,7 +61,7 @@ class RawCustomersClient:
         click_id: typing.Optional[str] = None,
         link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListCustomersResponse]:
+    ) -> SyncPager[Customer, ListCustomersResponse]:
         """
         Lists customers. Filter by program, partner, link, click, status or your own customer_id, and page with cursors.
 
@@ -118,7 +120,7 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[ListCustomersResponse]
+        SyncPager[Customer, ListCustomersResponse]
             A page of customers
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -146,21 +148,43 @@ class RawCustomersClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListCustomersResponse,
                     parse_obj_as(
                         type_=ListCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    program_id=program_id,
+                    partner_id=partner_id,
+                    customer_id=customer_id,
+                    status=status,
+                    search=search,
+                    click_id=click_id,
+                    link_id=link_id,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -169,9 +193,9 @@ class RawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -180,9 +204,9 @@ class RawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -191,9 +215,9 @@ class RawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -215,7 +239,7 @@ class RawCustomersClient:
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[CreateCustomerRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
@@ -223,7 +247,7 @@ class RawCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreateCustomersResponse]:
+    ) -> HttpResponse[CreateCustomerResponse]:
         """
         Creates a customer attributed to a partner. Pass partner_id or link_id, and optionally the click_id that brought them in.
 
@@ -244,7 +268,7 @@ class RawCustomersClient:
         customer_id : typing.Optional[str]
             Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it. Provide this or email.
 
-        status : typing.Optional[CreateCustomersRequestStatus]
+        status : typing.Optional[CreateCustomerRequestStatus]
             Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
 
         subscription_id : typing.Optional[str]
@@ -270,9 +294,12 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[CreateCustomersResponse]
+        HttpResponse[CreateCustomerResponse]
             The created customer
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = self._client_wrapper.httpx_client.request(
             "v2/customers",
             method="POST",
@@ -293,15 +320,15 @@ class RawCustomersClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCustomersResponse,
+                    CreateCustomerResponse,
                     parse_obj_as(
-                        type_=CreateCustomersResponse,  # type: ignore
+                        type_=CreateCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -310,9 +337,9 @@ class RawCustomersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -321,9 +348,9 @@ class RawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -332,9 +359,9 @@ class RawCustomersClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -343,9 +370,9 @@ class RawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -354,9 +381,9 @@ class RawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -372,7 +399,7 @@ class RawCustomersClient:
 
     def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetCustomersResponse]:
+    ) -> HttpResponse[GetCustomerResponse]:
         """
         Gets a customer by ID, with its status, the partner it is attributed to and your own customer and subscription IDs.
 
@@ -385,7 +412,7 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[GetCustomersResponse]
+        HttpResponse[GetCustomerResponse]
             The requested customer
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -396,9 +423,9 @@ class RawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCustomersResponse,
+                    GetCustomerResponse,
                     parse_obj_as(
-                        type_=GetCustomersResponse,  # type: ignore
+                        type_=GetCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -407,9 +434,9 @@ class RawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -418,9 +445,9 @@ class RawCustomersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -429,9 +456,9 @@ class RawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -440,9 +467,9 @@ class RawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -464,7 +491,7 @@ class RawCustomersClient:
         promotion_code: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCustomerRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -472,7 +499,7 @@ class RawCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateCustomersResponse]:
+    ) -> HttpResponse[UpdateCustomerResponse]:
         """
         Updates a customer's name, email, status, your own IDs, or the click and link the customer came from.
 
@@ -492,7 +519,7 @@ class RawCustomersClient:
         name : typing.Optional[str]
             Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
-        status : typing.Optional[UpdateCustomersRequestStatus]
+        status : typing.Optional[UpdateCustomerRequestStatus]
             Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
 
         customer_id : typing.Optional[str]
@@ -518,7 +545,7 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[UpdateCustomersResponse]
+        HttpResponse[UpdateCustomerResponse]
             The updated customer
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -546,9 +573,9 @@ class RawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCustomersResponse,
+                    UpdateCustomerResponse,
                     parse_obj_as(
-                        type_=UpdateCustomersResponse,  # type: ignore
+                        type_=UpdateCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -557,9 +584,9 @@ class RawCustomersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -568,9 +595,9 @@ class RawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -579,9 +606,9 @@ class RawCustomersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -590,9 +617,9 @@ class RawCustomersClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -601,9 +628,9 @@ class RawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -612,9 +639,9 @@ class RawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -630,7 +657,7 @@ class RawCustomersClient:
 
     def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteCustomersResponse]:
+    ) -> HttpResponse[DeleteCustomerResponse]:
         """
         Deletes a customer. Fails when any of the customer's commissions is paid or already included in a payout.
 
@@ -643,7 +670,7 @@ class RawCustomersClient:
 
         Returns
         -------
-        HttpResponse[DeleteCustomersResponse]
+        HttpResponse[DeleteCustomerResponse]
             The deleted customer
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -654,9 +681,9 @@ class RawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCustomersResponse,
+                    DeleteCustomerResponse,
                     parse_obj_as(
-                        type_=DeleteCustomersResponse,  # type: ignore
+                        type_=DeleteCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -665,9 +692,9 @@ class RawCustomersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -676,9 +703,9 @@ class RawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -687,9 +714,9 @@ class RawCustomersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -698,9 +725,9 @@ class RawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -709,9 +736,9 @@ class RawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -750,7 +777,7 @@ class AsyncRawCustomersClient:
         click_id: typing.Optional[str] = None,
         link_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListCustomersResponse]:
+    ) -> AsyncPager[Customer, ListCustomersResponse]:
         """
         Lists customers. Filter by program, partner, link, click, status or your own customer_id, and page with cursors.
 
@@ -809,7 +836,7 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListCustomersResponse]
+        AsyncPager[Customer, ListCustomersResponse]
             A page of customers
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -837,21 +864,46 @@ class AsyncRawCustomersClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListCustomersResponse,
                     parse_obj_as(
                         type_=ListCustomersResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        program_id=program_id,
+                        partner_id=partner_id,
+                        customer_id=customer_id,
+                        status=status,
+                        search=search,
+                        click_id=click_id,
+                        link_id=link_id,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -860,9 +912,9 @@ class AsyncRawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -871,9 +923,9 @@ class AsyncRawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -882,9 +934,9 @@ class AsyncRawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -906,7 +958,7 @@ class AsyncRawCustomersClient:
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
-        status: typing.Optional[CreateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[CreateCustomerRequestStatus] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
         link_id: typing.Optional[str] = OMIT,
@@ -914,7 +966,7 @@ class AsyncRawCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreateCustomersResponse]:
+    ) -> AsyncHttpResponse[CreateCustomerResponse]:
         """
         Creates a customer attributed to a partner. Pass partner_id or link_id, and optionally the click_id that brought them in.
 
@@ -935,7 +987,7 @@ class AsyncRawCustomersClient:
         customer_id : typing.Optional[str]
             Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it. Provide this or email.
 
-        status : typing.Optional[CreateCustomersRequestStatus]
+        status : typing.Optional[CreateCustomerRequestStatus]
             Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
 
         subscription_id : typing.Optional[str]
@@ -961,9 +1013,12 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreateCustomersResponse]
+        AsyncHttpResponse[CreateCustomerResponse]
             The created customer
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = await self._client_wrapper.httpx_client.request(
             "v2/customers",
             method="POST",
@@ -984,15 +1039,15 @@ class AsyncRawCustomersClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateCustomersResponse,
+                    CreateCustomerResponse,
                     parse_obj_as(
-                        type_=CreateCustomersResponse,  # type: ignore
+                        type_=CreateCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1001,9 +1056,9 @@ class AsyncRawCustomersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1012,9 +1067,9 @@ class AsyncRawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1023,9 +1078,9 @@ class AsyncRawCustomersClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1034,9 +1089,9 @@ class AsyncRawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1045,9 +1100,9 @@ class AsyncRawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1063,7 +1118,7 @@ class AsyncRawCustomersClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetCustomersResponse]:
+    ) -> AsyncHttpResponse[GetCustomerResponse]:
         """
         Gets a customer by ID, with its status, the partner it is attributed to and your own customer and subscription IDs.
 
@@ -1076,7 +1131,7 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetCustomersResponse]
+        AsyncHttpResponse[GetCustomerResponse]
             The requested customer
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1087,9 +1142,9 @@ class AsyncRawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetCustomersResponse,
+                    GetCustomerResponse,
                     parse_obj_as(
-                        type_=GetCustomersResponse,  # type: ignore
+                        type_=GetCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1098,9 +1153,9 @@ class AsyncRawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1109,9 +1164,9 @@ class AsyncRawCustomersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1120,9 +1175,9 @@ class AsyncRawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1131,9 +1186,9 @@ class AsyncRawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1155,7 +1210,7 @@ class AsyncRawCustomersClient:
         promotion_code: typing.Optional[str] = OMIT,
         created_at: typing.Optional[dt.datetime] = OMIT,
         name: typing.Optional[str] = OMIT,
-        status: typing.Optional[UpdateCustomersRequestStatus] = OMIT,
+        status: typing.Optional[UpdateCustomerRequestStatus] = OMIT,
         customer_id: typing.Optional[str] = OMIT,
         subscription_id: typing.Optional[str] = OMIT,
         click_id: typing.Optional[str] = OMIT,
@@ -1163,7 +1218,7 @@ class AsyncRawCustomersClient:
         lead_at: typing.Optional[dt.datetime] = OMIT,
         active_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateCustomersResponse]:
+    ) -> AsyncHttpResponse[UpdateCustomerResponse]:
         """
         Updates a customer's name, email, status, your own IDs, or the click and link the customer came from.
 
@@ -1183,7 +1238,7 @@ class AsyncRawCustomersClient:
         name : typing.Optional[str]
             Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
 
-        status : typing.Optional[UpdateCustomersRequestStatus]
+        status : typing.Optional[UpdateCustomerRequestStatus]
             Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
 
         customer_id : typing.Optional[str]
@@ -1209,7 +1264,7 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateCustomersResponse]
+        AsyncHttpResponse[UpdateCustomerResponse]
             The updated customer
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1237,9 +1292,9 @@ class AsyncRawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateCustomersResponse,
+                    UpdateCustomerResponse,
                     parse_obj_as(
-                        type_=UpdateCustomersResponse,  # type: ignore
+                        type_=UpdateCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1248,9 +1303,9 @@ class AsyncRawCustomersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1259,9 +1314,9 @@ class AsyncRawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1270,9 +1325,9 @@ class AsyncRawCustomersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1281,9 +1336,9 @@ class AsyncRawCustomersClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1292,9 +1347,9 @@ class AsyncRawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1303,9 +1358,9 @@ class AsyncRawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1321,7 +1376,7 @@ class AsyncRawCustomersClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteCustomersResponse]:
+    ) -> AsyncHttpResponse[DeleteCustomerResponse]:
         """
         Deletes a customer. Fails when any of the customer's commissions is paid or already included in a payout.
 
@@ -1334,7 +1389,7 @@ class AsyncRawCustomersClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteCustomersResponse]
+        AsyncHttpResponse[DeleteCustomerResponse]
             The deleted customer
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1345,9 +1400,9 @@ class AsyncRawCustomersClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteCustomersResponse,
+                    DeleteCustomerResponse,
                     parse_obj_as(
-                        type_=DeleteCustomersResponse,  # type: ignore
+                        type_=DeleteCustomerResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1356,9 +1411,9 @@ class AsyncRawCustomersClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1367,9 +1422,9 @@ class AsyncRawCustomersClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1378,9 +1433,9 @@ class AsyncRawCustomersClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1389,9 +1444,9 @@ class AsyncRawCustomersClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1400,9 +1455,9 @@ class AsyncRawCustomersClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

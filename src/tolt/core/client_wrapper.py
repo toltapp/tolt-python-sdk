@@ -29,16 +29,18 @@ class BaseClientWrapper:
         self._max_stream_reconnection_attempts = max_stream_reconnection_attempts
         self._logging = logging
 
-    def get_headers(self) -> typing.Dict[str, str]:
+    def get_headers(self, *, include_token: bool = True) -> typing.Dict[str, str]:
         import platform
 
         headers: typing.Dict[str, str] = {
+            "User-Agent": "tolt-python/0.7.1",
             "X-Fern-Language": "Python",
             "X-Fern-Runtime": f"python/{platform.python_version()}",
             "X-Fern-Platform": f"{platform.system().lower()}/{platform.release()}",
             **(self.get_custom_headers() or {}),
         }
-        headers["Authorization"] = f"Bearer {self._get_token()}"
+        if include_token:
+            headers["Authorization"] = f"Bearer {self._get_token()}"
         return headers
 
     def _get_token(self) -> str:
@@ -137,7 +139,7 @@ class AsyncClientWrapper(BaseClientWrapper):
         )
 
     async def async_get_headers(self) -> typing.Dict[str, str]:
-        headers = self.get_headers()
+        headers = self.get_headers(include_token=self._async_token is None)
         if self._async_token is not None:
             token = await self._async_token()
             headers["Authorization"] = f"Bearer {token}"

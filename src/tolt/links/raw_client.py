@@ -9,6 +9,7 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
@@ -18,15 +19,16 @@ from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
-from ..types.error import Error
-from .types.create_links_response import CreateLinksResponse
-from .types.delete_links_response import DeleteLinksResponse
-from .types.get_by_param_value_links_response import GetByParamValueLinksResponse
-from .types.get_links_response import GetLinksResponse
+from ..types.error_response import ErrorResponse
+from ..types.link import Link
+from .types.create_link_response import CreateLinkResponse
+from .types.delete_link_response import DeleteLinkResponse
+from .types.get_link_by_param_value_response import GetLinkByParamValueResponse
+from .types.get_link_response import GetLinkResponse
 from .types.list_links_request_order import ListLinksRequestOrder
 from .types.list_links_request_sort import ListLinksRequestSort
 from .types.list_links_response import ListLinksResponse
-from .types.update_links_response import UpdateLinksResponse
+from .types.update_link_response import UpdateLinkResponse
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -55,7 +57,7 @@ class RawLinksClient:
         value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListLinksResponse]:
+    ) -> SyncPager[Link, ListLinksResponse]:
         """
         Lists ordinary links. Campaign-managed links are excluded.
 
@@ -108,7 +110,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[ListLinksResponse]
+        SyncPager[Link, ListLinksResponse]
             A page of links
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -134,21 +136,41 @@ class RawLinksClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListLinksResponse,
                     parse_obj_as(
                         type_=ListLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+                _get_next = lambda: self.list(
+                    limit=limit,
+                    order=order,
+                    sort=sort,
+                    starting_after=_parsed_next,
+                    ending_before=ending_before,
+                    created_after=created_after,
+                    created_before=created_before,
+                    updated_after=updated_after,
+                    updated_before=updated_before,
+                    program_id=program_id,
+                    partner_id=partner_id,
+                    param=param,
+                    value=value,
+                    search=search,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -157,9 +179,9 @@ class RawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -168,9 +190,9 @@ class RawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -179,9 +201,9 @@ class RawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -202,7 +224,7 @@ class RawLinksClient:
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[CreateLinksResponse]:
+    ) -> HttpResponse[CreateLinkResponse]:
         """
         Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
 
@@ -222,9 +244,12 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[CreateLinksResponse]
+        HttpResponse[CreateLinkResponse]
             The created link
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = self._client_wrapper.httpx_client.request(
             "v2/links",
             method="POST",
@@ -236,15 +261,15 @@ class RawLinksClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateLinksResponse,
+                    CreateLinkResponse,
                     parse_obj_as(
-                        type_=CreateLinksResponse,  # type: ignore
+                        type_=CreateLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -253,9 +278,9 @@ class RawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -264,9 +289,9 @@ class RawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -275,9 +300,9 @@ class RawLinksClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -286,9 +311,9 @@ class RawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -297,9 +322,9 @@ class RawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -315,7 +340,7 @@ class RawLinksClient:
 
     def get_by_param_value(
         self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetByParamValueLinksResponse]:
+    ) -> HttpResponse[GetLinkByParamValueResponse]:
         """
         Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
 
@@ -331,7 +356,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[GetByParamValueLinksResponse]
+        HttpResponse[GetLinkByParamValueResponse]
             The matching link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -346,9 +371,9 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetByParamValueLinksResponse,
+                    GetLinkByParamValueResponse,
                     parse_obj_as(
-                        type_=GetByParamValueLinksResponse,  # type: ignore
+                        type_=GetLinkByParamValueResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -357,9 +382,9 @@ class RawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -368,9 +393,9 @@ class RawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -379,9 +404,9 @@ class RawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -390,9 +415,9 @@ class RawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -401,9 +426,9 @@ class RawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -417,9 +442,7 @@ class RawLinksClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[GetLinksResponse]:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[GetLinkResponse]:
         """
         Gets an ordinary or campaign-managed link by ID.
 
@@ -432,7 +455,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[GetLinksResponse]
+        HttpResponse[GetLinkResponse]
             The requested link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -443,9 +466,9 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetLinksResponse,
+                    GetLinkResponse,
                     parse_obj_as(
-                        type_=GetLinksResponse,  # type: ignore
+                        type_=GetLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -454,9 +477,9 @@ class RawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -465,9 +488,9 @@ class RawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -476,9 +499,9 @@ class RawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -487,9 +510,9 @@ class RawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -510,7 +533,7 @@ class RawLinksClient:
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[UpdateLinksResponse]:
+    ) -> HttpResponse[UpdateLinkResponse]:
         """
         Updates an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -529,7 +552,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[UpdateLinksResponse]
+        HttpResponse[UpdateLinkResponse]
             The updated link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -548,9 +571,9 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateLinksResponse,
+                    UpdateLinkResponse,
                     parse_obj_as(
-                        type_=UpdateLinksResponse,  # type: ignore
+                        type_=UpdateLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -559,9 +582,9 @@ class RawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -570,9 +593,9 @@ class RawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -581,9 +604,9 @@ class RawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -592,9 +615,9 @@ class RawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -603,9 +626,9 @@ class RawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -621,7 +644,7 @@ class RawLinksClient:
 
     def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[DeleteLinksResponse]:
+    ) -> HttpResponse[DeleteLinkResponse]:
         """
         Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -634,7 +657,7 @@ class RawLinksClient:
 
         Returns
         -------
-        HttpResponse[DeleteLinksResponse]
+        HttpResponse[DeleteLinkResponse]
             The deleted link
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -645,9 +668,9 @@ class RawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteLinksResponse,
+                    DeleteLinkResponse,
                     parse_obj_as(
-                        type_=DeleteLinksResponse,  # type: ignore
+                        type_=DeleteLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -656,9 +679,9 @@ class RawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -667,9 +690,9 @@ class RawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -678,9 +701,9 @@ class RawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -689,9 +712,9 @@ class RawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -700,9 +723,9 @@ class RawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -739,7 +762,7 @@ class AsyncRawLinksClient:
         value: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListLinksResponse]:
+    ) -> AsyncPager[Link, ListLinksResponse]:
         """
         Lists ordinary links. Campaign-managed links are excluded.
 
@@ -792,7 +815,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListLinksResponse]
+        AsyncPager[Link, ListLinksResponse]
             A page of links
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -818,21 +841,44 @@ class AsyncRawLinksClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListLinksResponse,
                     parse_obj_as(
                         type_=ListLinksResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _parsed_next = _parsed_response.next_cursor
+                _has_next = _parsed_next is not None and _parsed_next != ""
+
+                async def _get_next():
+                    return await self.list(
+                        limit=limit,
+                        order=order,
+                        sort=sort,
+                        starting_after=_parsed_next,
+                        ending_before=ending_before,
+                        created_after=created_after,
+                        created_before=created_before,
+                        updated_after=updated_after,
+                        updated_before=updated_before,
+                        program_id=program_id,
+                        partner_id=partner_id,
+                        param=param,
+                        value=value,
+                        search=search,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -841,9 +887,9 @@ class AsyncRawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -852,9 +898,9 @@ class AsyncRawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -863,9 +909,9 @@ class AsyncRawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -886,7 +932,7 @@ class AsyncRawLinksClient:
         partner_id: str,
         param: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[CreateLinksResponse]:
+    ) -> AsyncHttpResponse[CreateLinkResponse]:
         """
         Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
 
@@ -906,9 +952,12 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[CreateLinksResponse]
+        AsyncHttpResponse[CreateLinkResponse]
             The created link
         """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
         _response = await self._client_wrapper.httpx_client.request(
             "v2/links",
             method="POST",
@@ -920,15 +969,15 @@ class AsyncRawLinksClient:
             headers={
                 "content-type": "application/json",
             },
-            request_options=request_options,
+            request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    CreateLinksResponse,
+                    CreateLinkResponse,
                     parse_obj_as(
-                        type_=CreateLinksResponse,  # type: ignore
+                        type_=CreateLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -937,9 +986,9 @@ class AsyncRawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -948,9 +997,9 @@ class AsyncRawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -959,9 +1008,9 @@ class AsyncRawLinksClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -970,9 +1019,9 @@ class AsyncRawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -981,9 +1030,9 @@ class AsyncRawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -999,7 +1048,7 @@ class AsyncRawLinksClient:
 
     async def get_by_param_value(
         self, *, param: str, value: str, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetByParamValueLinksResponse]:
+    ) -> AsyncHttpResponse[GetLinkByParamValueResponse]:
         """
         Looks up a single link by its parameter and value (value matched case-insensitively). Returns 404 when none matches.
 
@@ -1015,7 +1064,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetByParamValueLinksResponse]
+        AsyncHttpResponse[GetLinkByParamValueResponse]
             The matching link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1030,9 +1079,9 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetByParamValueLinksResponse,
+                    GetLinkByParamValueResponse,
                     parse_obj_as(
-                        type_=GetByParamValueLinksResponse,  # type: ignore
+                        type_=GetLinkByParamValueResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1041,9 +1090,9 @@ class AsyncRawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1052,9 +1101,9 @@ class AsyncRawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1063,9 +1112,9 @@ class AsyncRawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1074,9 +1123,9 @@ class AsyncRawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1085,9 +1134,9 @@ class AsyncRawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1103,7 +1152,7 @@ class AsyncRawLinksClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[GetLinksResponse]:
+    ) -> AsyncHttpResponse[GetLinkResponse]:
         """
         Gets an ordinary or campaign-managed link by ID.
 
@@ -1116,7 +1165,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[GetLinksResponse]
+        AsyncHttpResponse[GetLinkResponse]
             The requested link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1127,9 +1176,9 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GetLinksResponse,
+                    GetLinkResponse,
                     parse_obj_as(
-                        type_=GetLinksResponse,  # type: ignore
+                        type_=GetLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1138,9 +1187,9 @@ class AsyncRawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1149,9 +1198,9 @@ class AsyncRawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1160,9 +1209,9 @@ class AsyncRawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1171,9 +1220,9 @@ class AsyncRawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1194,7 +1243,7 @@ class AsyncRawLinksClient:
         param: typing.Optional[str] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[UpdateLinksResponse]:
+    ) -> AsyncHttpResponse[UpdateLinkResponse]:
         """
         Updates an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -1213,7 +1262,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[UpdateLinksResponse]
+        AsyncHttpResponse[UpdateLinkResponse]
             The updated link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1232,9 +1281,9 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    UpdateLinksResponse,
+                    UpdateLinkResponse,
                     parse_obj_as(
-                        type_=UpdateLinksResponse,  # type: ignore
+                        type_=UpdateLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1243,9 +1292,9 @@ class AsyncRawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1254,9 +1303,9 @@ class AsyncRawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1265,9 +1314,9 @@ class AsyncRawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1276,9 +1325,9 @@ class AsyncRawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1287,9 +1336,9 @@ class AsyncRawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1305,7 +1354,7 @@ class AsyncRawLinksClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[DeleteLinksResponse]:
+    ) -> AsyncHttpResponse[DeleteLinkResponse]:
         """
         Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
 
@@ -1318,7 +1367,7 @@ class AsyncRawLinksClient:
 
         Returns
         -------
-        AsyncHttpResponse[DeleteLinksResponse]
+        AsyncHttpResponse[DeleteLinkResponse]
             The deleted link
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1329,9 +1378,9 @@ class AsyncRawLinksClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    DeleteLinksResponse,
+                    DeleteLinkResponse,
                     parse_obj_as(
-                        type_=DeleteLinksResponse,  # type: ignore
+                        type_=DeleteLinkResponse,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -1340,9 +1389,9 @@ class AsyncRawLinksClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1351,9 +1400,9 @@ class AsyncRawLinksClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1362,9 +1411,9 @@ class AsyncRawLinksClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1373,9 +1422,9 @@ class AsyncRawLinksClient:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -1384,9 +1433,9 @@ class AsyncRawLinksClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        Error,
+                        ErrorResponse,
                         parse_obj_as(
-                            type_=Error,  # type: ignore
+                            type_=ErrorResponse,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

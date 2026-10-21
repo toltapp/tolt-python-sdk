@@ -4,10 +4,11 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.group import Group
 from .raw_client import AsyncRawGroupsClient, RawGroupsClient
-from .types.get_groups_response import GetGroupsResponse
-from .types.list_groups_request_default import ListGroupsRequestDefault
+from .types.get_group_response import GetGroupResponse
 from .types.list_groups_request_order import ListGroupsRequestOrder
 from .types.list_groups_request_sort import ListGroupsRequestSort
 from .types.list_groups_response import ListGroupsResponse
@@ -42,9 +43,9 @@ class GroupsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
-        default: typing.Optional[ListGroupsRequestDefault] = None,
+        default: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListGroupsResponse:
+    ) -> SyncPager[Group, ListGroupsResponse]:
         """
         Lists partner groups. Filter by program or by the default group, and page with cursors.
 
@@ -83,7 +84,7 @@ class GroupsClient:
         search : typing.Optional[str]
             Text matched anywhere in the group's name, description or public key, ignoring case.
 
-        default : typing.Optional[ListGroupsRequestDefault]
+        default : typing.Optional[bool]
             true lists only default groups, where new partners are placed unless another group is chosen; false lists the others.
 
         request_options : typing.Optional[RequestOptions]
@@ -91,7 +92,7 @@ class GroupsClient:
 
         Returns
         -------
-        ListGroupsResponse
+        SyncPager[Group, ListGroupsResponse]
             A page of groups
 
         Examples
@@ -101,9 +102,14 @@ class GroupsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.groups.list()
+        response = client.groups.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -118,9 +124,8 @@ class GroupsClient:
             default=default,
             request_options=request_options,
         )
-        return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupsResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupResponse:
         """
         Gets a partner group by ID, with the program it belongs to and whether it is the program's default group.
 
@@ -133,7 +138,7 @@ class GroupsClient:
 
         Returns
         -------
-        GetGroupsResponse
+        GetGroupResponse
             The requested group
 
         Examples
@@ -180,9 +185,9 @@ class AsyncGroupsClient:
         updated_before: typing.Optional[dt.datetime] = None,
         program_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
-        default: typing.Optional[ListGroupsRequestDefault] = None,
+        default: typing.Optional[bool] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListGroupsResponse:
+    ) -> AsyncPager[Group, ListGroupsResponse]:
         """
         Lists partner groups. Filter by program or by the default group, and page with cursors.
 
@@ -221,7 +226,7 @@ class AsyncGroupsClient:
         search : typing.Optional[str]
             Text matched anywhere in the group's name, description or public key, ignoring case.
 
-        default : typing.Optional[ListGroupsRequestDefault]
+        default : typing.Optional[bool]
             true lists only default groups, where new partners are placed unless another group is chosen; false lists the others.
 
         request_options : typing.Optional[RequestOptions]
@@ -229,7 +234,7 @@ class AsyncGroupsClient:
 
         Returns
         -------
-        ListGroupsResponse
+        AsyncPager[Group, ListGroupsResponse]
             A page of groups
 
         Examples
@@ -244,12 +249,18 @@ class AsyncGroupsClient:
 
 
         async def main() -> None:
-            await client.groups.list()
+            response = await client.groups.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -264,9 +275,8 @@ class AsyncGroupsClient:
             default=default,
             request_options=request_options,
         )
-        return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupsResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetGroupResponse:
         """
         Gets a partner group by ID, with the program it belongs to and whether it is the program's default group.
 
@@ -279,7 +289,7 @@ class AsyncGroupsClient:
 
         Returns
         -------
-        GetGroupsResponse
+        GetGroupResponse
             The requested group
 
         Examples

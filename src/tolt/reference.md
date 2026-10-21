@@ -1,6 +1,6 @@
 # Reference
-## Embed
-<details><summary><code>client.embed.<a href="src/tolt/embed/client.py">create_token</a>(...) -> CreateTokenEmbedResponse</code></summary>
+## EmbedTokens
+<details><summary><code>client.embed_tokens.<a href="src/tolt/embed_tokens/client.py">create</a>(...) -> CreateEmbedTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -35,9 +35,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.DEFAULT,
 )
 
-client.embed.create_token(
-    request={"key": "value"},
-)
+client.embed_tokens.create()
 
 ```
 </dd>
@@ -53,7 +51,15 @@ client.embed.create_token(
 <dl>
 <dd>
 
-**request:** `CreateTokenEmbedRequest` 
+**partner_id:** `typing.Optional[str]` — Id of an existing partner (part_...). Send this or partner, not both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**partner:** `typing.Optional[CreateEmbedTokenRequestPartner]` — Look up an onboarded partner by email within a program. Send this or partner_id, not both.
     
 </dd>
 </dl>
@@ -213,7 +219,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**default:** `typing.Optional[ListGroupsRequestDefault]` — true lists only default groups, where new partners are placed unless another group is chosen; false lists the others.
+**default:** `typing.Optional[bool]` — true lists only default groups, where new partners are placed unless another group is chosen; false lists the others.
     
 </dd>
 </dl>
@@ -233,7 +239,7 @@ client.groups.list()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/tolt/groups/client.py">get</a>(...) -> GetGroupsResponse</code></summary>
+<details><summary><code>client.groups.<a href="src/tolt/groups/client.py">get</a>(...) -> GetGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -462,7 +468,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**active:** `typing.Optional[ListFlowsRequestActive]` — true lists only active flows, false only paused flows, which do not run.
+**active:** `typing.Optional[bool]` — true lists only active flows, false only paused flows, which do not run.
     
 </dd>
 </dl>
@@ -490,7 +496,7 @@ client.flows.list()
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/tolt/flows/client.py">get</a>(...) -> GetFlowsResponse</code></summary>
+<details><summary><code>client.flows.<a href="src/tolt/flows/client.py">get</a>(...) -> GetFlowResponse</code></summary>
 <dl>
 <dd>
 
@@ -742,7 +748,7 @@ client.clicks.list(
 </dl>
 </details>
 
-<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">create</a>(...) -> CreateClicksResponse</code></summary>
+<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">create</a>(...) -> CreateClickResponse</code></summary>
 <dl>
 <dd>
 
@@ -778,7 +784,11 @@ client = ToltApi(
 )
 
 client.clicks.create(
-    request={"key": "value"},
+    link_id="lnk_mtTeeckFa1vMdvDFXretQNs6",
+    country="US",
+    device="desktop",
+    page="https://example.com/pricing?ref=sam",
+    referrer="https://partner.example.com",
 )
 
 ```
@@ -795,7 +805,63 @@ client.clicks.create(
 <dl>
 <dd>
 
-**request:** `CreateClicksRequest` 
+**link_id:** `typing.Optional[str]` — The link that was clicked. The partner and program are taken from it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**partner_id:** `typing.Optional[str]` — The partner who generated the click. Use it when you know the partner but not the link.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**param:** `typing.Optional[str]` — The tracking parameter of the link, e.g. `ref`. Send it with value when all you have is the landing URL.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**value:** `typing.Optional[str]` — The value of the tracking parameter, e.g. `sam` in `?ref=sam`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — Two-letter ISO country code where the click originated.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**device:** `typing.Optional[str]` — Device type, e.g. `desktop`, `mobile` or `tablet`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page:** `typing.Optional[str]` — URL of the page the visitor landed on.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**referrer:** `typing.Optional[str]` — URL of the referring page.
     
 </dd>
 </dl>
@@ -815,7 +881,7 @@ client.clicks.create(
 </dl>
 </details>
 
-<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">get</a>(...) -> GetClicksResponse</code></summary>
+<details><summary><code>client.clicks.<a href="src/tolt/clicks/client.py">get</a>(...) -> GetClickResponse</code></summary>
 <dl>
 <dd>
 
@@ -1217,7 +1283,7 @@ client.partners.list()
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">create</a>(...) -> CreatePartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">create</a>(...) -> CreatePartnerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1246,7 +1312,7 @@ Creates an onboarded partner together with their referral link. The link value d
 ```python
 from tolt import ToltApi
 from tolt.environment import ToltApiEnvironment
-from tolt.partners import CreatePartnersRequestLink
+from tolt.partners import CreatePartnerRequestLink
 
 client = ToltApi(
     token="<token>",
@@ -1259,7 +1325,7 @@ client.partners.create(
     first_name="Sam",
     last_name="Taylor",
     group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
-    link=CreatePartnersRequestLink(
+    link=CreatePartnerRequestLink(
         value="sam",
         param="ref",
     ),
@@ -1359,7 +1425,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**status:** `typing.Optional[CreatePartnersRequestStatus]` — Use pending to add the partner as an application that still needs approval instead of an active partner.
+**status:** `typing.Optional[CreatePartnerRequestStatus]` — Use pending to add the partner as an application that still needs approval instead of an active partner.
     
 </dd>
 </dl>
@@ -1367,7 +1433,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**link:** `typing.Optional[CreatePartnersRequestLink]` — The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
+**link:** `typing.Optional[CreatePartnerRequestLink]` — The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
     
 </dd>
 </dl>
@@ -1395,7 +1461,7 @@ client.partners.create(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">get</a>(...) -> GetPartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">get</a>(...) -> GetPartnerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1468,7 +1534,7 @@ client.partners.get(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">update</a>(...) -> UpdatePartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">update</a>(...) -> UpdatePartnerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1592,7 +1658,7 @@ client.partners.update(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">approve</a>(...) -> ApprovePartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">approve</a>(...) -> ApprovePartnerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1665,7 +1731,7 @@ client.partners.approve(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">reject</a>(...) -> RejectPartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">reject</a>(...) -> RejectPartnerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1746,7 +1812,7 @@ client.partners.reject(
 </dl>
 </details>
 
-<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">suspend</a>(...) -> SuspendPartnersResponse</code></summary>
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">suspend</a>(...) -> SuspendPartnerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1971,7 +2037,7 @@ client.programs.list()
 </dl>
 </details>
 
-<details><summary><code>client.programs.<a href="src/tolt/programs/client.py">get</a>(...) -> GetProgramsResponse</code></summary>
+<details><summary><code>client.programs.<a href="src/tolt/programs/client.py">get</a>(...) -> GetProgramResponse</code></summary>
 <dl>
 <dd>
 
@@ -2236,7 +2302,7 @@ client.customers.list()
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">create</a>(...) -> CreateCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">create</a>(...) -> CreateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2333,7 +2399,7 @@ client.customers.create(
 <dl>
 <dd>
 
-**status:** `typing.Optional[CreateCustomersRequestStatus]` — Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
+**status:** `typing.Optional[CreateCustomerRequestStatus]` — Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
     
 </dd>
 </dl>
@@ -2401,7 +2467,7 @@ client.customers.create(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">get</a>(...) -> GetCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">get</a>(...) -> GetCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2474,7 +2540,7 @@ client.customers.get(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">update</a>(...) -> UpdateCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">update</a>(...) -> UpdateCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2569,7 +2635,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**status:** `typing.Optional[UpdateCustomersRequestStatus]` — Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
+**status:** `typing.Optional[UpdateCustomerRequestStatus]` — Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
     
 </dd>
 </dl>
@@ -2637,7 +2703,7 @@ client.customers.update(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">delete</a>(...) -> DeleteCustomersResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/tolt/customers/client.py">delete</a>(...) -> DeleteCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -3054,7 +3120,7 @@ client.commissions.list()
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">create</a>(...) -> CreateCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">create</a>(...) -> CreateCommissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3090,7 +3156,12 @@ client = ToltApi(
 )
 
 client.commissions.create(
-    request={"key": "value"},
+    amount=1000,
+    customer_id="cus_LBfjvtfct9pVUeLojMHiGnXv",
+    revenue=5000,
+    status="approved",
+    source="api",
+    transaction_id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
 )
 
 ```
@@ -3107,7 +3178,79 @@ client.commissions.create(
 <dl>
 <dd>
 
-**request:** `CreateCommissionsRequest` 
+**amount:** `int` — What the partner earns for this commission, in minor units of the program currency (cents for USD).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_at:** `typing.Optional[datetime.datetime]` — When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change. Defaults to now.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**customer_id:** `typing.Optional[str]` — Id of the customer the commission is for (cus_...), as returned when listing customers. The commission goes to the customer's partner and program; partner_id and program_id can be left out, and when given they must match the customer's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**partner_id:** `typing.Optional[str]` — Id of the partner who earns the commission (part_...), as returned when listing partners. Used with program_id when no customer_id is given.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**program_id:** `typing.Optional[str]` — Id of the partner's program (prg_...). Required with partner_id when no customer_id is given.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**revenue:** `typing.Optional[int]` — The sale amount the commission is based on, in minor units of the program currency.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[CreateCommissionRequestStatus]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**source:** `typing.Optional[str]` — Free-form label for where the commission came from, such as stripe or api.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**charge_id:** `typing.Optional[str]` — Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**transaction_id:** `typing.Optional[str]` — Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
     
 </dd>
 </dl>
@@ -3127,7 +3270,7 @@ client.commissions.create(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">get</a>(...) -> GetCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">get</a>(...) -> GetCommissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3200,7 +3343,7 @@ client.commissions.get(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">update</a>(...) -> UpdateCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">update</a>(...) -> UpdateCommissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3280,7 +3423,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**status:** `typing.Optional[UpdateCommissionsRequestStatus]` 
+**status:** `typing.Optional[UpdateCommissionRequestStatus]` 
     
 </dd>
 </dl>
@@ -3332,7 +3475,7 @@ client.commissions.update(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">delete</a>(...) -> DeleteCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">delete</a>(...) -> DeleteCommissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3405,7 +3548,7 @@ client.commissions.delete(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">approve</a>(...) -> ApproveCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">approve</a>(...) -> ApproveCommissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3478,7 +3621,7 @@ client.commissions.approve(
 </dl>
 </details>
 
-<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">decline</a>(...) -> DeclineCommissionsResponse</code></summary>
+<details><summary><code>client.commissions.<a href="src/tolt/commissions/client.py">decline</a>(...) -> DeclineCommissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3727,7 +3870,7 @@ client.transactions.list()
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">create</a>(...) -> CreateTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">create</a>(...) -> CreateTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3878,7 +4021,7 @@ client.transactions.create(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">get</a>(...) -> GetTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">get</a>(...) -> GetTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3951,7 +4094,7 @@ client.transactions.get(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">update</a>(...) -> UpdateTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">update</a>(...) -> UpdateTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4106,7 +4249,7 @@ client.transactions.update(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">delete</a>(...) -> DeleteTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">delete</a>(...) -> DeleteTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4179,7 +4322,7 @@ client.transactions.delete(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">refund</a>(...) -> RefundTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">refund</a>(...) -> RefundTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4252,7 +4395,7 @@ client.transactions.refund(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">rerun_flows</a>(...) -> RerunFlowsTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">rerun_flows</a>(...) -> RerunTransactionFlowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4501,7 +4644,7 @@ client.links.list()
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">create</a>(...) -> CreateLinksResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">create</a>(...) -> CreateLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -4592,7 +4735,7 @@ client.links.create(
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">get_by_param_value</a>(...) -> GetByParamValueLinksResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">get_by_param_value</a>(...) -> GetLinkByParamValueResponse</code></summary>
 <dl>
 <dd>
 
@@ -4674,7 +4817,7 @@ client.links.get_by_param_value(
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">get</a>(...) -> GetLinksResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">get</a>(...) -> GetLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -4747,7 +4890,7 @@ client.links.get(
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">update</a>(...) -> UpdateLinksResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">update</a>(...) -> UpdateLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -4838,7 +4981,7 @@ client.links.update(
 </dl>
 </details>
 
-<details><summary><code>client.links.<a href="src/tolt/links/client.py">delete</a>(...) -> DeleteLinksResponse</code></summary>
+<details><summary><code>client.links.<a href="src/tolt/links/client.py">delete</a>(...) -> DeleteLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -5079,7 +5222,7 @@ client.promotion_codes.list()
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">create</a>(...) -> CreatePromotionCodesResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">create</a>(...) -> CreatePromotionCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -5151,7 +5294,7 @@ client.promotion_codes.create(
 <dl>
 <dd>
 
-**type:** `typing.Optional[CreatePromotionCodesRequestType]` — Whether value is a percent off or a fixed amount off.
+**type:** `typing.Optional[CreatePromotionCodeRequestType]` — Whether value is a percent off or a fixed amount off.
     
 </dd>
 </dl>
@@ -5179,7 +5322,7 @@ client.promotion_codes.create(
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">get</a>(...) -> GetPromotionCodesResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">get</a>(...) -> GetPromotionCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -5252,7 +5395,7 @@ client.promotion_codes.get(
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">update</a>(...) -> UpdatePromotionCodesResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">update</a>(...) -> UpdatePromotionCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -5324,7 +5467,7 @@ client.promotion_codes.update(
 <dl>
 <dd>
 
-**type:** `typing.Optional[UpdatePromotionCodesRequestType]` — Whether value is a percent off or a fixed amount off.
+**type:** `typing.Optional[UpdatePromotionCodeRequestType]` — Whether value is a percent off or a fixed amount off.
     
 </dd>
 </dl>
@@ -5352,7 +5495,7 @@ client.promotion_codes.update(
 </dl>
 </details>
 
-<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">delete</a>(...) -> DeletePromotionCodesResponse</code></summary>
+<details><summary><code>client.promotion_codes.<a href="src/tolt/promotion_codes/client.py">delete</a>(...) -> DeletePromotionCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -5426,7 +5569,7 @@ client.promotion_codes.delete(
 </details>
 
 ## Reports
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">overview</a>(...) -> OverviewReportsResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">overview</a>(...) -> ReportsOverviewResponse</code></summary>
 <dl>
 <dd>
 
@@ -5513,7 +5656,7 @@ client.reports.overview()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">partners</a>(...) -> PartnersReportsResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">partners</a>(...) -> ReportsPartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5640,7 +5783,7 @@ client.reports.partners()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">links</a>(...) -> LinksReportsResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">links</a>(...) -> ReportsLinksResponse</code></summary>
 <dl>
 <dd>
 
@@ -5767,7 +5910,7 @@ client.reports.links()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">timeseries</a>(...) -> TimeseriesReportsResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">timeseries</a>(...) -> ReportsTimeseriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5870,7 +6013,7 @@ client.reports.timeseries()
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">customer_stats</a>(...) -> CustomerStatsReportsResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/tolt/reports/client.py">customers</a>(...) -> ReportsCustomersResponse</code></summary>
 <dl>
 <dd>
 
@@ -5905,7 +6048,7 @@ client = ToltApi(
     environment=ToltApiEnvironment.DEFAULT,
 )
 
-client.reports.customer_stats()
+client.reports.customers()
 
 ```
 </dd>

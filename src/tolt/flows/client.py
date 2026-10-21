@@ -4,10 +4,11 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.flow import Flow
 from .raw_client import AsyncRawFlowsClient, RawFlowsClient
-from .types.get_flows_response import GetFlowsResponse
-from .types.list_flows_request_active import ListFlowsRequestActive
+from .types.get_flow_response import GetFlowResponse
 from .types.list_flows_request_order import ListFlowsRequestOrder
 from .types.list_flows_request_sort import ListFlowsRequestSort
 from .types.list_flows_response import ListFlowsResponse
@@ -44,10 +45,10 @@ class FlowsClient:
         group_id: typing.Optional[str] = None,
         campaign_id: typing.Optional[str] = None,
         event: typing.Optional[str] = None,
-        active: typing.Optional[ListFlowsRequestActive] = None,
+        active: typing.Optional[bool] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListFlowsResponse:
+    ) -> SyncPager[Flow, ListFlowsResponse]:
         """
         Lists flows. Filter by program, group, campaign, event or active state, and page with cursors.
 
@@ -92,7 +93,7 @@ class FlowsClient:
         event : typing.Optional[str]
             Only flows triggered by this event, such as transaction_created or lead_created.
 
-        active : typing.Optional[ListFlowsRequestActive]
+        active : typing.Optional[bool]
             true lists only active flows, false only paused flows, which do not run.
 
         search : typing.Optional[str]
@@ -103,7 +104,7 @@ class FlowsClient:
 
         Returns
         -------
-        ListFlowsResponse
+        SyncPager[Flow, ListFlowsResponse]
             A page of flows
 
         Examples
@@ -113,9 +114,14 @@ class FlowsClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.flows.list()
+        response = client.flows.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -133,9 +139,8 @@ class FlowsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowsResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowResponse:
         """
         Gets a flow by ID, with the event it runs on, its conditions and its action: a commission to generate or a group to move the partner to.
 
@@ -148,7 +153,7 @@ class FlowsClient:
 
         Returns
         -------
-        GetFlowsResponse
+        GetFlowResponse
             The requested flow
 
         Examples
@@ -197,10 +202,10 @@ class AsyncFlowsClient:
         group_id: typing.Optional[str] = None,
         campaign_id: typing.Optional[str] = None,
         event: typing.Optional[str] = None,
-        active: typing.Optional[ListFlowsRequestActive] = None,
+        active: typing.Optional[bool] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListFlowsResponse:
+    ) -> AsyncPager[Flow, ListFlowsResponse]:
         """
         Lists flows. Filter by program, group, campaign, event or active state, and page with cursors.
 
@@ -245,7 +250,7 @@ class AsyncFlowsClient:
         event : typing.Optional[str]
             Only flows triggered by this event, such as transaction_created or lead_created.
 
-        active : typing.Optional[ListFlowsRequestActive]
+        active : typing.Optional[bool]
             true lists only active flows, false only paused flows, which do not run.
 
         search : typing.Optional[str]
@@ -256,7 +261,7 @@ class AsyncFlowsClient:
 
         Returns
         -------
-        ListFlowsResponse
+        AsyncPager[Flow, ListFlowsResponse]
             A page of flows
 
         Examples
@@ -271,12 +276,18 @@ class AsyncFlowsClient:
 
 
         async def main() -> None:
-            await client.flows.list()
+            response = await client.flows.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -294,9 +305,8 @@ class AsyncFlowsClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowsResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetFlowResponse:
         """
         Gets a flow by ID, with the event it runs on, its conditions and its action: a commission to generate or a group to move the partner to.
 
@@ -309,7 +319,7 @@ class AsyncFlowsClient:
 
         Returns
         -------
-        GetFlowsResponse
+        GetFlowResponse
             The requested flow
 
         Examples

@@ -6,16 +6,9 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import (
-        GetGroupsResponse,
-        ListGroupsRequestDefault,
-        ListGroupsRequestOrder,
-        ListGroupsRequestSort,
-        ListGroupsResponse,
-    )
+    from .types import GetGroupResponse, ListGroupsRequestOrder, ListGroupsRequestSort, ListGroupsResponse
 _dynamic_imports: typing.Dict[str, str] = {
-    "GetGroupsResponse": ".types",
-    "ListGroupsRequestDefault": ".types",
+    "GetGroupResponse": ".types",
     "ListGroupsRequestOrder": ".types",
     "ListGroupsRequestSort": ".types",
     "ListGroupsResponse": ".types",
@@ -43,10 +36,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = [
-    "GetGroupsResponse",
-    "ListGroupsRequestDefault",
-    "ListGroupsRequestOrder",
-    "ListGroupsRequestSort",
-    "ListGroupsResponse",
-]
+__all__ = ["GetGroupResponse", "ListGroupsRequestOrder", "ListGroupsRequestSort", "ListGroupsResponse"]

@@ -4,18 +4,20 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.promotion_code import PromotionCode
 from .raw_client import AsyncRawPromotionCodesClient, RawPromotionCodesClient
-from .types.create_promotion_codes_request_type import CreatePromotionCodesRequestType
-from .types.create_promotion_codes_response import CreatePromotionCodesResponse
-from .types.delete_promotion_codes_response import DeletePromotionCodesResponse
-from .types.get_promotion_codes_response import GetPromotionCodesResponse
+from .types.create_promotion_code_request_type import CreatePromotionCodeRequestType
+from .types.create_promotion_code_response import CreatePromotionCodeResponse
+from .types.delete_promotion_code_response import DeletePromotionCodeResponse
+from .types.get_promotion_code_response import GetPromotionCodeResponse
 from .types.list_promotion_codes_request_order import ListPromotionCodesRequestOrder
 from .types.list_promotion_codes_request_sort import ListPromotionCodesRequestSort
 from .types.list_promotion_codes_request_type import ListPromotionCodesRequestType
 from .types.list_promotion_codes_response import ListPromotionCodesResponse
-from .types.update_promotion_codes_request_type import UpdatePromotionCodesRequestType
-from .types.update_promotion_codes_response import UpdatePromotionCodesResponse
+from .types.update_promotion_code_request_type import UpdatePromotionCodeRequestType
+from .types.update_promotion_code_response import UpdatePromotionCodeResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -53,7 +55,7 @@ class PromotionCodesClient:
         type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListPromotionCodesResponse:
+    ) -> SyncPager[PromotionCode, ListPromotionCodesResponse]:
         """
         Lists promotion codes. Filter by program, partner or type, and page with cursors.
 
@@ -103,7 +105,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        ListPromotionCodesResponse
+        SyncPager[PromotionCode, ListPromotionCodesResponse]
             A page of promotion codes
 
         Examples
@@ -113,9 +115,14 @@ class PromotionCodesClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.promotion_codes.list()
+        response = client.promotion_codes.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -131,17 +138,16 @@ class PromotionCodesClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
         self,
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[CreatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePromotionCodesResponse:
+    ) -> CreatePromotionCodeResponse:
         """
         Creates a promotion code for a partner, so customers who use it are credited to them. A partner cannot have the same code twice.
 
@@ -153,7 +159,7 @@ class PromotionCodesClient:
         partner_id : str
             Id of the partner the code belongs to (part_...), as returned when listing partners. The code is created in that partner's program.
 
-        type : typing.Optional[CreatePromotionCodesRequestType]
+        type : typing.Optional[CreatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -164,7 +170,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        CreatePromotionCodesResponse
+        CreatePromotionCodeResponse
             The created promotion code
 
         Examples
@@ -186,7 +192,7 @@ class PromotionCodesClient:
         )
         return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPromotionCodesResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetPromotionCodeResponse:
         """
         Gets a promotion code by ID, with its discount type and value and the partner, group or program it belongs to.
 
@@ -199,7 +205,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        GetPromotionCodesResponse
+        GetPromotionCodeResponse
             The requested promotion code
 
         Examples
@@ -221,10 +227,10 @@ class PromotionCodesClient:
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[UpdatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePromotionCodesResponse:
+    ) -> UpdatePromotionCodeResponse:
         """
         Updates a promotion code's code, discount type or value.
 
@@ -235,7 +241,7 @@ class PromotionCodesClient:
         code : typing.Optional[str]
             The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case.
 
-        type : typing.Optional[UpdatePromotionCodesRequestType]
+        type : typing.Optional[UpdatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -246,7 +252,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        UpdatePromotionCodesResponse
+        UpdatePromotionCodeResponse
             The updated promotion code
 
         Examples
@@ -268,7 +274,7 @@ class PromotionCodesClient:
 
     def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeletePromotionCodesResponse:
+    ) -> DeletePromotionCodeResponse:
         """
         Deletes a promotion code, so customers who use it afterwards are no longer attributed through it.
 
@@ -281,7 +287,7 @@ class PromotionCodesClient:
 
         Returns
         -------
-        DeletePromotionCodesResponse
+        DeletePromotionCodeResponse
             The deleted promotion code
 
         Examples
@@ -331,7 +337,7 @@ class AsyncPromotionCodesClient:
         type: typing.Optional[ListPromotionCodesRequestType] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListPromotionCodesResponse:
+    ) -> AsyncPager[PromotionCode, ListPromotionCodesResponse]:
         """
         Lists promotion codes. Filter by program, partner or type, and page with cursors.
 
@@ -381,7 +387,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        ListPromotionCodesResponse
+        AsyncPager[PromotionCode, ListPromotionCodesResponse]
             A page of promotion codes
 
         Examples
@@ -396,12 +402,18 @@ class AsyncPromotionCodesClient:
 
 
         async def main() -> None:
-            await client.promotion_codes.list()
+            response = await client.promotion_codes.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -417,17 +429,16 @@ class AsyncPromotionCodesClient:
             search=search,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
         self,
         *,
         code: str,
         partner_id: str,
-        type: typing.Optional[CreatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[CreatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> CreatePromotionCodesResponse:
+    ) -> CreatePromotionCodeResponse:
         """
         Creates a promotion code for a partner, so customers who use it are credited to them. A partner cannot have the same code twice.
 
@@ -439,7 +450,7 @@ class AsyncPromotionCodesClient:
         partner_id : str
             Id of the partner the code belongs to (part_...), as returned when listing partners. The code is created in that partner's program.
 
-        type : typing.Optional[CreatePromotionCodesRequestType]
+        type : typing.Optional[CreatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -450,7 +461,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        CreatePromotionCodesResponse
+        CreatePromotionCodeResponse
             The created promotion code
 
         Examples
@@ -482,7 +493,7 @@ class AsyncPromotionCodesClient:
 
     async def get(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> GetPromotionCodesResponse:
+    ) -> GetPromotionCodeResponse:
         """
         Gets a promotion code by ID, with its discount type and value and the partner, group or program it belongs to.
 
@@ -495,7 +506,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        GetPromotionCodesResponse
+        GetPromotionCodeResponse
             The requested promotion code
 
         Examples
@@ -525,10 +536,10 @@ class AsyncPromotionCodesClient:
         id: str,
         *,
         code: typing.Optional[str] = OMIT,
-        type: typing.Optional[UpdatePromotionCodesRequestType] = OMIT,
+        type: typing.Optional[UpdatePromotionCodeRequestType] = OMIT,
         value: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UpdatePromotionCodesResponse:
+    ) -> UpdatePromotionCodeResponse:
         """
         Updates a promotion code's code, discount type or value.
 
@@ -539,7 +550,7 @@ class AsyncPromotionCodesClient:
         code : typing.Optional[str]
             The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case.
 
-        type : typing.Optional[UpdatePromotionCodesRequestType]
+        type : typing.Optional[UpdatePromotionCodeRequestType]
             Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
@@ -550,7 +561,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        UpdatePromotionCodesResponse
+        UpdatePromotionCodeResponse
             The updated promotion code
 
         Examples
@@ -582,7 +593,7 @@ class AsyncPromotionCodesClient:
 
     async def delete(
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> DeletePromotionCodesResponse:
+    ) -> DeletePromotionCodeResponse:
         """
         Deletes a promotion code, so customers who use it afterwards are no longer attributed through it.
 
@@ -595,7 +606,7 @@ class AsyncPromotionCodesClient:
 
         Returns
         -------
-        DeletePromotionCodesResponse
+        DeletePromotionCodeResponse
             The deleted promotion code
 
         Examples

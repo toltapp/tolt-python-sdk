@@ -4,11 +4,12 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.click import Click
 from .raw_client import AsyncRawClicksClient, RawClicksClient
-from .types.create_clicks_request import CreateClicksRequest
-from .types.create_clicks_response import CreateClicksResponse
-from .types.get_clicks_response import GetClicksResponse
+from .types.create_click_response import CreateClickResponse
+from .types.get_click_response import GetClickResponse
 from .types.list_clicks_request_order import ListClicksRequestOrder
 from .types.list_clicks_request_sort import ListClicksRequestSort
 from .types.list_clicks_response import ListClicksResponse
@@ -50,7 +51,7 @@ class ClicksClient:
         country: typing.Optional[str] = None,
         device: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListClicksResponse:
+    ) -> SyncPager[Click, ListClicksResponse]:
         """
         Lists recorded clicks. Filter by program, partner, link, country, or device, and page with cursors.
 
@@ -103,7 +104,7 @@ class ClicksClient:
 
         Returns
         -------
-        ListClicksResponse
+        SyncPager[Click, ListClicksResponse]
             A page of clicks
 
         Examples
@@ -113,12 +114,17 @@ class ClicksClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.clicks.list(
+        response = client.clicks.list(
             country="Canada",
             device="desktop",
         )
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -135,24 +141,55 @@ class ClicksClient:
             device=device,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
-        self, *, request: CreateClicksRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> CreateClicksResponse:
+        self,
+        *,
+        link_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        param: typing.Optional[str] = OMIT,
+        value: typing.Optional[str] = OMIT,
+        country: typing.Optional[str] = OMIT,
+        device: typing.Optional[str] = OMIT,
+        page: typing.Optional[str] = OMIT,
+        referrer: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateClickResponse:
         """
         Records a click on a partner's link from your own server, for visits the browser script cannot see. Identify the source by link_id, by partner_id with an optional link_id, or by the link's param and value; the partner and program are resolved from it. Pass the returned id as click_id when you create the customer.
 
         Parameters
         ----------
-        request : CreateClicksRequest
+        link_id : typing.Optional[str]
+            The link that was clicked. The partner and program are taken from it.
+
+        partner_id : typing.Optional[str]
+            The partner who generated the click. Use it when you know the partner but not the link.
+
+        param : typing.Optional[str]
+            The tracking parameter of the link, e.g. `ref`. Send it with value when all you have is the landing URL.
+
+        value : typing.Optional[str]
+            The value of the tracking parameter, e.g. `sam` in `?ref=sam`.
+
+        country : typing.Optional[str]
+            Two-letter ISO country code where the click originated.
+
+        device : typing.Optional[str]
+            Device type, e.g. `desktop`, `mobile` or `tablet`.
+
+        page : typing.Optional[str]
+            URL of the page the visitor landed on.
+
+        referrer : typing.Optional[str]
+            URL of the referring page.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateClicksResponse
+        CreateClickResponse
             The created click
 
         Examples
@@ -163,13 +200,27 @@ class ClicksClient:
             token="YOUR_TOKEN",
         )
         client.clicks.create(
-            request={"key": "value"},
+            link_id="lnk_mtTeeckFa1vMdvDFXretQNs6",
+            country="US",
+            device="desktop",
+            page="https://example.com/pricing?ref=sam",
+            referrer="https://partner.example.com",
         )
         """
-        _response = self._raw_client.create(request=request, request_options=request_options)
+        _response = self._raw_client.create(
+            link_id=link_id,
+            partner_id=partner_id,
+            param=param,
+            value=value,
+            country=country,
+            device=device,
+            page=page,
+            referrer=referrer,
+            request_options=request_options,
+        )
         return _response.data
 
-    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClicksResponse:
+    def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClickResponse:
         """
         Gets a recorded click by ID, with the partner, link, page, referrer, country, device and browser it came from.
 
@@ -182,7 +233,7 @@ class ClicksClient:
 
         Returns
         -------
-        GetClicksResponse
+        GetClickResponse
             The requested click
 
         Examples
@@ -233,7 +284,7 @@ class AsyncClicksClient:
         country: typing.Optional[str] = None,
         device: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListClicksResponse:
+    ) -> AsyncPager[Click, ListClicksResponse]:
         """
         Lists recorded clicks. Filter by program, partner, link, country, or device, and page with cursors.
 
@@ -286,7 +337,7 @@ class AsyncClicksClient:
 
         Returns
         -------
-        ListClicksResponse
+        AsyncPager[Click, ListClicksResponse]
             A page of clicks
 
         Examples
@@ -301,15 +352,21 @@ class AsyncClicksClient:
 
 
         async def main() -> None:
-            await client.clicks.list(
+            response = await client.clicks.list(
                 country="Canada",
                 device="desktop",
             )
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             sort=sort,
@@ -326,24 +383,55 @@ class AsyncClicksClient:
             device=device,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
-        self, *, request: CreateClicksRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> CreateClicksResponse:
+        self,
+        *,
+        link_id: typing.Optional[str] = OMIT,
+        partner_id: typing.Optional[str] = OMIT,
+        param: typing.Optional[str] = OMIT,
+        value: typing.Optional[str] = OMIT,
+        country: typing.Optional[str] = OMIT,
+        device: typing.Optional[str] = OMIT,
+        page: typing.Optional[str] = OMIT,
+        referrer: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> CreateClickResponse:
         """
         Records a click on a partner's link from your own server, for visits the browser script cannot see. Identify the source by link_id, by partner_id with an optional link_id, or by the link's param and value; the partner and program are resolved from it. Pass the returned id as click_id when you create the customer.
 
         Parameters
         ----------
-        request : CreateClicksRequest
+        link_id : typing.Optional[str]
+            The link that was clicked. The partner and program are taken from it.
+
+        partner_id : typing.Optional[str]
+            The partner who generated the click. Use it when you know the partner but not the link.
+
+        param : typing.Optional[str]
+            The tracking parameter of the link, e.g. `ref`. Send it with value when all you have is the landing URL.
+
+        value : typing.Optional[str]
+            The value of the tracking parameter, e.g. `sam` in `?ref=sam`.
+
+        country : typing.Optional[str]
+            Two-letter ISO country code where the click originated.
+
+        device : typing.Optional[str]
+            Device type, e.g. `desktop`, `mobile` or `tablet`.
+
+        page : typing.Optional[str]
+            URL of the page the visitor landed on.
+
+        referrer : typing.Optional[str]
+            URL of the referring page.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        CreateClicksResponse
+        CreateClickResponse
             The created click
 
         Examples
@@ -359,16 +447,30 @@ class AsyncClicksClient:
 
         async def main() -> None:
             await client.clicks.create(
-                request={"key": "value"},
+                link_id="lnk_mtTeeckFa1vMdvDFXretQNs6",
+                country="US",
+                device="desktop",
+                page="https://example.com/pricing?ref=sam",
+                referrer="https://partner.example.com",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create(request=request, request_options=request_options)
+        _response = await self._raw_client.create(
+            link_id=link_id,
+            partner_id=partner_id,
+            param=param,
+            value=value,
+            country=country,
+            device=device,
+            page=page,
+            referrer=referrer,
+            request_options=request_options,
+        )
         return _response.data
 
-    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClicksResponse:
+    async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetClickResponse:
         """
         Gets a recorded click by ID, with the partner, link, page, referrer, country, device and browser it came from.
 
@@ -381,7 +483,7 @@ class AsyncClicksClient:
 
         Returns
         -------
-        GetClicksResponse
+        GetClickResponse
             The requested click
 
         Examples

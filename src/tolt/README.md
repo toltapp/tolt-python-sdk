@@ -13,6 +13,7 @@ The Tolt Python library provides convenient access to the Tolt APIs from Python.
 - [Environments](#environments)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
+- [Pagination](#pagination)
 - [Advanced](#advanced)
   - [Access Raw Response Data](#access-raw-response-data)
   - [Retries](#retries)
@@ -41,9 +42,7 @@ client = ToltApi(
     token="<token>",
 )
 
-client.embed.create_token(
-    request={"key": "value"},
-)
+client.embed_tokens.create()
 ```
 
 ## Environments
@@ -74,9 +73,7 @@ client = AsyncToltApi(
 
 
 async def main() -> None:
-    await client.embed.create_token(
-        request={"key": "value"},
-    )
+    await client.embed_tokens.create()
 
 
 asyncio.run(main())
@@ -91,10 +88,33 @@ will be thrown.
 from tolt.core.api_error import ApiError
 
 try:
-    client.embed.create_token(...)
+    client.embed_tokens.create(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
+```
+
+## Pagination
+
+Paginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.
+
+```python
+from tolt import ToltApi
+
+client = ToltApi(
+    token="<token>",
+)
+
+client.groups.list()
+```
+
+```python
+# You can also iterate through pages and access the typed response per page
+pager = client.groups.list(...)
+for page in pager.iter_pages():
+    print(page.response)  # access the typed response for each page
+    for item in page:
+        print(item)
 ```
 
 ## Advanced
@@ -108,7 +128,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from tolt import ToltApi
 
 client = ToltApi(...)
-response = client.embed.with_raw_response.create_token(...)
+response = client.embed_tokens.with_raw_response.create(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -139,7 +159,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.embed.create_token(..., request_options={
+client.embed_tokens.create(..., request_options={
     "max_retries": 1
 })
 ```
@@ -154,7 +174,7 @@ from tolt import ToltApi
 client = ToltApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.embed.create_token(..., request_options={
+client.embed_tokens.create(..., request_options={
     "timeout": 1
 })
 ```

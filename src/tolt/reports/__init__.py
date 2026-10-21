@@ -7,28 +7,28 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        CustomerStatsReportsResponse,
         LinksReportsRequestOrder,
         LinksReportsRequestSort,
-        LinksReportsResponse,
-        OverviewReportsResponse,
         PartnersReportsRequestOrder,
         PartnersReportsRequestSort,
-        PartnersReportsResponse,
+        ReportsCustomersResponse,
+        ReportsLinksResponse,
+        ReportsOverviewResponse,
+        ReportsPartnersResponse,
+        ReportsTimeseriesResponse,
         TimeseriesReportsRequestGranularity,
-        TimeseriesReportsResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
-    "CustomerStatsReportsResponse": ".types",
     "LinksReportsRequestOrder": ".types",
     "LinksReportsRequestSort": ".types",
-    "LinksReportsResponse": ".types",
-    "OverviewReportsResponse": ".types",
     "PartnersReportsRequestOrder": ".types",
     "PartnersReportsRequestSort": ".types",
-    "PartnersReportsResponse": ".types",
+    "ReportsCustomersResponse": ".types",
+    "ReportsLinksResponse": ".types",
+    "ReportsOverviewResponse": ".types",
+    "ReportsPartnersResponse": ".types",
+    "ReportsTimeseriesResponse": ".types",
     "TimeseriesReportsRequestGranularity": ".types",
-    "TimeseriesReportsResponse": ".types",
 }
 
 
@@ -54,14 +54,14 @@ def __dir__():
 
 
 __all__ = [
-    "CustomerStatsReportsResponse",
     "LinksReportsRequestOrder",
     "LinksReportsRequestSort",
-    "LinksReportsResponse",
-    "OverviewReportsResponse",
     "PartnersReportsRequestOrder",
     "PartnersReportsRequestSort",
-    "PartnersReportsResponse",
+    "ReportsCustomersResponse",
+    "ReportsLinksResponse",
+    "ReportsOverviewResponse",
+    "ReportsPartnersResponse",
+    "ReportsTimeseriesResponse",
     "TimeseriesReportsRequestGranularity",
-    "TimeseriesReportsResponse",
 ]
