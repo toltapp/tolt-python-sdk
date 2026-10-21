@@ -1,6 +1,30 @@
 # CHANGELOG
 
 
+## v0.7.1 (2026-10-21)
+
+### Bug Fixes
+
+- Ship py.typed, keep tests out of the wheel, and run CI on pull requests
+  ([#8](https://github.com/toltapp/tolt-python-sdk/pull/8),
+  [`6d7bb19`](https://github.com/toltapp/tolt-python-sdk/commit/6d7bb190b3761c64be68a2299e350fa765f680b7))
+
+* fix: ship py.typed, keep tests out of the wheel, and run CI on pull requests
+
+The wheel had no py.typed marker, so mypy skipped the package entirely ("missing library stubs or
+  py.typed marker"), and it shipped tolt/tests/ and three markdown files that Fern writes next to
+  the source. Fern owns src/tolt and removes files it didn't generate, so py.typed is force-included
+  from the repo root.
+
+Adds a PR workflow that builds the wheel, checks its contents, runs the tests on Python 3.8 and
+  3.12, and type-checks the package and a strict caller.
+
+* ci: test on Python 3.10 and 3.13
+
+The SDK doesn't run on 3.8 or 3.9 (#10 raises requires-python to 3.10), so the matrix covers the
+  supported floor and the newest release.
+
+
 ## v0.7.0 (2026-10-21)
 
 ### Features
