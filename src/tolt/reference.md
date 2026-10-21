@@ -32,10 +32,12 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
-client.embed.create_token()
+client.embed.create_token(
+    request={"key": "value"},
+)
 
 ```
 </dd>
@@ -51,15 +53,7 @@ client.embed.create_token()
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**partner:** `typing.Optional[CreateTokenEmbedRequestPartner]` 
+**request:** `CreateTokenEmbedRequest` 
     
 </dd>
 </dl>
@@ -84,6 +78,20 @@ client.embed.create_token()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists partner groups. Filter by program or by the default group, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -98,7 +106,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.groups.list()
@@ -117,7 +125,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -125,7 +133,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListGroupsRequestOrder]` 
+**order:** `typing.Optional[ListGroupsRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -133,7 +141,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListGroupsRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListGroupsRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -157,7 +165,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -165,7 +173,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -173,7 +181,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -181,7 +189,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -189,7 +197,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -197,7 +205,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the group's name, description or public key, ignoring case.
     
 </dd>
 </dl>
@@ -205,7 +213,7 @@ client.groups.list()
 <dl>
 <dd>
 
-**default:** `typing.Optional[ListGroupsRequestDefault]` 
+**default:** `typing.Optional[ListGroupsRequestDefault]` — true lists only default groups, where new partners are placed unless another group is chosen; false lists the others.
     
 </dd>
 </dl>
@@ -229,6 +237,20 @@ client.groups.list()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a partner group by ID, with the program it belongs to and whether it is the program's default group.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -243,11 +265,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.groups.get(
-    id="id",
+    id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
 )
 
 ```
@@ -289,6 +311,20 @@ client.groups.get(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists flows. Filter by program, group, campaign, event or active state, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -303,7 +339,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.flows.list()
@@ -322,7 +358,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -330,7 +366,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListFlowsRequestOrder]` 
+**order:** `typing.Optional[ListFlowsRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -338,7 +374,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListFlowsRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListFlowsRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -362,7 +398,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -370,7 +406,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -378,7 +414,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -386,7 +422,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -394,7 +430,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -402,7 +438,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**group_id:** `typing.Optional[str]` 
+**group_id:** `typing.Optional[str]` — Only flows that run for this partner group, by the group id (grp_...) as returned when listing groups.
     
 </dd>
 </dl>
@@ -410,7 +446,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**campaign_id:** `typing.Optional[str]` 
+**campaign_id:** `typing.Optional[str]` — Only flows that belong to this campaign, by its id as returned when listing campaigns.
     
 </dd>
 </dl>
@@ -418,7 +454,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**event:** `typing.Optional[str]` 
+**event:** `typing.Optional[str]` — Only flows triggered by this event, such as transaction_created or lead_created.
     
 </dd>
 </dl>
@@ -426,7 +462,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**active:** `typing.Optional[ListFlowsRequestActive]` 
+**active:** `typing.Optional[ListFlowsRequestActive]` — true lists only active flows, false only paused flows, which do not run.
     
 </dd>
 </dl>
@@ -434,7 +470,7 @@ client.flows.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the flow's name or description, ignoring case.
     
 </dd>
 </dl>
@@ -458,6 +494,20 @@ client.flows.list()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a flow by ID, with the event it runs on, its conditions and its action: a commission to generate or a group to move the partner to.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -472,11 +522,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.flows.get(
-    id="id",
+    id="flw_fAyK6FQ6EZngabgw8JifzQgN",
 )
 
 ```
@@ -546,7 +596,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.clicks.list(
@@ -568,7 +618,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -576,7 +626,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListClicksRequestOrder]` 
+**order:** `typing.Optional[ListClicksRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -584,7 +634,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListClicksRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListClicksRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -608,7 +658,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -616,7 +666,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -624,7 +674,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -632,7 +682,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -640,7 +690,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -648,7 +698,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
+**partner_id:** `typing.Optional[str]` — Limit to one partner, by its id (part_...) as returned when listing partners.
     
 </dd>
 </dl>
@@ -656,7 +706,7 @@ client.clicks.list(
 <dl>
 <dd>
 
-**link_id:** `typing.Optional[str]` 
+**link_id:** `typing.Optional[str]` — Limit to one referral link, by its id (lnk_...) as returned when listing links.
     
 </dd>
 </dl>
@@ -724,7 +774,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.clicks.create(
@@ -769,6 +819,20 @@ client.clicks.create(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a recorded click by ID, with the partner, link, page, referrer, country, device and browser it came from.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -783,11 +847,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.clicks.get(
-    id="id",
+    id="clk_mEsbFYv6ZjqXjAoFwokjS6v6",
 )
 
 ```
@@ -857,13 +921,13 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.bulk_approve(
     ids=[
-        "part_9fQ2xLL",
-        "part_3RtV9k"
+        "part_NLYzgNKuSuASvrvoxNtau6SY",
+        "part_9fQ2xLLmN3kP8dRvT1wYbHcS"
     ],
 )
 
@@ -881,7 +945,7 @@ client.partners.bulk_approve(
 <dl>
 <dd>
 
-**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+**ids:** `typing.List[str]` — Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
     
 </dd>
 </dl>
@@ -933,14 +997,15 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.bulk_reject(
     ids=[
-        "part_9fQ2xLL",
-        "part_3RtV9k"
+        "part_NLYzgNKuSuASvrvoxNtau6SY",
+        "part_9fQ2xLLmN3kP8dRvT1wYbHcS"
     ],
+    rejection_note="Site does not match our audience.",
 )
 
 ```
@@ -957,7 +1022,7 @@ client.partners.bulk_reject(
 <dl>
 <dd>
 
-**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+**ids:** `typing.List[str]` — Ids of the partners to act on, as returned when listing partners. Each one succeeds or fails on its own and gets its own entry in results.
     
 </dd>
 </dl>
@@ -965,7 +1030,7 @@ client.partners.bulk_reject(
 <dl>
 <dd>
 
-**rejection_note:** `typing.Optional[str]` 
+**rejection_note:** `typing.Optional[str]` — Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
     
 </dd>
 </dl>
@@ -989,6 +1054,20 @@ client.partners.bulk_reject(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1003,7 +1082,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.list()
@@ -1022,7 +1101,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -1030,7 +1109,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListPartnersRequestOrder]` 
+**order:** `typing.Optional[ListPartnersRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -1038,7 +1117,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListPartnersRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListPartnersRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -1062,7 +1141,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -1070,7 +1149,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -1078,7 +1157,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -1086,7 +1165,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -1094,7 +1173,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**status:** `typing.Optional[ListPartnersRequestStatus]` 
+**status:** `typing.Optional[ListPartnersRequestStatus]` — Keep only partners at this review stage; approved partners appear as active.
     
 </dd>
 </dl>
@@ -1102,7 +1181,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -1110,7 +1189,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**group_id:** `typing.Optional[str]` 
+**group_id:** `typing.Optional[str]` — Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
     
 </dd>
 </dl>
@@ -1118,7 +1197,7 @@ client.partners.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
     
 </dd>
 </dl>
@@ -1167,15 +1246,23 @@ Creates an onboarded partner together with their referral link. The link value d
 ```python
 from tolt import ToltApi
 from tolt.environment import ToltApiEnvironment
+from tolt.partners import CreatePartnersRequestLink
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.create(
-    email="sam@acme.com",
-    program_id="prg_YRsbPDAK",
+    email="sam@example.com",
+    program_id="prg_T6z8aRW3XCmvFWP972RKxpAd",
+    first_name="Sam",
+    last_name="Taylor",
+    group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
+    link=CreatePartnersRequestLink(
+        value="sam",
+        param="ref",
+    ),
 )
 
 ```
@@ -1192,7 +1279,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**email:** `str` — Unique within the program, compared case-insensitively.
+**email:** `str` — Partner's email address, where program emails such as the welcome email go. It identifies the partner in the program, so it cannot match another partner's email there, ignoring case.
     
 </dd>
 </dl>
@@ -1200,7 +1287,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**program_id:** `str` 
+**program_id:** `str` — Id of the program to add the partner to (prg_...), as returned when listing programs.
     
 </dd>
 </dl>
@@ -1208,7 +1295,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**first_name:** `typing.Optional[str]` 
+**first_name:** `typing.Optional[str]` — Partner's first name. With last_name it is used for the default link value when link is omitted.
     
 </dd>
 </dl>
@@ -1216,7 +1303,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**last_name:** `typing.Optional[str]` 
+**last_name:** `typing.Optional[str]` — Partner's last name. With first_name it makes up the name shown for the partner unless display_name is set.
     
 </dd>
 </dl>
@@ -1232,7 +1319,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**company_name:** `typing.Optional[str]` 
+**company_name:** `typing.Optional[str]` — Business the partner promotes through, if they are a company rather than a person. Leave it out for an individual.
     
 </dd>
 </dl>
@@ -1248,7 +1335,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**website_url:** `typing.Optional[str]` 
+**website_url:** `typing.Optional[str]` — URL of the partner's website, starting with http:// or https://.
     
 </dd>
 </dl>
@@ -1272,7 +1359,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**status:** `typing.Optional[CreatePartnersRequestStatus]` 
+**status:** `typing.Optional[CreatePartnersRequestStatus]` — Use pending to add the partner as an application that still needs approval instead of an active partner.
     
 </dd>
 </dl>
@@ -1280,7 +1367,7 @@ client.partners.create(
 <dl>
 <dd>
 
-**link:** `typing.Optional[CreatePartnersRequestLink]` — The referral link created with the partner. Defaults to a slug of the name or email.
+**link:** `typing.Optional[CreatePartnersRequestLink]` — The referral link created with the partner. Leave it out to build the slug from the partner's name, or from the part of the email before the @ when there is no name.
     
 </dd>
 </dl>
@@ -1312,6 +1399,20 @@ client.partners.create(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a partner by ID, with their profile, status, group and program.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1326,11 +1427,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.get(
-    id="id",
+    id="part_NLYzgNKuSuASvrvoxNtau6SY",
 )
 
 ```
@@ -1399,11 +1500,14 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.update(
-    id="id",
+    id="part_NLYzgNKuSuASvrvoxNtau6SY",
+    first_name="Sam",
+    last_name="Taylor",
+    group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
 )
 
 ```
@@ -1428,7 +1532,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**email:** `typing.Optional[str]` 
+**first_name:** `typing.Optional[str]` — Partner's first name, part of the name shown for them unless they have a display name; null clears it.
     
 </dd>
 </dl>
@@ -1436,7 +1540,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**first_name:** `typing.Optional[str]` 
+**last_name:** `typing.Optional[str]` — Partner's family name, shown with first_name in the dashboard and partner portal; null clears it.
     
 </dd>
 </dl>
@@ -1444,7 +1548,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**last_name:** `typing.Optional[str]` 
+**company_name:** `typing.Optional[str]` — Business the partner promotes through; null clears it.
     
 </dd>
 </dl>
@@ -1452,7 +1556,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**company_name:** `typing.Optional[str]` 
+**country_code:** `typing.Optional[str]` — Partner's country as a two-letter ISO code. Commission flows can match on it.
     
 </dd>
 </dl>
@@ -1460,7 +1564,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**country_code:** `typing.Optional[str]` 
+**website_url:** `typing.Optional[str]` — URL of the partner's website, starting with http:// or https://; null clears it.
     
 </dd>
 </dl>
@@ -1468,15 +1572,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**website_url:** `typing.Optional[str]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**group_id:** `typing.Optional[str]` 
+**group_id:** `typing.Optional[str]` — Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
     
 </dd>
 </dl>
@@ -1500,6 +1596,20 @@ client.partners.update(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Makes the partner active. A partner who was not already active is sent the program's approval email.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1514,11 +1624,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.approve(
-    id="id",
+    id="part_NLYzgNKuSuASvrvoxNtau6SY",
 )
 
 ```
@@ -1559,6 +1669,20 @@ client.partners.approve(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Rejects the partner. A partner who was not already rejected is sent the program's rejection email with the note.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1573,11 +1697,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.reject(
-    id="id",
+    id="part_NLYzgNKuSuASvrvoxNtau6SY",
 )
 
 ```
@@ -1602,7 +1726,7 @@ client.partners.reject(
 <dl>
 <dd>
 
-**rejection_note:** `typing.Optional[str]` 
+**rejection_note:** `typing.Optional[str]` — Reason for the rejection, shown to the partner in the partner portal. Null clears an earlier note.
     
 </dd>
 </dl>
@@ -1626,6 +1750,20 @@ client.partners.reject(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Suspends the partner, with an optional suspension_reason. Use the approve action to make them active again.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1640,11 +1778,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.partners.suspend(
-    id="id",
+    id="part_NLYzgNKuSuASvrvoxNtau6SY",
 )
 
 ```
@@ -1669,7 +1807,7 @@ client.partners.suspend(
 <dl>
 <dd>
 
-**suspension_reason:** `typing.Optional[str]` 
+**suspension_reason:** `typing.Optional[str]` — Reason for the suspension, shown to the partner in the partner portal. Null clears an earlier reason.
     
 </dd>
 </dl>
@@ -1694,6 +1832,20 @@ client.partners.suspend(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists the programs in your organization, with search, date filters and cursor pagination.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1708,7 +1860,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.programs.list()
@@ -1727,7 +1879,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -1735,7 +1887,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListProgramsRequestOrder]` 
+**order:** `typing.Optional[ListProgramsRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -1743,7 +1895,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListProgramsRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListProgramsRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -1767,7 +1919,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -1775,7 +1927,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -1783,7 +1935,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -1791,7 +1943,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -1799,7 +1951,7 @@ client.programs.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the program name, ignoring case.
     
 </dd>
 </dl>
@@ -1823,6 +1975,20 @@ client.programs.list()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a program by ID, with its name, currency, website, cookie duration and payout terms.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1837,11 +2003,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.programs.get(
-    id="id",
+    id="prg_T6z8aRW3XCmvFWP972RKxpAd",
 )
 
 ```
@@ -1883,6 +2049,20 @@ client.programs.get(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists customers. Filter by program, partner, link, click, status or your own customer_id, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -1897,7 +2077,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.customers.list()
@@ -1916,7 +2096,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -1924,7 +2104,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListCustomersRequestOrder]` 
+**order:** `typing.Optional[ListCustomersRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -1932,7 +2112,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListCustomersRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListCustomersRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -1956,7 +2136,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -1964,7 +2144,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -1972,7 +2152,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -1980,7 +2160,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -1988,7 +2168,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -1996,7 +2176,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
+**partner_id:** `typing.Optional[str]` — Limit to one partner, by its id (part_...) as returned when listing partners.
     
 </dd>
 </dl>
@@ -2004,7 +2184,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**customer_id:** `typing.Optional[str]` 
+**customer_id:** `typing.Optional[str]` — Exact match on the customer's customer_id field, the id the customer has in your own system or billing provider; not the Tolt customer id.
     
 </dd>
 </dl>
@@ -2012,7 +2192,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**status:** `typing.Optional[ListCustomersRequestStatus]` 
+**status:** `typing.Optional[ListCustomersRequestStatus]` — Keep only customers at this lifecycle stage, from signed-up leads through trials to paying, canceled or suspended customers. Leave it out to include every stage.
     
 </dd>
 </dl>
@@ -2020,7 +2200,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the customer's email, name, identifier or customer_id, ignoring case.
     
 </dd>
 </dl>
@@ -2028,7 +2208,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**click_id:** `typing.Optional[str]` 
+**click_id:** `typing.Optional[str]` — Only the customers attributed to this click, by its id (clk_...).
     
 </dd>
 </dl>
@@ -2036,7 +2216,7 @@ client.customers.list()
 <dl>
 <dd>
 
-**link_id:** `typing.Optional[str]` 
+**link_id:** `typing.Optional[str]` — Only customers attributed to this referral link (lnk_...), directly or through one of its clicks.
     
 </dd>
 </dl>
@@ -2060,6 +2240,20 @@ client.customers.list()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a customer attributed to a partner. Pass partner_id or link_id, and optionally the click_id that brought them in.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -2074,10 +2268,16 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
-client.customers.create()
+client.customers.create(
+    email="alex@example.com",
+    name="Alex Morgan",
+    customer_id="user_4821",
+    link_id="lnk_mtTeeckFa1vMdvDFXretQNs6",
+    partner_id="part_NLYzgNKuSuASvrvoxNtau6SY",
+)
 
 ```
 </dd>
@@ -2093,7 +2293,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**email:** `typing.Optional[str]` 
+**email:** `typing.Optional[str]` — Customer's email, stored lowercased and used as their identifier. It must not belong to another customer. Provide this or customer_id.
     
 </dd>
 </dl>
@@ -2101,7 +2301,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**promotion_code:** `typing.Optional[str]` — Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
+**promotion_code:** `typing.Optional[str]` — Resolve a code in the partner’s program, ignoring case, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged.
     
 </dd>
 </dl>
@@ -2109,7 +2309,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**created_at:** `typing.Optional[datetime.datetime]` 
+**created_at:** `typing.Optional[datetime.datetime]` — When the customer was created, for backdating. Defaults to now; lead_at, and active_at for active customers, default to it.
     
 </dd>
 </dl>
@@ -2117,7 +2317,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**name:** `typing.Optional[str]` 
+**name:** `typing.Optional[str]` — Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
     
 </dd>
 </dl>
@@ -2125,7 +2325,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**customer_id:** `typing.Optional[str]` 
+**customer_id:** `typing.Optional[str]` — Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it. Provide this or email.
     
 </dd>
 </dl>
@@ -2133,7 +2333,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**status:** `typing.Optional[CreateCustomersRequestStatus]` 
+**status:** `typing.Optional[CreateCustomersRequestStatus]` — Lifecycle stage of the customer. Defaults to lead (signed up, not paying yet); recording a transaction for the customer makes them active.
     
 </dd>
 </dl>
@@ -2141,7 +2341,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**subscription_id:** `typing.Optional[str]` 
+**subscription_id:** `typing.Optional[str]` — Customer's subscription id in your billing system, such as a Stripe subscription id.
     
 </dd>
 </dl>
@@ -2149,7 +2349,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**click_id:** `typing.Optional[str]` 
+**click_id:** `typing.Optional[str]` — Id of the tracked click the customer came from, as returned when listing clicks. It must belong to the partner, and its link is used when link_id is omitted.
     
 </dd>
 </dl>
@@ -2157,7 +2357,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**link_id:** `typing.Optional[str]` 
+**link_id:** `typing.Optional[str]` — Id of the referral link the customer came through (lnk_...). Without partner_id the link's partner is used; with it, the link must belong to that partner.
     
 </dd>
 </dl>
@@ -2165,7 +2365,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
+**partner_id:** `typing.Optional[str]` — Id of the partner who referred the customer (part_...), as returned when listing partners. The customer joins that partner's program. Provide this or link_id.
     
 </dd>
 </dl>
@@ -2173,7 +2373,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**lead_at:** `typing.Optional[datetime.datetime]` 
+**lead_at:** `typing.Optional[datetime.datetime]` — When the customer signed up as a lead, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Defaults to created_at.
     
 </dd>
 </dl>
@@ -2181,7 +2381,7 @@ client.customers.create()
 <dl>
 <dd>
 
-**active_at:** `typing.Optional[datetime.datetime]` 
+**active_at:** `typing.Optional[datetime.datetime]` — When the customer became a paying customer, as a timestamp with a time zone. Defaults to created_at when status is active, otherwise it is set when a transaction is recorded for the customer.
     
 </dd>
 </dl>
@@ -2205,6 +2405,20 @@ client.customers.create()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a customer by ID, with its status, the partner it is attributed to and your own customer and subscription IDs.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -2219,11 +2433,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.customers.get(
-    id="id",
+    id="cus_LBfjvtfct9pVUeLojMHiGnXv",
 )
 
 ```
@@ -2264,6 +2478,20 @@ client.customers.get(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates a customer's name, email, status, your own IDs, or the click and link the customer came from.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -2278,11 +2506,13 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.customers.update(
-    id="id",
+    id="cus_LBfjvtfct9pVUeLojMHiGnXv",
+    name="Alex Morgan",
+    status="active",
 )
 
 ```
@@ -2307,7 +2537,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**email:** `typing.Optional[str]` 
+**email:** `typing.Optional[str]` — New email, stored lowercased and used as the customer's identifier. It must not belong to another customer.
     
 </dd>
 </dl>
@@ -2315,7 +2545,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**promotion_code:** `typing.Optional[str]` — Resolve a code in the partner’s program, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
+**promotion_code:** `typing.Optional[str]` — Resolve a code in the partner’s program, ignoring case, preferring partner, group, then program scope. An unmatched code leaves attribution unchanged. Null clears the promotion code and its derived attribution.
     
 </dd>
 </dl>
@@ -2323,7 +2553,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**created_at:** `typing.Optional[datetime.datetime]` 
+**created_at:** `typing.Optional[datetime.datetime]` — When the customer was created, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters that date customers by creation use it; those that date them by conversion read active_at, which this does not change.
     
 </dd>
 </dl>
@@ -2331,7 +2561,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**name:** `typing.Optional[str]` 
+**name:** `typing.Optional[str]` — Customer's full name as you want it shown in the dashboard; it does not affect attribution or matching.
     
 </dd>
 </dl>
@@ -2339,7 +2569,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**status:** `typing.Optional[UpdateCustomersRequestStatus]` 
+**status:** `typing.Optional[UpdateCustomersRequestStatus]` — Lifecycle stage of the customer. Changing it does not set active_at or run commission flows.
     
 </dd>
 </dl>
@@ -2347,7 +2577,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**customer_id:** `typing.Optional[str]` 
+**customer_id:** `typing.Optional[str]` — Customer's id in your billing system, such as a Stripe customer id. The billing integration matches payments to this customer by it.
     
 </dd>
 </dl>
@@ -2355,7 +2585,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**subscription_id:** `typing.Optional[str]` 
+**subscription_id:** `typing.Optional[str]` — Customer's subscription id in your billing system, such as a Stripe subscription id.
     
 </dd>
 </dl>
@@ -2363,7 +2593,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**click_id:** `typing.Optional[str]` 
+**click_id:** `typing.Optional[str]` — Id of the tracked click the customer came from, as returned when listing clicks. It must belong to the customer's partner; link_id is not changed.
     
 </dd>
 </dl>
@@ -2371,7 +2601,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**link_id:** `typing.Optional[str]` 
+**link_id:** `typing.Optional[str]` — Id of the referral link the customer came through (lnk_...). It must belong to the customer's partner; a customer without a partner takes the link's partner and program.
     
 </dd>
 </dl>
@@ -2379,7 +2609,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**lead_at:** `typing.Optional[datetime.datetime]` 
+**lead_at:** `typing.Optional[datetime.datetime]` — When the customer signed up as a lead, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z.
     
 </dd>
 </dl>
@@ -2387,7 +2617,7 @@ client.customers.update(
 <dl>
 <dd>
 
-**active_at:** `typing.Optional[datetime.datetime]` 
+**active_at:** `typing.Optional[datetime.datetime]` — When the customer became a paying customer, as a timestamp with a time zone.
     
 </dd>
 </dl>
@@ -2411,6 +2641,20 @@ client.customers.update(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a customer. Fails when any of the customer's commissions is paid or already included in a payout.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -2425,11 +2669,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.customers.delete(
-    id="id",
+    id="cus_LBfjvtfct9pVUeLojMHiGnXv",
 )
 
 ```
@@ -2499,13 +2743,13 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.bulk_approve(
     ids=[
-        "part_9fQ2xLL",
-        "part_3RtV9k"
+        "comm_X85RLnefjTCNrypH4MA1PdSp",
+        "comm_3RtV9kQ2mW8nX5pL1sB7cD4f"
     ],
 )
 
@@ -2523,7 +2767,7 @@ client.commissions.bulk_approve(
 <dl>
 <dd>
 
-**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+**ids:** `typing.List[str]` — Ids of the commissions to act on, as returned when listing commissions. Each one succeeds or fails on its own and gets its own entry in results.
     
 </dd>
 </dl>
@@ -2575,13 +2819,13 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.bulk_decline(
     ids=[
-        "part_9fQ2xLL",
-        "part_3RtV9k"
+        "comm_X85RLnefjTCNrypH4MA1PdSp",
+        "comm_3RtV9kQ2mW8nX5pL1sB7cD4f"
     ],
 )
 
@@ -2599,7 +2843,7 @@ client.commissions.bulk_decline(
 <dl>
 <dd>
 
-**ids:** `typing.List[str]` — Up to 100 ids. Duplicates are processed once.
+**ids:** `typing.List[str]` — Ids of the commissions to act on, as returned when listing commissions. Each one succeeds or fails on its own and gets its own entry in results.
     
 </dd>
 </dl>
@@ -2623,6 +2867,20 @@ client.commissions.bulk_decline(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists commissions. Filter by program, partner, customer, transaction, status or type, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -2637,7 +2895,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.list()
@@ -2656,7 +2914,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -2664,7 +2922,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListCommissionsRequestOrder]` 
+**order:** `typing.Optional[ListCommissionsRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -2672,7 +2930,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListCommissionsRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListCommissionsRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -2696,7 +2954,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -2704,7 +2962,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -2712,7 +2970,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -2720,7 +2978,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -2728,7 +2986,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -2736,7 +2994,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
+**partner_id:** `typing.Optional[str]` — Limit to one partner, by its id (part_...) as returned when listing partners.
     
 </dd>
 </dl>
@@ -2744,7 +3002,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**customer_id:** `typing.Optional[str]` 
+**customer_id:** `typing.Optional[str]` — Only commissions for this customer, by Tolt customer id (cus_...) as returned when listing customers.
     
 </dd>
 </dl>
@@ -2752,7 +3010,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**transaction_id:** `typing.Optional[str]` 
+**transaction_id:** `typing.Optional[str]` — Only commissions linked to this transaction, by its id (txn_...).
     
 </dd>
 </dl>
@@ -2760,7 +3018,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` 
+**status:** `typing.Optional[str]` — Only commissions in this status, matched exactly, such as pending, approved or paid.
     
 </dd>
 </dl>
@@ -2768,7 +3026,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**type:** `typing.Optional[str]` 
+**type:** `typing.Optional[str]` — Only commissions whose type equals this stored value exactly.
     
 </dd>
 </dl>
@@ -2776,7 +3034,7 @@ client.commissions.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the commission id or its charge_id, ignoring case.
     
 </dd>
 </dl>
@@ -2828,7 +3086,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.create(
@@ -2873,6 +3131,20 @@ client.commissions.create(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a commission by ID, with its amount, status, type and partner, plus its customer and transaction when it has them.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -2887,11 +3159,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.get(
-    id="id",
+    id="comm_X85RLnefjTCNrypH4MA1PdSp",
 )
 
 ```
@@ -2960,11 +3232,14 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.update(
-    id="id",
+    id="comm_X85RLnefjTCNrypH4MA1PdSp",
+    amount=1000,
+    revenue=5000,
+    status="approved",
 )
 
 ```
@@ -2989,7 +3264,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**amount:** `typing.Optional[int]` — Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+**amount:** `typing.Optional[int]` — What the partner earns for this commission, in minor units of the program currency (cents for USD).
     
 </dd>
 </dl>
@@ -2997,7 +3272,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**revenue:** `typing.Optional[int]` — Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+**revenue:** `typing.Optional[int]` — The sale amount the commission is based on, in minor units of the program currency.
     
 </dd>
 </dl>
@@ -3005,7 +3280,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` 
+**status:** `typing.Optional[UpdateCommissionsRequestStatus]` 
     
 </dd>
 </dl>
@@ -3013,7 +3288,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**source:** `typing.Optional[str]` 
+**source:** `typing.Optional[str]` — Free-form label for where the commission came from, such as stripe or api.
     
 </dd>
 </dl>
@@ -3021,7 +3296,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**charge_id:** `typing.Optional[str]` 
+**charge_id:** `typing.Optional[str]` — Id of the payment in your billing system that the commission is for, such as a Stripe charge id.
     
 </dd>
 </dl>
@@ -3029,7 +3304,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**transaction_id:** `typing.Optional[str]` 
+**transaction_id:** `typing.Optional[str]` — Id of the transaction the commission is for (txn_...). It must belong to the commission's customer, or to its partner and program, and must not be refunded.
     
 </dd>
 </dl>
@@ -3037,7 +3312,7 @@ client.commissions.update(
 <dl>
 <dd>
 
-**created_at:** `typing.Optional[datetime.datetime]` 
+**created_at:** `typing.Optional[datetime.datetime]` — When the commission was earned, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and filters by creation date place the commission on this date; the upcoming approvals forecast goes by its scheduled approval date, which this does not change.
     
 </dd>
 </dl>
@@ -3061,6 +3336,20 @@ client.commissions.update(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a commission. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -3075,11 +3364,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.delete(
-    id="id",
+    id="comm_X85RLnefjTCNrypH4MA1PdSp",
 )
 
 ```
@@ -3120,6 +3409,20 @@ client.commissions.delete(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Marks a commission approved so it is included in the next payout. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -3134,11 +3437,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.approve(
-    id="id",
+    id="comm_X85RLnefjTCNrypH4MA1PdSp",
 )
 
 ```
@@ -3179,6 +3482,20 @@ client.commissions.approve(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Marks a commission declined so it is left out of payouts until it is approved again. Fails for paid commissions, refund commissions, commissions on a refunded transaction, and those on a confirmed or legacy autopayout invoice.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -3193,11 +3510,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.commissions.decline(
-    id="id",
+    id="comm_X85RLnefjTCNrypH4MA1PdSp",
 )
 
 ```
@@ -3239,6 +3556,20 @@ client.commissions.decline(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists transactions. Filter by program, partner, customer or status, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -3253,7 +3584,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.transactions.list()
@@ -3272,7 +3603,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -3280,7 +3611,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListTransactionsRequestOrder]` 
+**order:** `typing.Optional[ListTransactionsRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -3288,7 +3619,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListTransactionsRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListTransactionsRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -3312,7 +3643,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -3320,7 +3651,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -3328,7 +3659,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -3336,7 +3667,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -3344,7 +3675,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -3352,7 +3683,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
+**partner_id:** `typing.Optional[str]` — Limit to one partner, by its id (part_...) as returned when listing partners.
     
 </dd>
 </dl>
@@ -3360,7 +3691,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**customer_id:** `typing.Optional[str]` 
+**customer_id:** `typing.Optional[str]` — Only transactions from this customer, by Tolt customer id (cus_...) as returned when listing customers.
     
 </dd>
 </dl>
@@ -3368,7 +3699,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` 
+**status:** `typing.Optional[str]` — Only transactions in this status, matched exactly, such as paid or refunded.
     
 </dd>
 </dl>
@@ -3376,7 +3707,7 @@ client.transactions.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the transaction id or its charge_id, ignoring case.
     
 </dd>
 </dl>
@@ -3428,12 +3759,17 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.transactions.create(
-    amount=1,
-    customer_id="customer_id",
+    product_id="prod_pro",
+    product_name="Pro plan",
+    amount=5000,
+    customer_id="cus_LBfjvtfct9pVUeLojMHiGnXv",
+    billing_type="subscription",
+    interval="month",
+    source="api",
 )
 
 ```
@@ -3450,7 +3786,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**amount:** `int` — Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+**amount:** `int` — The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
     
 </dd>
 </dl>
@@ -3458,7 +3794,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**customer_id:** `str` 
+**customer_id:** `str` — Id of the customer who paid (cus_...), as returned when listing customers. The transaction goes to that customer's partner and program, and the customer becomes active.
     
 </dd>
 </dl>
@@ -3466,7 +3802,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**created_at:** `typing.Optional[datetime.datetime]` 
+**created_at:** `typing.Optional[datetime.datetime]` — When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date. Defaults to now.
     
 </dd>
 </dl>
@@ -3474,7 +3810,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**product_id:** `typing.Optional[str]` 
+**product_id:** `typing.Optional[str]` — Id of the purchased product in your billing system. Commission flows can match on it.
     
 </dd>
 </dl>
@@ -3482,7 +3818,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**product_name:** `typing.Optional[str]` 
+**product_name:** `typing.Optional[str]` — Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name.
     
 </dd>
 </dl>
@@ -3490,7 +3826,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**billing_type:** `typing.Optional[str]` 
+**billing_type:** `typing.Optional[str]` — Kind of payment: subscription for a recurring payment, or one_time. Commission flows can match on it.
     
 </dd>
 </dl>
@@ -3498,7 +3834,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**charge_id:** `typing.Optional[str]` 
+**charge_id:** `typing.Optional[str]` — Id of the payment in your billing system, such as a Stripe charge id. A customer can have only one transaction per charge_id, so retrying a create with the same value returns 409 instead of booking the payment twice. An empty or whitespace-only charge_id is stored as no charge id and is not checked; any other value is stored and compared exactly as sent.
     
 </dd>
 </dl>
@@ -3506,7 +3842,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**click_id:** `typing.Optional[str]` 
+**click_id:** `typing.Optional[str]` — Id of the tracked click behind this payment, as returned when listing clicks. Commission flows use its link before falling back to the customer's link.
     
 </dd>
 </dl>
@@ -3514,7 +3850,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**interval:** `typing.Optional[str]` 
+**interval:** `typing.Optional[str]` — Billing period of a subscription payment: month or year. Commission flows can match on it. Flows can also split a yearly payment into monthly commissions.
     
 </dd>
 </dl>
@@ -3522,7 +3858,7 @@ client.transactions.create(
 <dl>
 <dd>
 
-**source:** `typing.Optional[str]` 
+**source:** `typing.Optional[str]` — Where the transaction came from, such as stripe or api. Commissions that flows create from it copy this value.
     
 </dd>
 </dl>
@@ -3546,6 +3882,20 @@ client.transactions.create(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -3560,11 +3910,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.transactions.get(
-    id="id",
+    id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
 )
 
 ```
@@ -3605,6 +3955,20 @@ client.transactions.get(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -3619,11 +3983,13 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.transactions.update(
-    id="id",
+    id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
+    amount=5000,
+    product_name="Pro plan",
 )
 
 ```
@@ -3648,7 +4014,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**amount:** `typing.Optional[int]` — Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+**amount:** `typing.Optional[int]` — The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
     
 </dd>
 </dl>
@@ -3656,7 +4022,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**status:** `typing.Optional[str]` 
+**status:** `typing.Optional[str]` — Payment status text, such as paid, which is what new transactions get. refunded is not accepted here: refund a transaction with the refund action. null clears the status.
     
 </dd>
 </dl>
@@ -3664,7 +4030,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**source:** `typing.Optional[str]` 
+**source:** `typing.Optional[str]` — Where the transaction came from, such as stripe or api.
     
 </dd>
 </dl>
@@ -3672,7 +4038,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**billing_type:** `typing.Optional[str]` 
+**billing_type:** `typing.Optional[str]` — Kind of payment: subscription for a recurring payment, or one_time.
     
 </dd>
 </dl>
@@ -3680,7 +4046,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**charge_id:** `typing.Optional[str]` 
+**charge_id:** `typing.Optional[str]` — Id of the payment in your billing system, such as a Stripe charge id.
     
 </dd>
 </dl>
@@ -3688,7 +4054,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**click_id:** `typing.Optional[str]` 
+**click_id:** `typing.Optional[str]` — Id of the tracked click behind this payment, as returned when listing clicks.
     
 </dd>
 </dl>
@@ -3696,7 +4062,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**product_id:** `typing.Optional[str]` 
+**product_id:** `typing.Optional[str]` — Id of the purchased product in your billing system.
     
 </dd>
 </dl>
@@ -3704,7 +4070,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**product_name:** `typing.Optional[str]` 
+**product_name:** `typing.Optional[str]` — Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name. null clears it.
     
 </dd>
 </dl>
@@ -3712,7 +4078,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**interval:** `typing.Optional[str]` 
+**interval:** `typing.Optional[str]` — Billing period of a subscription payment: month or year.
     
 </dd>
 </dl>
@@ -3720,7 +4086,7 @@ client.transactions.update(
 <dl>
 <dd>
 
-**created_at:** `typing.Optional[datetime.datetime]` 
+**created_at:** `typing.Optional[datetime.datetime]` — When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date.
     
 </dd>
 </dl>
@@ -3744,6 +4110,20 @@ client.transactions.update(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -3758,11 +4138,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.transactions.delete(
-    id="id",
+    id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
 )
 
 ```
@@ -3831,11 +4211,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.transactions.refund(
-    id="id",
+    id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
 )
 
 ```
@@ -3904,11 +4284,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.transactions.rerun_flows(
-    id="id",
+    id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
 )
 
 ```
@@ -3978,7 +4358,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.links.list()
@@ -3997,7 +4377,7 @@ client.links.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -4005,7 +4385,7 @@ client.links.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListLinksRequestOrder]` 
+**order:** `typing.Optional[ListLinksRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -4013,7 +4393,7 @@ client.links.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListLinksRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListLinksRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -4037,7 +4417,7 @@ client.links.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -4045,7 +4425,7 @@ client.links.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -4053,7 +4433,7 @@ client.links.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -4061,7 +4441,7 @@ client.links.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -4069,7 +4449,7 @@ client.links.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -4077,7 +4457,7 @@ client.links.list()
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
+**partner_id:** `typing.Optional[str]` — Limit to one partner, by its id (part_...) as returned when listing partners.
     
 </dd>
 </dl>
@@ -4085,7 +4465,7 @@ client.links.list()
 <dl>
 <dd>
 
-**param:** `typing.Optional[str]` 
+**param:** `typing.Optional[str]` — Only links using this URL parameter name exactly, such as `ref` in `?ref=sam`.
     
 </dd>
 </dl>
@@ -4093,7 +4473,7 @@ client.links.list()
 <dl>
 <dd>
 
-**value:** `typing.Optional[str]` 
+**value:** `typing.Optional[str]` — Only links with this exact slug, such as `sam` in `?ref=sam`.
     
 </dd>
 </dl>
@@ -4101,7 +4481,7 @@ client.links.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the link's slug (value) or parameter name, ignoring case.
     
 </dd>
 </dl>
@@ -4125,6 +4505,20 @@ client.links.list()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -4139,12 +4533,13 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.links.create(
-    value="value",
-    partner_id="partner_id",
+    value="sam",
+    param="ref",
+    partner_id="part_NLYzgNKuSuASvrvoxNtau6SY",
 )
 
 ```
@@ -4161,7 +4556,7 @@ client.links.create(
 <dl>
 <dd>
 
-**value:** `str` 
+**value:** `str` — Slug that identifies the partner in referral URLs, such as `sam` in `?ref=sam`, saved in lowercase. Pick one that no other link uses with the same parameter; a taken slug returns an error.
     
 </dd>
 </dl>
@@ -4169,7 +4564,7 @@ client.links.create(
 <dl>
 <dd>
 
-**partner_id:** `str` 
+**partner_id:** `str` — Id of the partner who owns the link (part_...), as returned when listing partners. The link is created in that partner's program.
     
 </dd>
 </dl>
@@ -4177,7 +4572,7 @@ client.links.create(
 <dl>
 <dd>
 
-**param:** `typing.Optional[str]` 
+**param:** `typing.Optional[str]` — Query parameter of the link, e.g. `ref` in `?ref=sam`. Leave it out or send an empty string to use the program's first link parameter, which is what gets stored.
     
 </dd>
 </dl>
@@ -4229,7 +4624,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.links.get_by_param_value(
@@ -4311,11 +4706,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.links.get(
-    id="id",
+    id="lnk_mtTeeckFa1vMdvDFXretQNs6",
 )
 
 ```
@@ -4384,11 +4779,13 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.links.update(
-    id="id",
+    id="lnk_mtTeeckFa1vMdvDFXretQNs6",
+    param="ref",
+    value="sam",
 )
 
 ```
@@ -4413,7 +4810,7 @@ client.links.update(
 <dl>
 <dd>
 
-**param:** `typing.Optional[str]` 
+**param:** `typing.Optional[str]` — New query parameter of the link, e.g. `ref` in `?ref=sam`. URLs with the old parameter stop matching this link.
     
 </dd>
 </dl>
@@ -4421,7 +4818,7 @@ client.links.update(
 <dl>
 <dd>
 
-**value:** `typing.Optional[str]` 
+**value:** `typing.Optional[str]` — New slug, e.g. `sam` in `?ref=sam`, stored lowercased. URLs using the old slug stop matching this link.
     
 </dd>
 </dl>
@@ -4473,11 +4870,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.links.delete(
-    id="id",
+    id="lnk_mtTeeckFa1vMdvDFXretQNs6",
 )
 
 ```
@@ -4519,6 +4916,20 @@ client.links.delete(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists promotion codes. Filter by program, partner or type, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -4533,7 +4944,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.promotion_codes.list()
@@ -4552,7 +4963,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -4560,7 +4971,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**order:** `typing.Optional[ListPromotionCodesRequestOrder]` 
+**order:** `typing.Optional[ListPromotionCodesRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
     
 </dd>
 </dl>
@@ -4568,7 +4979,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[ListPromotionCodesRequestSort]` — Column the list is ordered and paged by.
+**sort:** `typing.Optional[ListPromotionCodesRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
     
 </dd>
 </dl>
@@ -4592,7 +5003,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**created_after:** `typing.Optional[datetime.datetime]` — Only items created at or after this ISO 8601 time.
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -4600,7 +5011,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**created_before:** `typing.Optional[datetime.datetime]` — Only items created before this ISO 8601 time.
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -4608,7 +5019,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**updated_after:** `typing.Optional[datetime.datetime]` — Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
     
 </dd>
 </dl>
@@ -4616,7 +5027,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**updated_before:** `typing.Optional[datetime.datetime]` — Only items updated before this ISO 8601 time.
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
     
 </dd>
 </dl>
@@ -4624,7 +5035,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -4632,7 +5043,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**partner_id:** `typing.Optional[str]` 
+**partner_id:** `typing.Optional[str]` — Limit to one partner, by its id (part_...) as returned when listing partners.
     
 </dd>
 </dl>
@@ -4640,7 +5051,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**type:** `typing.Optional[ListPromotionCodesRequestType]` 
+**type:** `typing.Optional[ListPromotionCodesRequestType]` — Only codes giving this kind of discount: a fixed amount off or a percentage off.
     
 </dd>
 </dl>
@@ -4648,7 +5059,7 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
-**search:** `typing.Optional[str]` 
+**search:** `typing.Optional[str]` — Text matched anywhere in the code, ignoring case.
     
 </dd>
 </dl>
@@ -4672,6 +5083,20 @@ client.promotion_codes.list()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a promotion code for a partner, so customers who use it are credited to them. A partner cannot have the same code twice.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -4686,12 +5111,14 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.promotion_codes.create(
-    code="code",
-    partner_id="partner_id",
+    code="SAM20",
+    type="percentage",
+    value="20",
+    partner_id="part_NLYzgNKuSuASvrvoxNtau6SY",
 )
 
 ```
@@ -4708,7 +5135,7 @@ client.promotion_codes.create(
 <dl>
 <dd>
 
-**code:** `str` 
+**code:** `str` — The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case. Recording it here does not create it in your billing system.
     
 </dd>
 </dl>
@@ -4716,7 +5143,7 @@ client.promotion_codes.create(
 <dl>
 <dd>
 
-**partner_id:** `str` 
+**partner_id:** `str` — Id of the partner the code belongs to (part_...), as returned when listing partners. The code is created in that partner's program.
     
 </dd>
 </dl>
@@ -4724,7 +5151,7 @@ client.promotion_codes.create(
 <dl>
 <dd>
 
-**type:** `typing.Optional[CreatePromotionCodesRequestType]` 
+**type:** `typing.Optional[CreatePromotionCodesRequestType]` — Whether value is a percent off or a fixed amount off.
     
 </dd>
 </dl>
@@ -4732,7 +5159,7 @@ client.promotion_codes.create(
 <dl>
 <dd>
 
-**value:** `typing.Optional[str]` 
+**value:** `typing.Optional[str]` — Size of the discount as a plain decimal: a percent from 0 to 100 for percentage codes ("20" is 20%), or an amount from 0 to 1,000,000 in major units of the program currency for fixed codes ("20" is 20.00).
     
 </dd>
 </dl>
@@ -4756,6 +5183,20 @@ client.promotion_codes.create(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a promotion code by ID, with its discount type and value and the partner, group or program it belongs to.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -4770,11 +5211,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.promotion_codes.get(
-    id="id",
+    id="promo_gTCAUsWfdmN2GuCVRaHWNRan",
 )
 
 ```
@@ -4815,6 +5256,20 @@ client.promotion_codes.get(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Updates a promotion code's code, discount type or value.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -4829,11 +5284,14 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.promotion_codes.update(
-    id="id",
+    id="promo_gTCAUsWfdmN2GuCVRaHWNRan",
+    code="SAM20",
+    type="percentage",
+    value="20",
 )
 
 ```
@@ -4858,7 +5316,7 @@ client.promotion_codes.update(
 <dl>
 <dd>
 
-**code:** `typing.Optional[str]` 
+**code:** `typing.Optional[str]` — The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case.
     
 </dd>
 </dl>
@@ -4866,7 +5324,7 @@ client.promotion_codes.update(
 <dl>
 <dd>
 
-**type:** `typing.Optional[UpdatePromotionCodesRequestType]` 
+**type:** `typing.Optional[UpdatePromotionCodesRequestType]` — Whether value is a percent off or a fixed amount off.
     
 </dd>
 </dl>
@@ -4874,7 +5332,7 @@ client.promotion_codes.update(
 <dl>
 <dd>
 
-**value:** `typing.Optional[str]` 
+**value:** `typing.Optional[str]` — Size of the discount as a plain decimal: a percent from 0 to 100 for percentage codes ("20" is 20%), or an amount from 0 to 1,000,000 in major units of the program currency for fixed codes ("20" is 20.00). null clears it.
     
 </dd>
 </dl>
@@ -4898,6 +5356,20 @@ client.promotion_codes.update(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a promotion code, so customers who use it afterwards are no longer attributed through it.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -4912,11 +5384,11 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.promotion_codes.delete(
-    id="id",
+    id="promo_gTCAUsWfdmN2GuCVRaHWNRan",
 )
 
 ```
@@ -4958,6 +5430,20 @@ client.promotion_codes.delete(
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns revenue, commission, customer and partner totals for the organization or one program over a date range.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -4972,7 +5458,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.reports.overview()
@@ -4991,7 +5477,7 @@ client.reports.overview()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -4999,7 +5485,7 @@ client.reports.overview()
 <dl>
 <dd>
 
-**start_date:** `typing.Optional[datetime.date]` 
+**start_date:** `typing.Optional[datetime.date]` — Earliest day to include, by creation date. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -5007,7 +5493,7 @@ client.reports.overview()
 <dl>
 <dd>
 
-**end_date:** `typing.Optional[datetime.date]` 
+**end_date:** `typing.Optional[datetime.date]` — Latest day to include, by creation date; the whole day counts. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -5031,6 +5517,20 @@ client.reports.overview()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns one row of revenue, commissions, customers and clicks per partner over a date range, sorted and paged by offset.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -5045,7 +5545,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.reports.partners()
@@ -5064,7 +5564,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -5072,7 +5572,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**start_date:** `typing.Optional[datetime.date]` 
+**start_date:** `typing.Optional[datetime.date]` — Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -5080,7 +5580,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**end_date:** `typing.Optional[datetime.date]` 
+**end_date:** `typing.Optional[datetime.date]` — Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -5088,7 +5588,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**currency:** `typing.Optional[str]` 
+**currency:** `typing.Optional[str]` — Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
     
 </dd>
 </dl>
@@ -5096,7 +5596,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -5104,7 +5604,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**offset:** `typing.Optional[int]` 
+**offset:** `typing.Optional[int]` — How many rows to skip before this page begins.
     
 </dd>
 </dl>
@@ -5112,7 +5612,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[PartnersReportsRequestSort]` 
+**sort:** `typing.Optional[PartnersReportsRequestSort]` — Metric to rank by, computed over the date window.
     
 </dd>
 </dl>
@@ -5120,7 +5620,7 @@ client.reports.partners()
 <dl>
 <dd>
 
-**order:** `typing.Optional[PartnersReportsRequestOrder]` 
+**order:** `typing.Optional[PartnersReportsRequestOrder]` — Ranking direction: desc puts the highest values first.
     
 </dd>
 </dl>
@@ -5144,6 +5644,20 @@ client.reports.partners()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns one row of revenue, commissions, customers and clicks per link over a date range, sorted and paged by offset.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -5158,7 +5672,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.reports.links()
@@ -5177,7 +5691,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -5185,7 +5699,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**start_date:** `typing.Optional[datetime.date]` 
+**start_date:** `typing.Optional[datetime.date]` — Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -5193,7 +5707,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**end_date:** `typing.Optional[datetime.date]` 
+**end_date:** `typing.Optional[datetime.date]` — Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -5201,7 +5715,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**currency:** `typing.Optional[str]` 
+**currency:** `typing.Optional[str]` — Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
     
 </dd>
 </dl>
@@ -5209,7 +5723,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**limit:** `typing.Optional[int]` 
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
     
 </dd>
 </dl>
@@ -5217,7 +5731,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**offset:** `typing.Optional[int]` 
+**offset:** `typing.Optional[int]` — How many rows to skip before this page begins.
     
 </dd>
 </dl>
@@ -5225,7 +5739,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**sort:** `typing.Optional[LinksReportsRequestSort]` 
+**sort:** `typing.Optional[LinksReportsRequestSort]` — Metric to rank by, computed over the date window.
     
 </dd>
 </dl>
@@ -5233,7 +5747,7 @@ client.reports.links()
 <dl>
 <dd>
 
-**order:** `typing.Optional[LinksReportsRequestOrder]` 
+**order:** `typing.Optional[LinksReportsRequestOrder]` — Ranking direction: desc puts the highest values first.
     
 </dd>
 </dl>
@@ -5257,6 +5771,20 @@ client.reports.links()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns revenue, commissions, customers and clicks per day, week or month over a date range, ready to chart.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -5271,7 +5799,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.reports.timeseries()
@@ -5290,7 +5818,7 @@ client.reports.timeseries()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -5298,7 +5826,7 @@ client.reports.timeseries()
 <dl>
 <dd>
 
-**start_date:** `typing.Optional[datetime.date]` 
+**start_date:** `typing.Optional[datetime.date]` — Earliest day to include, by creation date (customers by the day they became active). Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -5306,7 +5834,7 @@ client.reports.timeseries()
 <dl>
 <dd>
 
-**end_date:** `typing.Optional[datetime.date]` 
+**end_date:** `typing.Optional[datetime.date]` — Latest day to include, by creation date (customers by the day they became active); the whole day counts. Leave it out for no upper bound.
     
 </dd>
 </dl>
@@ -5314,7 +5842,7 @@ client.reports.timeseries()
 <dl>
 <dd>
 
-**granularity:** `typing.Optional[TimeseriesReportsRequestGranularity]` 
+**granularity:** `typing.Optional[TimeseriesReportsRequestGranularity]` — Bucket size of the series; weeks start on Monday, months on the 1st, and each bucket is labeled with its first day.
     
 </dd>
 </dl>
@@ -5322,7 +5850,7 @@ client.reports.timeseries()
 <dl>
 <dd>
 
-**currency:** `typing.Optional[str]` 
+**currency:** `typing.Optional[str]` — Only include transactions and commissions in this currency, such as USD; matching ignores case. Rows without their own currency use their program's.
     
 </dd>
 </dl>
@@ -5346,6 +5874,20 @@ client.reports.timeseries()
 <dl>
 <dd>
 
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Returns how many customers are in each subscription status for the organization or one program.
+</dd>
+</dl>
+</dd>
+</dl>
+
 #### 🔌 Usage
 
 <dl>
@@ -5360,7 +5902,7 @@ from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
     token="<token>",
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 
 client.reports.customer_stats()
@@ -5379,7 +5921,7 @@ client.reports.customer_stats()
 <dl>
 <dd>
 
-**program_id:** `typing.Optional[str]` 
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
     
 </dd>
 </dl>
@@ -5387,7 +5929,7 @@ client.reports.customer_stats()
 <dl>
 <dd>
 
-**start_date:** `typing.Optional[datetime.date]` 
+**start_date:** `typing.Optional[datetime.date]` — Earliest day to include, by the day customers became active. Leave it out for no lower bound.
     
 </dd>
 </dl>
@@ -5395,7 +5937,7 @@ client.reports.customer_stats()
 <dl>
 <dd>
 
-**end_date:** `typing.Optional[datetime.date]` 
+**end_date:** `typing.Optional[datetime.date]` — Latest day to include, by the day customers became active; the whole day counts. Leave it out for no upper bound.
     
 </dd>
 </dl>

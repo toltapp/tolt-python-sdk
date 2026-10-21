@@ -43,14 +43,18 @@ class ProgramsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListProgramsResponse:
         """
+        Lists the programs in your organization, with search, date filters and cursor pagination.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListProgramsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListProgramsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -59,18 +63,19 @@ class ProgramsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         search : typing.Optional[str]
+            Text matched anywhere in the program name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -106,6 +111,8 @@ class ProgramsClient:
 
     def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramsResponse:
         """
+        Gets a program by ID, with its name, currency, website, cookie duration and payout terms.
+
         Parameters
         ----------
         id : str
@@ -126,7 +133,7 @@ class ProgramsClient:
             token="YOUR_TOKEN",
         )
         client.programs.get(
-            id="id",
+            id="prg_T6z8aRW3XCmvFWP972RKxpAd",
         )
         """
         _response = self._raw_client.get(id, request_options=request_options)
@@ -164,14 +171,18 @@ class AsyncProgramsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListProgramsResponse:
         """
+        Lists the programs in your organization, with search, date filters and cursor pagination.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListProgramsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListProgramsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -180,18 +191,19 @@ class AsyncProgramsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         search : typing.Optional[str]
+            Text matched anywhere in the program name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -235,6 +247,8 @@ class AsyncProgramsClient:
 
     async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetProgramsResponse:
         """
+        Gets a program by ID, with its name, currency, website, cookie duration and payout terms.
+
         Parameters
         ----------
         id : str
@@ -260,7 +274,7 @@ class AsyncProgramsClient:
 
         async def main() -> None:
             await client.programs.get(
-                id="id",
+                id="prg_T6z8aRW3XCmvFWP972RKxpAd",
             )
 
 

@@ -55,14 +55,18 @@ class TransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListTransactionsResponse:
         """
+        Lists transactions. Filter by program, partner, customer or status, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListTransactionsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListTransactionsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -71,26 +75,31 @@ class TransactionsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Only transactions from this customer, by Tolt customer id (cus_...) as returned when listing customers.
 
         status : typing.Optional[str]
+            Only transactions in this status, matched exactly, such as paid or refunded.
 
         search : typing.Optional[str]
+            Text matched anywhere in the transaction id or its charge_id, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -149,25 +158,34 @@ class TransactionsClient:
         Parameters
         ----------
         amount : int
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         customer_id : str
+            Id of the customer who paid (cus_...), as returned when listing customers. The transaction goes to that customer's partner and program, and the customer becomes active.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date. Defaults to now.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system. Commission flows can match on it.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time. Commission flows can match on it.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id. A customer can have only one transaction per charge_id, so retrying a create with the same value returns 409 instead of booking the payment twice. An empty or whitespace-only charge_id is stored as no charge id and is not checked; any other value is stored and compared exactly as sent.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks. Commission flows use its link before falling back to the customer's link.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year. Commission flows can match on it. Flows can also split a yearly payment into monthly commissions.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api. Commissions that flows create from it copy this value.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -185,8 +203,13 @@ class TransactionsClient:
             token="YOUR_TOKEN",
         )
         client.transactions.create(
-            amount=1,
-            customer_id="customer_id",
+            product_id="prod_pro",
+            product_name="Pro plan",
+            amount=5000,
+            customer_id="cus_LBfjvtfct9pVUeLojMHiGnXv",
+            billing_type="subscription",
+            interval="month",
+            source="api",
         )
         """
         _response = self._raw_client.create(
@@ -206,6 +229,8 @@ class TransactionsClient:
 
     def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionsResponse:
         """
+        Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
+
         Parameters
         ----------
         id : str
@@ -226,7 +251,7 @@ class TransactionsClient:
             token="YOUR_TOKEN",
         )
         client.transactions.get(
-            id="id",
+            id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
         )
         """
         _response = self._raw_client.get(id, request_options=request_options)
@@ -249,30 +274,41 @@ class TransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> UpdateTransactionsResponse:
         """
+        Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
+
         Parameters
         ----------
         id : str
 
         amount : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         status : typing.Optional[str]
+            Payment status text, such as paid, which is what new transactions get. refunded is not accepted here: refund a transaction with the refund action. null clears the status.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name. null clears it.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -290,7 +326,9 @@ class TransactionsClient:
             token="YOUR_TOKEN",
         )
         client.transactions.update(
-            id="id",
+            id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
+            amount=5000,
+            product_name="Pro plan",
         )
         """
         _response = self._raw_client.update(
@@ -311,6 +349,8 @@ class TransactionsClient:
 
     def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteTransactionsResponse:
         """
+        Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
+
         Parameters
         ----------
         id : str
@@ -331,7 +371,7 @@ class TransactionsClient:
             token="YOUR_TOKEN",
         )
         client.transactions.delete(
-            id="id",
+            id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
         )
         """
         _response = self._raw_client.delete(id, request_options=request_options)
@@ -361,7 +401,7 @@ class TransactionsClient:
             token="YOUR_TOKEN",
         )
         client.transactions.refund(
-            id="id",
+            id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
         )
         """
         _response = self._raw_client.refund(id, request_options=request_options)
@@ -393,7 +433,7 @@ class TransactionsClient:
             token="YOUR_TOKEN",
         )
         client.transactions.rerun_flows(
-            id="id",
+            id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
         )
         """
         _response = self._raw_client.rerun_flows(id, request_options=request_options)
@@ -435,14 +475,18 @@ class AsyncTransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ListTransactionsResponse:
         """
+        Lists transactions. Filter by program, partner, customer or status, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListTransactionsRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListTransactionsRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -451,26 +495,31 @@ class AsyncTransactionsClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         customer_id : typing.Optional[str]
+            Only transactions from this customer, by Tolt customer id (cus_...) as returned when listing customers.
 
         status : typing.Optional[str]
+            Only transactions in this status, matched exactly, such as paid or refunded.
 
         search : typing.Optional[str]
+            Text matched anywhere in the transaction id or its charge_id, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -537,25 +586,34 @@ class AsyncTransactionsClient:
         Parameters
         ----------
         amount : int
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         customer_id : str
+            Id of the customer who paid (cus_...), as returned when listing customers. The transaction goes to that customer's partner and program, and the customer becomes active.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date. Defaults to now.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system. Commission flows can match on it.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time. Commission flows can match on it.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id. A customer can have only one transaction per charge_id, so retrying a create with the same value returns 409 instead of booking the payment twice. An empty or whitespace-only charge_id is stored as no charge id and is not checked; any other value is stored and compared exactly as sent.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks. Commission flows use its link before falling back to the customer's link.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year. Commission flows can match on it. Flows can also split a yearly payment into monthly commissions.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api. Commissions that flows create from it copy this value.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -578,8 +636,13 @@ class AsyncTransactionsClient:
 
         async def main() -> None:
             await client.transactions.create(
-                amount=1,
-                customer_id="customer_id",
+                product_id="prod_pro",
+                product_name="Pro plan",
+                amount=5000,
+                customer_id="cus_LBfjvtfct9pVUeLojMHiGnXv",
+                billing_type="subscription",
+                interval="month",
+                source="api",
             )
 
 
@@ -602,6 +665,8 @@ class AsyncTransactionsClient:
 
     async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> GetTransactionsResponse:
         """
+        Gets a transaction by ID, with its amount, status, billing details, products and the customer it belongs to.
+
         Parameters
         ----------
         id : str
@@ -627,7 +692,7 @@ class AsyncTransactionsClient:
 
         async def main() -> None:
             await client.transactions.get(
-                id="id",
+                id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
             )
 
 
@@ -653,30 +718,41 @@ class AsyncTransactionsClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> UpdateTransactionsResponse:
         """
+        Updates a transaction's amount, status, billing or product details. Refunded transactions cannot be modified.
+
         Parameters
         ----------
         id : str
 
         amount : typing.Optional[int]
-            Monetary amount as an integer in the smallest currency unit (cents), e.g. 500 = 5.00
+            The payment amount in the smallest unit of the program currency (cents for USD); percentage commissions are calculated from it.
 
         status : typing.Optional[str]
+            Payment status text, such as paid, which is what new transactions get. refunded is not accepted here: refund a transaction with the refund action. null clears the status.
 
         source : typing.Optional[str]
+            Where the transaction came from, such as stripe or api.
 
         billing_type : typing.Optional[str]
+            Kind of payment: subscription for a recurring payment, or one_time.
 
         charge_id : typing.Optional[str]
+            Id of the payment in your billing system, such as a Stripe charge id.
 
         click_id : typing.Optional[str]
+            Id of the tracked click behind this payment, as returned when listing clicks.
 
         product_id : typing.Optional[str]
+            Id of the purchased product in your billing system.
 
         product_name : typing.Optional[str]
+            Readable name of the purchased product, such as Pro plan. It is saved as the transaction's product name, which revenue_by_product groups revenue by; flows match on product_id, not on this name. null clears it.
 
         interval : typing.Optional[str]
+            Billing period of a subscription payment: month or year.
 
         created_at : typing.Optional[dt.datetime]
+            When the payment happened, as a timestamp with a time zone, for example 2026-03-01T12:00:00Z. Reports and date filters place the transaction on this date.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -699,7 +775,9 @@ class AsyncTransactionsClient:
 
         async def main() -> None:
             await client.transactions.update(
-                id="id",
+                id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
+                amount=5000,
+                product_name="Pro plan",
             )
 
 
@@ -725,6 +803,8 @@ class AsyncTransactionsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> DeleteTransactionsResponse:
         """
+        Deletes a transaction. Refunded transactions and transactions that already have commissions cannot be deleted.
+
         Parameters
         ----------
         id : str
@@ -750,7 +830,7 @@ class AsyncTransactionsClient:
 
         async def main() -> None:
             await client.transactions.delete(
-                id="id",
+                id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
             )
 
 
@@ -790,7 +870,7 @@ class AsyncTransactionsClient:
 
         async def main() -> None:
             await client.transactions.refund(
-                id="id",
+                id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
             )
 
 
@@ -830,7 +910,7 @@ class AsyncTransactionsClient:
 
         async def main() -> None:
             await client.transactions.rerun_flows(
-                id="id",
+                id="txn_fB3egT1sKNVNu3ZYuU1ypYDA",
             )
 
 

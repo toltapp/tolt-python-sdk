@@ -11,11 +11,12 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
+from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error import Error
-from .types.create_token_embed_request_partner import CreateTokenEmbedRequestPartner
+from .types.create_token_embed_request import CreateTokenEmbedRequest
 from .types.create_token_embed_response import CreateTokenEmbedResponse
 from pydantic import ValidationError
 
@@ -28,20 +29,14 @@ class RawEmbedClient:
         self._client_wrapper = client_wrapper
 
     def create_token(
-        self,
-        *,
-        partner_id: typing.Optional[str] = OMIT,
-        partner: typing.Optional[CreateTokenEmbedRequestPartner] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: CreateTokenEmbedRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[CreateTokenEmbedResponse]:
         """
         Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
 
         Parameters
         ----------
-        partner_id : typing.Optional[str]
-
-        partner : typing.Optional[CreateTokenEmbedRequestPartner]
+        request : CreateTokenEmbedRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -54,15 +49,9 @@ class RawEmbedClient:
         _response = self._client_wrapper.httpx_client.request(
             "v2/embed-tokens",
             method="POST",
-            json={
-                "partner_id": partner_id,
-                "partner": convert_and_respect_annotation_metadata(
-                    object_=partner, annotation=CreateTokenEmbedRequestPartner, direction="write"
-                ),
-            },
-            headers={
-                "content-type": "application/json",
-            },
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=CreateTokenEmbedRequest, direction="write"
+            ),
             request_options=request_options,
             omit=OMIT,
         )
@@ -109,6 +98,17 @@ class RawEmbedClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -135,20 +135,14 @@ class AsyncRawEmbedClient:
         self._client_wrapper = client_wrapper
 
     async def create_token(
-        self,
-        *,
-        partner_id: typing.Optional[str] = OMIT,
-        partner: typing.Optional[CreateTokenEmbedRequestPartner] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: CreateTokenEmbedRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[CreateTokenEmbedResponse]:
         """
         Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
 
         Parameters
         ----------
-        partner_id : typing.Optional[str]
-
-        partner : typing.Optional[CreateTokenEmbedRequestPartner]
+        request : CreateTokenEmbedRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -161,15 +155,9 @@ class AsyncRawEmbedClient:
         _response = await self._client_wrapper.httpx_client.request(
             "v2/embed-tokens",
             method="POST",
-            json={
-                "partner_id": partner_id,
-                "partner": convert_and_respect_annotation_metadata(
-                    object_=partner, annotation=CreateTokenEmbedRequestPartner, direction="write"
-                ),
-            },
-            headers={
-                "content-type": "application/json",
-            },
+            json=convert_and_respect_annotation_metadata(
+                object_=request, annotation=CreateTokenEmbedRequest, direction="write"
+            ),
             request_options=request_options,
             omit=OMIT,
         )
@@ -207,6 +195,17 @@ class AsyncRawEmbedClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

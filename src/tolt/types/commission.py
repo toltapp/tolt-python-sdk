@@ -33,7 +33,7 @@ class Commission(UniversalBaseModel):
     is_ad_click: typing.Optional[bool] = None
     is_self_referral: typing.Optional[bool] = None
     approval_type: typing.Optional[str] = None
-    scheduled_approval_date: dt.datetime
+    scheduled_approval_date: typing.Optional[dt.datetime] = None
     created_at: dt.datetime
     updated_at: dt.datetime
 

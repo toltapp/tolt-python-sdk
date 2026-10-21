@@ -21,8 +21,8 @@ class Customer(UniversalBaseModel):
     link_id: typing.Optional[str] = None
     promotion_code_id: typing.Optional[str] = None
     click_id: typing.Optional[str] = None
-    lead_at: dt.datetime
-    active_at: dt.datetime
+    lead_at: typing.Optional[dt.datetime] = None
+    active_at: typing.Optional[dt.datetime] = None
     created_at: dt.datetime
     updated_at: dt.datetime
 

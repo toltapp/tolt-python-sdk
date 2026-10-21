@@ -41,7 +41,9 @@ client = ToltApi(
     token="<token>",
 )
 
-client.embed.create_token()
+client.embed.create_token(
+    request={"key": "value"},
+)
 ```
 
 ## Environments
@@ -53,7 +55,7 @@ from tolt import ToltApi
 from tolt.environment import ToltApiEnvironment
 
 client = ToltApi(
-    environment=ToltApiEnvironment.PRODUCTION,
+    environment=ToltApiEnvironment.DEFAULT,
 )
 ```
 
@@ -72,7 +74,9 @@ client = AsyncToltApi(
 
 
 async def main() -> None:
-    await client.embed.create_token()
+    await client.embed.create_token(
+        request={"key": "value"},
+    )
 
 
 asyncio.run(main())

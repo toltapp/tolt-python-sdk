@@ -38,7 +38,7 @@ class ToltApi:
 
 
 
-        Defaults to ToltApiEnvironment.PRODUCTION
+        Defaults to ToltApiEnvironment.DEFAULT
 
 
 
@@ -80,7 +80,7 @@ class ToltApi:
         self,
         *,
         base_url: typing.Optional[str] = None,
-        environment: ToltApiEnvironment = ToltApiEnvironment.PRODUCTION,
+        environment: ToltApiEnvironment = ToltApiEnvironment.DEFAULT,
         token: typing.Union[str, typing.Callable[[], str]],
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
@@ -250,7 +250,7 @@ class AsyncToltApi:
 
 
 
-        Defaults to ToltApiEnvironment.PRODUCTION
+        Defaults to ToltApiEnvironment.DEFAULT
 
 
 
@@ -295,7 +295,7 @@ class AsyncToltApi:
         self,
         *,
         base_url: typing.Optional[str] = None,
-        environment: ToltApiEnvironment = ToltApiEnvironment.PRODUCTION,
+        environment: ToltApiEnvironment = ToltApiEnvironment.DEFAULT,
         token: typing.Union[str, typing.Callable[[], str]],
         headers: typing.Optional[typing.Dict[str, str]] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,

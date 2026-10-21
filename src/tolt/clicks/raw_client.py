@@ -14,6 +14,7 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
+from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
@@ -59,11 +60,13 @@ class RawClicksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListClicksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListClicksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -72,22 +75,25 @@ class RawClicksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         link_id : typing.Optional[str]
+            Limit to one referral link, by its id (lnk_...) as returned when listing links.
 
         country : typing.Optional[str]
             Filter by the click's stored country, matched exactly (values are not normalized). Clicks recorded by the tracking script store a country name (e.g. `Canada`); clicks created through the API store a 2-letter ISO code (e.g. `CA`). Filter by the exact form you expect.
@@ -147,6 +153,17 @@ class RawClicksClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -235,6 +252,17 @@ class RawClicksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -259,6 +287,8 @@ class RawClicksClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[GetClicksResponse]:
         """
+        Gets a recorded click by ID, with the partner, link, page, referrer, country, device and browser it came from.
+
         Parameters
         ----------
         id : str
@@ -299,6 +329,17 @@ class RawClicksClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -358,11 +399,13 @@ class AsyncRawClicksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListClicksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListClicksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -371,22 +414,25 @@ class AsyncRawClicksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         link_id : typing.Optional[str]
+            Limit to one referral link, by its id (lnk_...) as returned when listing links.
 
         country : typing.Optional[str]
             Filter by the click's stored country, matched exactly (values are not normalized). Clicks recorded by the tracking script store a country name (e.g. `Canada`); clicks created through the API store a 2-letter ISO code (e.g. `CA`). Filter by the exact form you expect.
@@ -446,6 +492,17 @@ class AsyncRawClicksClient:
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -534,6 +591,17 @@ class AsyncRawClicksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -558,6 +626,8 @@ class AsyncRawClicksClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[GetClicksResponse]:
         """
+        Gets a recorded click by ID, with the partner, link, page, referrer, country, device and browser it came from.
+
         Parameters
         ----------
         id : str
@@ -598,6 +668,17 @@ class AsyncRawClicksClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

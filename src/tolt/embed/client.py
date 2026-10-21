@@ -5,7 +5,7 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawEmbedClient, RawEmbedClient
-from .types.create_token_embed_request_partner import CreateTokenEmbedRequestPartner
+from .types.create_token_embed_request import CreateTokenEmbedRequest
 from .types.create_token_embed_response import CreateTokenEmbedResponse
 
 # this is used as the default value for optional parameters
@@ -28,20 +28,14 @@ class EmbedClient:
         return self._raw_client
 
     def create_token(
-        self,
-        *,
-        partner_id: typing.Optional[str] = OMIT,
-        partner: typing.Optional[CreateTokenEmbedRequestPartner] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: CreateTokenEmbedRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> CreateTokenEmbedResponse:
         """
         Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
 
         Parameters
         ----------
-        partner_id : typing.Optional[str]
-
-        partner : typing.Optional[CreateTokenEmbedRequestPartner]
+        request : CreateTokenEmbedRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -58,11 +52,11 @@ class EmbedClient:
         client = ToltApi(
             token="YOUR_TOKEN",
         )
-        client.embed.create_token()
-        """
-        _response = self._raw_client.create_token(
-            partner_id=partner_id, partner=partner, request_options=request_options
+        client.embed.create_token(
+            request={"key": "value"},
         )
+        """
+        _response = self._raw_client.create_token(request=request, request_options=request_options)
         return _response.data
 
 
@@ -82,20 +76,14 @@ class AsyncEmbedClient:
         return self._raw_client
 
     async def create_token(
-        self,
-        *,
-        partner_id: typing.Optional[str] = OMIT,
-        partner: typing.Optional[CreateTokenEmbedRequestPartner] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: CreateTokenEmbedRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> CreateTokenEmbedResponse:
         """
         Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser.
 
         Parameters
         ----------
-        partner_id : typing.Optional[str]
-
-        partner : typing.Optional[CreateTokenEmbedRequestPartner]
+        request : CreateTokenEmbedRequest
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -117,12 +105,12 @@ class AsyncEmbedClient:
 
 
         async def main() -> None:
-            await client.embed.create_token()
+            await client.embed.create_token(
+                request={"key": "value"},
+            )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_token(
-            partner_id=partner_id, partner=partner, request_options=request_options
-        )
+        _response = await self._raw_client.create_token(request=request, request_options=request_options)
         return _response.data

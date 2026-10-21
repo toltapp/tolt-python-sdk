@@ -13,6 +13,8 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
+from ..errors.conflict_error import ConflictError
+from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
@@ -56,14 +58,18 @@ class RawPromotionCodesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[ListPromotionCodesResponse]:
         """
+        Lists promotion codes. Filter by program, partner or type, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListPromotionCodesRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListPromotionCodesRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -72,24 +78,28 @@ class RawPromotionCodesClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         type : typing.Optional[ListPromotionCodesRequestType]
+            Only codes giving this kind of discount: a fixed amount off or a percentage off.
 
         search : typing.Optional[str]
+            Text matched anywhere in the code, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -151,6 +161,17 @@ class RawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -181,15 +202,21 @@ class RawPromotionCodesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreatePromotionCodesResponse]:
         """
+        Creates a promotion code for a partner, so customers who use it are credited to them. A partner cannot have the same code twice.
+
         Parameters
         ----------
         code : str
+            The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case. Recording it here does not create it in your billing system.
 
         partner_id : str
+            Id of the partner the code belongs to (part_...), as returned when listing partners. The code is created in that partner's program.
 
         type : typing.Optional[CreatePromotionCodesRequestType]
+            Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
+            Size of the discount as a plain decimal: a percent from 0 to 100 for percentage codes ("20" is 20%), or an amount from 0 to 1,000,000 in major units of the program currency for fixed codes ("20" is 20.00).
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -246,6 +273,28 @@ class RawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -270,6 +319,8 @@ class RawPromotionCodesClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[GetPromotionCodesResponse]:
         """
+        Gets a promotion code by ID, with its discount type and value and the partner, group or program it belongs to.
+
         Parameters
         ----------
         id : str
@@ -319,6 +370,17 @@ class RawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -349,15 +411,20 @@ class RawPromotionCodesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[UpdatePromotionCodesResponse]:
         """
+        Updates a promotion code's code, discount type or value.
+
         Parameters
         ----------
         id : str
 
         code : typing.Optional[str]
+            The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case.
 
         type : typing.Optional[UpdatePromotionCodesRequestType]
+            Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
+            Size of the discount as a plain decimal: a percent from 0 to 100 for percentage codes ("20" is 20%), or an amount from 0 to 1,000,000 in major units of the program currency for fixed codes ("20" is 20.00). null clears it.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -424,6 +491,28 @@ class RawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -448,6 +537,8 @@ class RawPromotionCodesClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[DeletePromotionCodesResponse]:
         """
+        Deletes a promotion code, so customers who use it afterwards are no longer attributed through it.
+
         Parameters
         ----------
         id : str
@@ -488,6 +579,17 @@ class RawPromotionCodesClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -541,14 +643,18 @@ class AsyncRawPromotionCodesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[ListPromotionCodesResponse]:
         """
+        Lists promotion codes. Filter by program, partner or type, and page with cursors.
+
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListPromotionCodesRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListPromotionCodesRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -557,24 +663,28 @@ class AsyncRawPromotionCodesClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         type : typing.Optional[ListPromotionCodesRequestType]
+            Only codes giving this kind of discount: a fixed amount off or a percentage off.
 
         search : typing.Optional[str]
+            Text matched anywhere in the code, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -636,6 +746,17 @@ class AsyncRawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -666,15 +787,21 @@ class AsyncRawPromotionCodesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreatePromotionCodesResponse]:
         """
+        Creates a promotion code for a partner, so customers who use it are credited to them. A partner cannot have the same code twice.
+
         Parameters
         ----------
         code : str
+            The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case. Recording it here does not create it in your billing system.
 
         partner_id : str
+            Id of the partner the code belongs to (part_...), as returned when listing partners. The code is created in that partner's program.
 
         type : typing.Optional[CreatePromotionCodesRequestType]
+            Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
+            Size of the discount as a plain decimal: a percent from 0 to 100 for percentage codes ("20" is 20%), or an amount from 0 to 1,000,000 in major units of the program currency for fixed codes ("20" is 20.00).
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -731,6 +858,28 @@ class AsyncRawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -755,6 +904,8 @@ class AsyncRawPromotionCodesClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[GetPromotionCodesResponse]:
         """
+        Gets a promotion code by ID, with its discount type and value and the partner, group or program it belongs to.
+
         Parameters
         ----------
         id : str
@@ -804,6 +955,17 @@ class AsyncRawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -834,15 +996,20 @@ class AsyncRawPromotionCodesClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[UpdatePromotionCodesResponse]:
         """
+        Updates a promotion code's code, discount type or value.
+
         Parameters
         ----------
         id : str
 
         code : typing.Optional[str]
+            The discount code as customers enter it at checkout. Customers and payments that use it are attributed to the code's partner. A partner cannot have the same code twice, ignoring case.
 
         type : typing.Optional[UpdatePromotionCodesRequestType]
+            Whether value is a percent off or a fixed amount off.
 
         value : typing.Optional[str]
+            Size of the discount as a plain decimal: a percent from 0 to 100 for percentage codes ("20" is 20%), or an amount from 0 to 1,000,000 in major units of the program currency for fixed codes ("20" is 20.00). null clears it.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -909,6 +1076,28 @@ class AsyncRawPromotionCodesClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
@@ -933,6 +1122,8 @@ class AsyncRawPromotionCodesClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[DeletePromotionCodesResponse]:
         """
+        Deletes a promotion code, so customers who use it afterwards are no longer attributed through it.
+
         Parameters
         ----------
         id : str
@@ -973,6 +1164,17 @@ class AsyncRawPromotionCodesClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

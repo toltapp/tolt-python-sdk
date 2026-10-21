@@ -59,11 +59,13 @@ class LinksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListLinksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListLinksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -72,26 +74,31 @@ class LinksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         param : typing.Optional[str]
+            Only links using this URL parameter name exactly, such as `ref` in `?ref=sam`.
 
         value : typing.Optional[str]
+            Only links with this exact slug, such as `sam` in `?ref=sam`.
 
         search : typing.Optional[str]
+            Text matched anywhere in the link's slug (value) or parameter name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -138,13 +145,18 @@ class LinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateLinksResponse:
         """
+        Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
+
         Parameters
         ----------
         value : str
+            Slug that identifies the partner in referral URLs, such as `sam` in `?ref=sam`, saved in lowercase. Pick one that no other link uses with the same parameter; a taken slug returns an error.
 
         partner_id : str
+            Id of the partner who owns the link (part_...), as returned when listing partners. The link is created in that partner's program.
 
         param : typing.Optional[str]
+            Query parameter of the link, e.g. `ref` in `?ref=sam`. Leave it out or send an empty string to use the program's first link parameter, which is what gets stored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -162,8 +174,9 @@ class LinksClient:
             token="YOUR_TOKEN",
         )
         client.links.create(
-            value="value",
-            partner_id="partner_id",
+            value="sam",
+            param="ref",
+            partner_id="part_NLYzgNKuSuASvrvoxNtau6SY",
         )
         """
         _response = self._raw_client.create(
@@ -231,7 +244,7 @@ class LinksClient:
             token="YOUR_TOKEN",
         )
         client.links.get(
-            id="id",
+            id="lnk_mtTeeckFa1vMdvDFXretQNs6",
         )
         """
         _response = self._raw_client.get(id, request_options=request_options)
@@ -253,8 +266,10 @@ class LinksClient:
         id : str
 
         param : typing.Optional[str]
+            New query parameter of the link, e.g. `ref` in `?ref=sam`. URLs with the old parameter stop matching this link.
 
         value : typing.Optional[str]
+            New slug, e.g. `sam` in `?ref=sam`, stored lowercased. URLs using the old slug stop matching this link.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -272,7 +287,9 @@ class LinksClient:
             token="YOUR_TOKEN",
         )
         client.links.update(
-            id="id",
+            id="lnk_mtTeeckFa1vMdvDFXretQNs6",
+            param="ref",
+            value="sam",
         )
         """
         _response = self._raw_client.update(id, param=param, value=value, request_options=request_options)
@@ -302,7 +319,7 @@ class LinksClient:
             token="YOUR_TOKEN",
         )
         client.links.delete(
-            id="id",
+            id="lnk_mtTeeckFa1vMdvDFXretQNs6",
         )
         """
         _response = self._raw_client.delete(id, request_options=request_options)
@@ -349,11 +366,13 @@ class AsyncLinksClient:
         Parameters
         ----------
         limit : typing.Optional[int]
+            How many rows to return in one page.
 
         order : typing.Optional[ListLinksRequestOrder]
+            Ranking direction: desc puts the most recently created or updated rows first.
 
         sort : typing.Optional[ListLinksRequestSort]
-            Column the list is ordered and paged by.
+            Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
 
         starting_after : typing.Optional[str]
             Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
@@ -362,26 +381,31 @@ class AsyncLinksClient:
             Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
 
         created_after : typing.Optional[dt.datetime]
-            Only items created at or after this ISO 8601 time.
+            Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
 
         created_before : typing.Optional[dt.datetime]
-            Only items created before this ISO 8601 time.
+            End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
 
         updated_after : typing.Optional[dt.datetime]
-            Only items updated at or after this ISO 8601 time. Combine with sort=updated_at to sync changes.
+            Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
 
         updated_before : typing.Optional[dt.datetime]
-            Only items updated before this ISO 8601 time.
+            Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
 
         program_id : typing.Optional[str]
+            Limit to one program, by its id (prg_...) as returned when listing programs.
 
         partner_id : typing.Optional[str]
+            Limit to one partner, by its id (part_...) as returned when listing partners.
 
         param : typing.Optional[str]
+            Only links using this URL parameter name exactly, such as `ref` in `?ref=sam`.
 
         value : typing.Optional[str]
+            Only links with this exact slug, such as `sam` in `?ref=sam`.
 
         search : typing.Optional[str]
+            Text matched anywhere in the link's slug (value) or parameter name, ignoring case.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -436,13 +460,18 @@ class AsyncLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CreateLinksResponse:
         """
+        Creates a referral link for a partner. The value must be unique for its parameter, and param defaults to the program's.
+
         Parameters
         ----------
         value : str
+            Slug that identifies the partner in referral URLs, such as `sam` in `?ref=sam`, saved in lowercase. Pick one that no other link uses with the same parameter; a taken slug returns an error.
 
         partner_id : str
+            Id of the partner who owns the link (part_...), as returned when listing partners. The link is created in that partner's program.
 
         param : typing.Optional[str]
+            Query parameter of the link, e.g. `ref` in `?ref=sam`. Leave it out or send an empty string to use the program's first link parameter, which is what gets stored.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -465,8 +494,9 @@ class AsyncLinksClient:
 
         async def main() -> None:
             await client.links.create(
-                value="value",
-                partner_id="partner_id",
+                value="sam",
+                param="ref",
+                partner_id="part_NLYzgNKuSuASvrvoxNtau6SY",
             )
 
 
@@ -550,7 +580,7 @@ class AsyncLinksClient:
 
         async def main() -> None:
             await client.links.get(
-                id="id",
+                id="lnk_mtTeeckFa1vMdvDFXretQNs6",
             )
 
 
@@ -575,8 +605,10 @@ class AsyncLinksClient:
         id : str
 
         param : typing.Optional[str]
+            New query parameter of the link, e.g. `ref` in `?ref=sam`. URLs with the old parameter stop matching this link.
 
         value : typing.Optional[str]
+            New slug, e.g. `sam` in `?ref=sam`, stored lowercased. URLs using the old slug stop matching this link.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -599,7 +631,9 @@ class AsyncLinksClient:
 
         async def main() -> None:
             await client.links.update(
-                id="id",
+                id="lnk_mtTeeckFa1vMdvDFXretQNs6",
+                param="ref",
+                value="sam",
             )
 
 
@@ -637,7 +671,7 @@ class AsyncLinksClient:
 
         async def main() -> None:
             await client.links.delete(
-                id="id",
+                id="lnk_mtTeeckFa1vMdvDFXretQNs6",
             )
 
 
