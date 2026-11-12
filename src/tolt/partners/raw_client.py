@@ -22,6 +22,7 @@ from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.error_response import ErrorResponse
 from ..types.partner_details import PartnerDetails
+from .types.add_partner_tags_response import AddPartnerTagsResponse
 from .types.approve_partner_response import ApprovePartnerResponse
 from .types.bulk_approve_partners_response import BulkApprovePartnersResponse
 from .types.bulk_reject_partners_response import BulkRejectPartnersResponse
@@ -34,6 +35,7 @@ from .types.list_partners_request_sort import ListPartnersRequestSort
 from .types.list_partners_request_status import ListPartnersRequestStatus
 from .types.list_partners_response import ListPartnersResponse
 from .types.reject_partner_response import RejectPartnerResponse
+from .types.remove_partner_tag_response import RemovePartnerTagResponse
 from .types.suspend_partner_response import SuspendPartnerResponse
 from .types.update_partner_response import UpdatePartnerResponse
 from pydantic import ValidationError
@@ -257,6 +259,7 @@ class RawPartnersClient:
         status: typing.Optional[ListPartnersRequestStatus] = None,
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
+        tag_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SyncPager[PartnerDetails, ListPartnersResponse]:
@@ -301,6 +304,9 @@ class RawPartnersClient:
         group_id : typing.Optional[str]
             Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
 
+        tag_id : typing.Optional[str]
+            Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
+
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
@@ -328,6 +334,7 @@ class RawPartnersClient:
                 "status": status,
                 "program_id": program_id,
                 "group_id": group_id,
+                "tag_id": tag_id,
                 "search": search,
             },
             request_options=request_options,
@@ -357,6 +364,7 @@ class RawPartnersClient:
                     status=status,
                     program_id=program_id,
                     group_id=group_id,
+                    tag_id=tag_id,
                     search=search,
                     request_options=request_options,
                 )
@@ -1117,6 +1125,201 @@ class RawPartnersClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def add_partner_tags(
+        self, id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[AddPartnerTagsResponse]:
+        """
+        Puts one or more tags on the partner. Each tag must belong to the partner's program; tags the partner already has stay as they are. Returns every tag the partner now has, and sends partner.updated if any tag was added.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_ids : typing.Sequence[str]
+            Ids of the tags to add (ptag_...), as returned when listing partner tags. Each must belong to the partner's program. Tags the partner already has stay as they are.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[AddPartnerTagsResponse]
+            Every tag on the partner, sorted by name
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"v2/partners/{encode_path_param(id)}/tags",
+            method="POST",
+            json={
+                "tag_ids": tag_ids,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    AddPartnerTagsResponse,
+                    parse_obj_as(
+                        type_=AddPartnerTagsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def remove_partner_tag(
+        self, id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[RemovePartnerTagResponse]:
+        """
+        Takes the tag off the partner. Removing a tag the partner does not have succeeds and changes nothing. Returns every tag the partner still has, and sends partner.updated if the tag was removed.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[RemovePartnerTagResponse]
+            Every tag still on the partner, sorted by name
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"v2/partners/{encode_path_param(id)}/tags/{encode_path_param(tag_id)}",
+            method="DELETE",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    RemovePartnerTagResponse,
+                    parse_obj_as(
+                        type_=RemovePartnerTagResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
 
 class AsyncRawPartnersClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -1333,6 +1536,7 @@ class AsyncRawPartnersClient:
         status: typing.Optional[ListPartnersRequestStatus] = None,
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
+        tag_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncPager[PartnerDetails, ListPartnersResponse]:
@@ -1377,6 +1581,9 @@ class AsyncRawPartnersClient:
         group_id : typing.Optional[str]
             Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
 
+        tag_id : typing.Optional[str]
+            Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
+
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
@@ -1404,6 +1611,7 @@ class AsyncRawPartnersClient:
                 "status": status,
                 "program_id": program_id,
                 "group_id": group_id,
+                "tag_id": tag_id,
                 "search": search,
             },
             request_options=request_options,
@@ -1435,6 +1643,7 @@ class AsyncRawPartnersClient:
                         status=status,
                         program_id=program_id,
                         group_id=group_id,
+                        tag_id=tag_id,
                         search=search,
                         request_options=request_options,
                     )
@@ -2143,6 +2352,201 @@ class AsyncRawPartnersClient:
                         ),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def add_partner_tags(
+        self, id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[AddPartnerTagsResponse]:
+        """
+        Puts one or more tags on the partner. Each tag must belong to the partner's program; tags the partner already has stay as they are. Returns every tag the partner now has, and sends partner.updated if any tag was added.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_ids : typing.Sequence[str]
+            Ids of the tags to add (ptag_...), as returned when listing partner tags. Each must belong to the partner's program. Tags the partner already has stay as they are.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[AddPartnerTagsResponse]
+            Every tag on the partner, sorted by name
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"v2/partners/{encode_path_param(id)}/tags",
+            method="POST",
+            json={
+                "tag_ids": tag_ids,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    AddPartnerTagsResponse,
+                    parse_obj_as(
+                        type_=AddPartnerTagsResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 413:
+                raise ContentTooLargeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def remove_partner_tag(
+        self, id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[RemovePartnerTagResponse]:
+        """
+        Takes the tag off the partner. Removing a tag the partner does not have succeeds and changes nothing. Returns every tag the partner still has, and sends partner.updated if the tag was removed.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[RemovePartnerTagResponse]
+            Every tag still on the partner, sorted by name
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"v2/partners/{encode_path_param(id)}/tags/{encode_path_param(tag_id)}",
+            method="DELETE",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    RemovePartnerTagResponse,
+                    parse_obj_as(
+                        type_=RemovePartnerTagResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

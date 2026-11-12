@@ -17,6 +17,7 @@ if typing.TYPE_CHECKING:
     from .flows.client import AsyncFlowsClient, FlowsClient
     from .groups.client import AsyncGroupsClient, GroupsClient
     from .links.client import AsyncLinksClient, LinksClient
+    from .partner_tags.client import AsyncPartnerTagsClient, PartnerTagsClient
     from .partners.client import AsyncPartnersClient, PartnersClient
     from .programs.client import AsyncProgramsClient, ProgramsClient
     from .promotion_codes.client import AsyncPromotionCodesClient, PromotionCodesClient
@@ -113,6 +114,7 @@ class ToltApi:
         self._flows: typing.Optional[FlowsClient] = None
         self._clicks: typing.Optional[ClicksClient] = None
         self._partners: typing.Optional[PartnersClient] = None
+        self._partner_tags: typing.Optional[PartnerTagsClient] = None
         self._programs: typing.Optional[ProgramsClient] = None
         self._customers: typing.Optional[CustomersClient] = None
         self._commissions: typing.Optional[CommissionsClient] = None
@@ -160,6 +162,14 @@ class ToltApi:
 
             self._partners = PartnersClient(client_wrapper=self._client_wrapper)
         return self._partners
+
+    @property
+    def partner_tags(self):
+        if self._partner_tags is None:
+            from .partner_tags.client import PartnerTagsClient  # noqa: E402
+
+            self._partner_tags = PartnerTagsClient(client_wrapper=self._client_wrapper)
+        return self._partner_tags
 
     @property
     def programs(self):
@@ -328,6 +338,7 @@ class AsyncToltApi:
         self._flows: typing.Optional[AsyncFlowsClient] = None
         self._clicks: typing.Optional[AsyncClicksClient] = None
         self._partners: typing.Optional[AsyncPartnersClient] = None
+        self._partner_tags: typing.Optional[AsyncPartnerTagsClient] = None
         self._programs: typing.Optional[AsyncProgramsClient] = None
         self._customers: typing.Optional[AsyncCustomersClient] = None
         self._commissions: typing.Optional[AsyncCommissionsClient] = None
@@ -375,6 +386,14 @@ class AsyncToltApi:
 
             self._partners = AsyncPartnersClient(client_wrapper=self._client_wrapper)
         return self._partners
+
+    @property
+    def partner_tags(self):
+        if self._partner_tags is None:
+            from .partner_tags.client import AsyncPartnerTagsClient  # noqa: E402
+
+            self._partner_tags = AsyncPartnerTagsClient(client_wrapper=self._client_wrapper)
+        return self._partner_tags
 
     @property
     def programs(self):
