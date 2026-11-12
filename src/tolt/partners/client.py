@@ -8,6 +8,7 @@ from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
 from ..types.partner_details import PartnerDetails
 from .raw_client import AsyncRawPartnersClient, RawPartnersClient
+from .types.add_partner_tags_response import AddPartnerTagsResponse
 from .types.approve_partner_response import ApprovePartnerResponse
 from .types.bulk_approve_partners_response import BulkApprovePartnersResponse
 from .types.bulk_reject_partners_response import BulkRejectPartnersResponse
@@ -20,6 +21,7 @@ from .types.list_partners_request_sort import ListPartnersRequestSort
 from .types.list_partners_request_status import ListPartnersRequestStatus
 from .types.list_partners_response import ListPartnersResponse
 from .types.reject_partner_response import RejectPartnerResponse
+from .types.remove_partner_tag_response import RemovePartnerTagResponse
 from .types.suspend_partner_response import SuspendPartnerResponse
 from .types.update_partner_response import UpdatePartnerResponse
 
@@ -133,6 +135,7 @@ class PartnersClient:
         status: typing.Optional[ListPartnersRequestStatus] = None,
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
+        tag_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SyncPager[PartnerDetails, ListPartnersResponse]:
@@ -177,6 +180,9 @@ class PartnersClient:
         group_id : typing.Optional[str]
             Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
 
+        tag_id : typing.Optional[str]
+            Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
+
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
@@ -215,6 +221,7 @@ class PartnersClient:
             status=status,
             program_id=program_id,
             group_id=group_id,
+            tag_id=tag_id,
             search=search,
             request_options=request_options,
         )
@@ -536,6 +543,77 @@ class PartnersClient:
         _response = self._raw_client.suspend(id, suspension_reason=suspension_reason, request_options=request_options)
         return _response.data
 
+    def add_partner_tags(
+        self, id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> AddPartnerTagsResponse:
+        """
+        Puts one or more tags on the partner. Each tag must belong to the partner's program; tags the partner already has stay as they are. Returns every tag the partner now has, and sends partner.updated if any tag was added.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_ids : typing.Sequence[str]
+            Ids of the tags to add (ptag_...), as returned when listing partner tags. Each must belong to the partner's program. Tags the partner already has stay as they are.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AddPartnerTagsResponse
+            Every tag on the partner, sorted by name
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.partners.add_partner_tags(
+            id="part_NLYzgNKuSuASvrvoxNtau6SY",
+            tag_ids=["ptag_zDEcdqNuNBPcokarWxBnk9gB"],
+        )
+        """
+        _response = self._raw_client.add_partner_tags(id, tag_ids=tag_ids, request_options=request_options)
+        return _response.data
+
+    def remove_partner_tag(
+        self, id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> RemovePartnerTagResponse:
+        """
+        Takes the tag off the partner. Removing a tag the partner does not have succeeds and changes nothing. Returns every tag the partner still has, and sends partner.updated if the tag was removed.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RemovePartnerTagResponse
+            Every tag still on the partner, sorted by name
+
+        Examples
+        --------
+        from tolt import ToltApi
+
+        client = ToltApi(
+            token="YOUR_TOKEN",
+        )
+        client.partners.remove_partner_tag(
+            id="part_NLYzgNKuSuASvrvoxNtau6SY",
+            tag_id="ptag_zDEcdqNuNBPcokarWxBnk9gB",
+        )
+        """
+        _response = self._raw_client.remove_partner_tag(id, tag_id, request_options=request_options)
+        return _response.data
+
 
 class AsyncPartnersClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
@@ -659,6 +737,7 @@ class AsyncPartnersClient:
         status: typing.Optional[ListPartnersRequestStatus] = None,
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
+        tag_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncPager[PartnerDetails, ListPartnersResponse]:
@@ -702,6 +781,9 @@ class AsyncPartnersClient:
 
         group_id : typing.Optional[str]
             Limit to partners in one group, by the group id (grp_...) as returned when listing groups.
+
+        tag_id : typing.Optional[str]
+            Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
 
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
@@ -750,6 +832,7 @@ class AsyncPartnersClient:
             status=status,
             program_id=program_id,
             group_id=group_id,
+            tag_id=tag_id,
             search=search,
             request_options=request_options,
         )
@@ -1121,4 +1204,91 @@ class AsyncPartnersClient:
         _response = await self._raw_client.suspend(
             id, suspension_reason=suspension_reason, request_options=request_options
         )
+        return _response.data
+
+    async def add_partner_tags(
+        self, id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
+    ) -> AddPartnerTagsResponse:
+        """
+        Puts one or more tags on the partner. Each tag must belong to the partner's program; tags the partner already has stay as they are. Returns every tag the partner now has, and sends partner.updated if any tag was added.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_ids : typing.Sequence[str]
+            Ids of the tags to add (ptag_...), as returned when listing partner tags. Each must belong to the partner's program. Tags the partner already has stay as they are.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AddPartnerTagsResponse
+            Every tag on the partner, sorted by name
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.partners.add_partner_tags(
+                id="part_NLYzgNKuSuASvrvoxNtau6SY",
+                tag_ids=["ptag_zDEcdqNuNBPcokarWxBnk9gB"],
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.add_partner_tags(id, tag_ids=tag_ids, request_options=request_options)
+        return _response.data
+
+    async def remove_partner_tag(
+        self, id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> RemovePartnerTagResponse:
+        """
+        Takes the tag off the partner. Removing a tag the partner does not have succeeds and changes nothing. Returns every tag the partner still has, and sends partner.updated if the tag was removed.
+
+        Parameters
+        ----------
+        id : str
+
+        tag_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RemovePartnerTagResponse
+            Every tag still on the partner, sorted by name
+
+        Examples
+        --------
+        import asyncio
+
+        from tolt import AsyncToltApi
+
+        client = AsyncToltApi(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.partners.remove_partner_tag(
+                id="part_NLYzgNKuSuASvrvoxNtau6SY",
+                tag_id="ptag_zDEcdqNuNBPcokarWxBnk9gB",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.remove_partner_tag(id, tag_id, request_options=request_options)
         return _response.data

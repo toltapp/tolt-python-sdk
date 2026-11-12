@@ -6,12 +6,18 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from .partner import Partner
 from .partner_details_custom_fields_item import PartnerDetailsCustomFieldsItem
+from .partner_tag_summary import PartnerTagSummary
 
 
 class PartnerDetails(Partner):
     custom_fields: typing.List[PartnerDetailsCustomFieldsItem] = pydantic.Field()
     """
     Custom-field answers with their questions. Empty when no answers exist.
+    """
+
+    tags: typing.List[PartnerTagSummary] = pydantic.Field()
+    """
+    Tags on the partner, sorted by name. Empty when the partner has none.
     """
 
     if IS_PYDANTIC_V2:

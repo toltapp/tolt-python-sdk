@@ -1263,6 +1263,14 @@ client.partners.list()
 <dl>
 <dd>
 
+**tag_id:** `typing.Optional[str]` — Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **search:** `typing.Optional[str]` — Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
     
 </dd>
@@ -1874,6 +1882,652 @@ client.partners.suspend(
 <dd>
 
 **suspension_reason:** `typing.Optional[str]` — Reason for the suspension, shown to the partner in the partner portal. Null clears an earlier reason.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">add_partner_tags</a>(...) -> AddPartnerTagsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Puts one or more tags on the partner. Each tag must belong to the partner's program; tags the partner already has stay as they are. Returns every tag the partner now has, and sends partner.updated if any tag was added.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.partners.add_partner_tags(
+    id="part_NLYzgNKuSuASvrvoxNtau6SY",
+    tag_ids=[
+        "ptag_zDEcdqNuNBPcokarWxBnk9gB"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tag_ids:** `typing.List[str]` — Ids of the tags to add (ptag_...), as returned when listing partner tags. Each must belong to the partner's program. Tags the partner already has stay as they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partners.<a href="src/tolt/partners/client.py">remove_partner_tag</a>(...) -> RemovePartnerTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Takes the tag off the partner. Removing a tag the partner does not have succeeds and changes nothing. Returns every tag the partner still has, and sends partner.updated if the tag was removed.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.partners.remove_partner_tag(
+    id="part_NLYzgNKuSuASvrvoxNtau6SY",
+    tag_id="ptag_zDEcdqNuNBPcokarWxBnk9gB",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tag_id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## PartnerTags
+<details><summary><code>client.partner_tags.<a href="src/tolt/partner_tags/client.py">list_partner_tags</a>(...) -> ListPartnerTagsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists the tags you can put on partners. Filter by program, search by name, and page with cursors.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.partner_tags.list_partner_tags()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order:** `typing.Optional[ListPartnerTagsRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort:** `typing.Optional[ListPartnerTagsRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**search:** `typing.Optional[str]` — Text matched anywhere in the tag name, ignoring case.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partner_tags.<a href="src/tolt/partner_tags/client.py">create_partner_tag</a>(...) -> CreatePartnerTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a tag in a program. Put it on partners with POST /v2/partners/{id}/tags.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.partner_tags.create_partner_tag(
+    program_id="prg_T6z8aRW3XCmvFWP972RKxpAd",
+    name="VIP",
+    color="#2457D6",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**program_id:** `str` — Id of the program the tag belongs to (prg_...), as returned when listing programs. Only partners in that program can have the tag.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `str` — Label shown on the partner in the dashboard, up to 50 characters. A program cannot have two tags with the same name, ignoring case.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**color:** `typing.Optional[str]` — Color of the tag in the dashboard, as a hex code like #2457D6. Defaults to one of the dashboard's tag colors.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partner_tags.<a href="src/tolt/partner_tags/client.py">get_partner_tag</a>(...) -> GetPartnerTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a partner tag by ID, with how many partners have it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.partner_tags.get_partner_tag(
+    id="ptag_zDEcdqNuNBPcokarWxBnk9gB",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partner_tags.<a href="src/tolt/partner_tags/client.py">update_partner_tag</a>(...) -> UpdatePartnerTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Renames a tag or changes its color. Partners who have the tag keep it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.partner_tags.update_partner_tag(
+    id="ptag_zDEcdqNuNBPcokarWxBnk9gB",
+    name="VIP",
+    color="#2457D6",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` — Label shown on the partner in the dashboard, up to 50 characters. A program cannot have two tags with the same name, ignoring case.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**color:** `typing.Optional[str]` — Color of the tag in the dashboard, as a hex code like #2457D6.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.partner_tags.<a href="src/tolt/partner_tags/client.py">delete_partner_tag</a>(...) -> DeletePartnerTagResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a tag and removes it from every partner who has it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.partner_tags.delete_partner_tag(
+    id="ptag_zDEcdqNuNBPcokarWxBnk9gB",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
     
 </dd>
 </dl>

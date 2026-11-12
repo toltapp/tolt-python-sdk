@@ -6,6 +6,7 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .add_partner_tags_response import AddPartnerTagsResponse
     from .approve_partner_response import ApprovePartnerResponse
     from .bulk_approve_partners_response import BulkApprovePartnersResponse
     from .bulk_reject_partners_response import BulkRejectPartnersResponse
@@ -18,9 +19,11 @@ if typing.TYPE_CHECKING:
     from .list_partners_request_status import ListPartnersRequestStatus
     from .list_partners_response import ListPartnersResponse
     from .reject_partner_response import RejectPartnerResponse
+    from .remove_partner_tag_response import RemovePartnerTagResponse
     from .suspend_partner_response import SuspendPartnerResponse
     from .update_partner_response import UpdatePartnerResponse
 _dynamic_imports: typing.Dict[str, str] = {
+    "AddPartnerTagsResponse": ".add_partner_tags_response",
     "ApprovePartnerResponse": ".approve_partner_response",
     "BulkApprovePartnersResponse": ".bulk_approve_partners_response",
     "BulkRejectPartnersResponse": ".bulk_reject_partners_response",
@@ -33,6 +36,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ListPartnersRequestStatus": ".list_partners_request_status",
     "ListPartnersResponse": ".list_partners_response",
     "RejectPartnerResponse": ".reject_partner_response",
+    "RemovePartnerTagResponse": ".remove_partner_tag_response",
     "SuspendPartnerResponse": ".suspend_partner_response",
     "UpdatePartnerResponse": ".update_partner_response",
 }
@@ -60,6 +64,7 @@ def __dir__():
 
 
 __all__ = [
+    "AddPartnerTagsResponse",
     "ApprovePartnerResponse",
     "BulkApprovePartnersResponse",
     "BulkRejectPartnersResponse",
@@ -72,6 +77,7 @@ __all__ = [
     "ListPartnersRequestStatus",
     "ListPartnersResponse",
     "RejectPartnerResponse",
+    "RemovePartnerTagResponse",
     "SuspendPartnerResponse",
     "UpdatePartnerResponse",
 ]

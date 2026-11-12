@@ -7,6 +7,7 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
+        AddPartnerTagsResponse,
         ApprovePartnerResponse,
         BulkApprovePartnersResponse,
         BulkRejectPartnersResponse,
@@ -19,10 +20,12 @@ if typing.TYPE_CHECKING:
         ListPartnersRequestStatus,
         ListPartnersResponse,
         RejectPartnerResponse,
+        RemovePartnerTagResponse,
         SuspendPartnerResponse,
         UpdatePartnerResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
+    "AddPartnerTagsResponse": ".types",
     "ApprovePartnerResponse": ".types",
     "BulkApprovePartnersResponse": ".types",
     "BulkRejectPartnersResponse": ".types",
@@ -35,6 +38,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ListPartnersRequestStatus": ".types",
     "ListPartnersResponse": ".types",
     "RejectPartnerResponse": ".types",
+    "RemovePartnerTagResponse": ".types",
     "SuspendPartnerResponse": ".types",
     "UpdatePartnerResponse": ".types",
 }
@@ -62,6 +66,7 @@ def __dir__():
 
 
 __all__ = [
+    "AddPartnerTagsResponse",
     "ApprovePartnerResponse",
     "BulkApprovePartnersResponse",
     "BulkRejectPartnersResponse",
@@ -74,6 +79,7 @@ __all__ = [
     "ListPartnersRequestStatus",
     "ListPartnersResponse",
     "RejectPartnerResponse",
+    "RemovePartnerTagResponse",
     "SuspendPartnerResponse",
     "UpdatePartnerResponse",
 ]
