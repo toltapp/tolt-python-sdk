@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v1.3.0 (2026-11-12)
+
+### Features
+
+- Regenerate SDK from the latest OpenAPI spec
+  ([#16](https://github.com/toltapp/tolt-python-sdk/pull/16),
+  [`e2393e9`](https://github.com/toltapp/tolt-python-sdk/commit/e2393e995233f2c2aa8b021af0872547e80a0d46))
+
+* feat: regenerate SDK from the latest OpenAPI spec
+
+* test: add tags to the partner fixture
+
+Partner responses now always carry tags, and the regenerated GetPartnerResponse requires the field.
+
+
 ## v1.2.0 (2026-10-21)
 
 ### Documentation
