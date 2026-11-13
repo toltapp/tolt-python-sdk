@@ -12,7 +12,7 @@
 <dl>
 <dd>
 
-Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id), the partner is created when the program has none with that email, so one call covers a user's first visit.
+Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id, plus your own external_id), the partner is found by external_id, then by email, and created when the program has neither, so one call covers a user's first visit.
 </dd>
 </dl>
 </dd>
@@ -59,7 +59,7 @@ client.embed_tokens.create()
 <dl>
 <dd>
 
-**partner:** `typing.Optional[CreateEmbedTokenRequestPartner]` — Find the partner by email within the program, or create them (active, with a referral link) when the program has no partner with that email. Send this or partner_id, not both.
+**partner:** `typing.Optional[CreateEmbedTokenRequestPartner]` — Find the partner by external_id or email within the program, or create them (active, with a referral link) when the program has no such partner. Send this or partner_id, not both.
     
 </dd>
 </dl>
@@ -1128,7 +1128,7 @@ client.partners.bulk_reject(
 <dl>
 <dd>
 
-Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+Lists onboarded partners. Filter by status, program, group or external_id, search by name, email or company, and page with cursors.
 </dd>
 </dl>
 </dd>
@@ -1271,6 +1271,14 @@ client.partners.list()
 <dl>
 <dd>
 
+**external_id:** `typing.Optional[str]` — Keep only partners with this external_id, matched exactly. Add program_id to get at most one partner.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **search:** `typing.Optional[str]` — Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
     
 </dd>
@@ -1330,6 +1338,7 @@ client = ToltApi(
 client.partners.create(
     email="sam@example.com",
     program_id="prg_T6z8aRW3XCmvFWP972RKxpAd",
+    external_id="user_123",
     first_name="Sam",
     last_name="Taylor",
     group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
@@ -1362,6 +1371,14 @@ client.partners.create(
 <dd>
 
 **program_id:** `str` — Id of the program to add the partner to (prg_...), as returned when listing programs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**external_id:** `typing.Optional[str]` — Your own id for this partner, such as the user id in your app, so you can find them by it later. No other partner in the program can have it.
     
 </dd>
 </dl>
@@ -1639,6 +1656,14 @@ client.partners.update(
 <dd>
 
 **website_url:** `typing.Optional[str]` — URL of the partner's website, starting with http:// or https://; null clears it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**external_id:** `typing.Optional[str]` — Your own id for this partner, such as the user id in your app. No other partner in the program can have it; null clears it.
     
 </dd>
 </dl>

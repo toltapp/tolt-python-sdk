@@ -260,11 +260,12 @@ class RawPartnersClient:
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
         tag_id: typing.Optional[str] = None,
+        external_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SyncPager[PartnerDetails, ListPartnersResponse]:
         """
-        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+        Lists onboarded partners. Filter by status, program, group or external_id, search by name, email or company, and page with cursors.
 
         Parameters
         ----------
@@ -307,6 +308,9 @@ class RawPartnersClient:
         tag_id : typing.Optional[str]
             Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
 
+        external_id : typing.Optional[str]
+            Keep only partners with this external_id, matched exactly. Add program_id to get at most one partner.
+
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
@@ -335,6 +339,7 @@ class RawPartnersClient:
                 "program_id": program_id,
                 "group_id": group_id,
                 "tag_id": tag_id,
+                "external_id": external_id,
                 "search": search,
             },
             request_options=request_options,
@@ -365,6 +370,7 @@ class RawPartnersClient:
                     program_id=program_id,
                     group_id=group_id,
                     tag_id=tag_id,
+                    external_id=external_id,
                     search=search,
                     request_options=request_options,
                 )
@@ -427,6 +433,7 @@ class RawPartnersClient:
         *,
         email: str,
         program_id: str,
+        external_id: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         display_name: typing.Optional[str] = OMIT,
@@ -450,6 +457,9 @@ class RawPartnersClient:
 
         program_id : str
             Id of the program to add the partner to (prg_...), as returned when listing programs.
+
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app, so you can find them by it later. No other partner in the program can have it.
 
         first_name : typing.Optional[str]
             Partner's first name. With last_name it is used for the default link value when link is omitted.
@@ -501,6 +511,7 @@ class RawPartnersClient:
             json={
                 "email": email,
                 "program_id": program_id,
+                "external_id": external_id,
                 "first_name": first_name,
                 "last_name": last_name,
                 "display_name": display_name,
@@ -690,6 +701,7 @@ class RawPartnersClient:
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[UpdatePartnerResponse]:
@@ -715,6 +727,9 @@ class RawPartnersClient:
         website_url : typing.Optional[str]
             URL of the partner's website, starting with http:// or https://; null clears it.
 
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app. No other partner in the program can have it; null clears it.
+
         group_id : typing.Optional[str]
             Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
 
@@ -735,6 +750,7 @@ class RawPartnersClient:
                 "company_name": company_name,
                 "country_code": country_code,
                 "website_url": website_url,
+                "external_id": external_id,
                 "group_id": group_id,
             },
             headers={
@@ -777,6 +793,17 @@ class RawPartnersClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
@@ -1537,11 +1564,12 @@ class AsyncRawPartnersClient:
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
         tag_id: typing.Optional[str] = None,
+        external_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncPager[PartnerDetails, ListPartnersResponse]:
         """
-        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+        Lists onboarded partners. Filter by status, program, group or external_id, search by name, email or company, and page with cursors.
 
         Parameters
         ----------
@@ -1584,6 +1612,9 @@ class AsyncRawPartnersClient:
         tag_id : typing.Optional[str]
             Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
 
+        external_id : typing.Optional[str]
+            Keep only partners with this external_id, matched exactly. Add program_id to get at most one partner.
+
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
@@ -1612,6 +1643,7 @@ class AsyncRawPartnersClient:
                 "program_id": program_id,
                 "group_id": group_id,
                 "tag_id": tag_id,
+                "external_id": external_id,
                 "search": search,
             },
             request_options=request_options,
@@ -1644,6 +1676,7 @@ class AsyncRawPartnersClient:
                         program_id=program_id,
                         group_id=group_id,
                         tag_id=tag_id,
+                        external_id=external_id,
                         search=search,
                         request_options=request_options,
                     )
@@ -1707,6 +1740,7 @@ class AsyncRawPartnersClient:
         *,
         email: str,
         program_id: str,
+        external_id: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         display_name: typing.Optional[str] = OMIT,
@@ -1730,6 +1764,9 @@ class AsyncRawPartnersClient:
 
         program_id : str
             Id of the program to add the partner to (prg_...), as returned when listing programs.
+
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app, so you can find them by it later. No other partner in the program can have it.
 
         first_name : typing.Optional[str]
             Partner's first name. With last_name it is used for the default link value when link is omitted.
@@ -1781,6 +1818,7 @@ class AsyncRawPartnersClient:
             json={
                 "email": email,
                 "program_id": program_id,
+                "external_id": external_id,
                 "first_name": first_name,
                 "last_name": last_name,
                 "display_name": display_name,
@@ -1970,6 +2008,7 @@ class AsyncRawPartnersClient:
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[UpdatePartnerResponse]:
@@ -1995,6 +2034,9 @@ class AsyncRawPartnersClient:
         website_url : typing.Optional[str]
             URL of the partner's website, starting with http:// or https://; null clears it.
 
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app. No other partner in the program can have it; null clears it.
+
         group_id : typing.Optional[str]
             Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
 
@@ -2015,6 +2057,7 @@ class AsyncRawPartnersClient:
                 "company_name": company_name,
                 "country_code": country_code,
                 "website_url": website_url,
+                "external_id": external_id,
                 "group_id": group_id,
             },
             headers={
@@ -2057,6 +2100,17 @@ class AsyncRawPartnersClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,

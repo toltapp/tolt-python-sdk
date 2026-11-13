@@ -11,6 +11,7 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
+from ..errors.conflict_error import ConflictError
 from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
@@ -36,7 +37,7 @@ class RawEmbedTokensClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreateEmbedTokenResponse]:
         """
-        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id), the partner is created when the program has none with that email, so one call covers a user's first visit.
+        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id, plus your own external_id), the partner is found by external_id, then by email, and created when the program has neither, so one call covers a user's first visit.
 
         Parameters
         ----------
@@ -44,7 +45,7 @@ class RawEmbedTokensClient:
             Id of an existing partner (part_...). Send this or partner, not both.
 
         partner : typing.Optional[CreateEmbedTokenRequestPartner]
-            Find the partner by email within the program, or create them (active, with a referral link) when the program has no partner with that email. Send this or partner_id, not both.
+            Find the partner by external_id or email within the program, or create them (active, with a referral link) when the program has no such partner. Send this or partner_id, not both.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -112,6 +113,17 @@ class RawEmbedTokensClient:
                         ),
                     ),
                 )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
                     headers=dict(_response.headers),
@@ -156,7 +168,7 @@ class AsyncRawEmbedTokensClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreateEmbedTokenResponse]:
         """
-        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id), the partner is created when the program has none with that email, so one call covers a user's first visit.
+        Mint a short-lived, partner-scoped token for the embedded referral dashboard. Safe to send to the browser. With partner (email and program_id, plus your own external_id), the partner is found by external_id, then by email, and created when the program has neither, so one call covers a user's first visit.
 
         Parameters
         ----------
@@ -164,7 +176,7 @@ class AsyncRawEmbedTokensClient:
             Id of an existing partner (part_...). Send this or partner, not both.
 
         partner : typing.Optional[CreateEmbedTokenRequestPartner]
-            Find the partner by email within the program, or create them (active, with a referral link) when the program has no partner with that email. Send this or partner_id, not both.
+            Find the partner by external_id or email within the program, or create them (active, with a referral link) when the program has no such partner. Send this or partner_id, not both.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -223,6 +235,17 @@ class AsyncRawEmbedTokensClient:
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
