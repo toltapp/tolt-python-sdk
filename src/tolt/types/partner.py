@@ -10,6 +10,11 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 class Partner(UniversalBaseModel):
     id: str
     email: str
+    external_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Your own id for the partner, such as the user id in your app, or null.
+    """
+
     first_name: typing.Optional[str] = None
     last_name: typing.Optional[str] = None
     company_name: typing.Optional[str] = None

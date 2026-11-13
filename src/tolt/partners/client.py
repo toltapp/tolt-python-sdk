@@ -136,11 +136,12 @@ class PartnersClient:
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
         tag_id: typing.Optional[str] = None,
+        external_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SyncPager[PartnerDetails, ListPartnersResponse]:
         """
-        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+        Lists onboarded partners. Filter by status, program, group or external_id, search by name, email or company, and page with cursors.
 
         Parameters
         ----------
@@ -183,6 +184,9 @@ class PartnersClient:
         tag_id : typing.Optional[str]
             Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
 
+        external_id : typing.Optional[str]
+            Keep only partners with this external_id, matched exactly. Add program_id to get at most one partner.
+
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
 
@@ -222,6 +226,7 @@ class PartnersClient:
             program_id=program_id,
             group_id=group_id,
             tag_id=tag_id,
+            external_id=external_id,
             search=search,
             request_options=request_options,
         )
@@ -231,6 +236,7 @@ class PartnersClient:
         *,
         email: str,
         program_id: str,
+        external_id: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         display_name: typing.Optional[str] = OMIT,
@@ -254,6 +260,9 @@ class PartnersClient:
 
         program_id : str
             Id of the program to add the partner to (prg_...), as returned when listing programs.
+
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app, so you can find them by it later. No other partner in the program can have it.
 
         first_name : typing.Optional[str]
             Partner's first name. With last_name it is used for the default link value when link is omitted.
@@ -307,6 +316,7 @@ class PartnersClient:
         client.partners.create(
             email="sam@example.com",
             program_id="prg_T6z8aRW3XCmvFWP972RKxpAd",
+            external_id="user_123",
             first_name="Sam",
             last_name="Taylor",
             group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
@@ -319,6 +329,7 @@ class PartnersClient:
         _response = self._raw_client.create(
             email=email,
             program_id=program_id,
+            external_id=external_id,
             first_name=first_name,
             last_name=last_name,
             display_name=display_name,
@@ -373,6 +384,7 @@ class PartnersClient:
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> UpdatePartnerResponse:
@@ -397,6 +409,9 @@ class PartnersClient:
 
         website_url : typing.Optional[str]
             URL of the partner's website, starting with http:// or https://; null clears it.
+
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app. No other partner in the program can have it; null clears it.
 
         group_id : typing.Optional[str]
             Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
@@ -430,6 +445,7 @@ class PartnersClient:
             company_name=company_name,
             country_code=country_code,
             website_url=website_url,
+            external_id=external_id,
             group_id=group_id,
             request_options=request_options,
         )
@@ -738,11 +754,12 @@ class AsyncPartnersClient:
         program_id: typing.Optional[str] = None,
         group_id: typing.Optional[str] = None,
         tag_id: typing.Optional[str] = None,
+        external_id: typing.Optional[str] = None,
         search: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncPager[PartnerDetails, ListPartnersResponse]:
         """
-        Lists onboarded partners. Filter by status, program or group, search by name, email or company, and page with cursors.
+        Lists onboarded partners. Filter by status, program, group or external_id, search by name, email or company, and page with cursors.
 
         Parameters
         ----------
@@ -784,6 +801,9 @@ class AsyncPartnersClient:
 
         tag_id : typing.Optional[str]
             Limit to partners with this tag, by the tag id (ptag_...) as returned when listing partner tags.
+
+        external_id : typing.Optional[str]
+            Keep only partners with this external_id, matched exactly. Add program_id to get at most one partner.
 
         search : typing.Optional[str]
             Text matched anywhere in the partner's id, email, first name, last name or company name, ignoring case.
@@ -833,6 +853,7 @@ class AsyncPartnersClient:
             program_id=program_id,
             group_id=group_id,
             tag_id=tag_id,
+            external_id=external_id,
             search=search,
             request_options=request_options,
         )
@@ -842,6 +863,7 @@ class AsyncPartnersClient:
         *,
         email: str,
         program_id: str,
+        external_id: typing.Optional[str] = OMIT,
         first_name: typing.Optional[str] = OMIT,
         last_name: typing.Optional[str] = OMIT,
         display_name: typing.Optional[str] = OMIT,
@@ -865,6 +887,9 @@ class AsyncPartnersClient:
 
         program_id : str
             Id of the program to add the partner to (prg_...), as returned when listing programs.
+
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app, so you can find them by it later. No other partner in the program can have it.
 
         first_name : typing.Optional[str]
             Partner's first name. With last_name it is used for the default link value when link is omitted.
@@ -923,6 +948,7 @@ class AsyncPartnersClient:
             await client.partners.create(
                 email="sam@example.com",
                 program_id="prg_T6z8aRW3XCmvFWP972RKxpAd",
+                external_id="user_123",
                 first_name="Sam",
                 last_name="Taylor",
                 group_id="grp_zUQ8Pt281MsbNDApmDPN3Y2a",
@@ -938,6 +964,7 @@ class AsyncPartnersClient:
         _response = await self._raw_client.create(
             email=email,
             program_id=program_id,
+            external_id=external_id,
             first_name=first_name,
             last_name=last_name,
             display_name=display_name,
@@ -1000,6 +1027,7 @@ class AsyncPartnersClient:
         company_name: typing.Optional[str] = OMIT,
         country_code: typing.Optional[str] = OMIT,
         website_url: typing.Optional[str] = OMIT,
+        external_id: typing.Optional[str] = OMIT,
         group_id: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> UpdatePartnerResponse:
@@ -1024,6 +1052,9 @@ class AsyncPartnersClient:
 
         website_url : typing.Optional[str]
             URL of the partner's website, starting with http:// or https://; null clears it.
+
+        external_id : typing.Optional[str]
+            Your own id for this partner, such as the user id in your app. No other partner in the program can have it; null clears it.
 
         group_id : typing.Optional[str]
             Id of a group in the partner's program to move them to (grp_...), as returned when listing groups. Commission flows scoped to that group then apply to them; null removes them from their group.
@@ -1065,6 +1096,7 @@ class AsyncPartnersClient:
             company_name=company_name,
             country_code=country_code,
             website_url=website_url,
+            external_id=external_id,
             group_id=group_id,
             request_options=request_options,
         )
