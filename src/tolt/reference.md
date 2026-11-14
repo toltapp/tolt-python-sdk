@@ -1623,7 +1623,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**first_name:** `typing.Optional[str]` — Partner's first name, part of the name shown for them unless they have a display name; null clears it.
+**first_name:** `typing.Optional[str]` — Partner's first name. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
@@ -1631,7 +1631,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**last_name:** `typing.Optional[str]` — Partner's family name, shown with first_name in the dashboard and partner portal; null clears it.
+**last_name:** `typing.Optional[str]` — Partner's family name. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
@@ -1639,7 +1639,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**company_name:** `typing.Optional[str]` — Business the partner promotes through; null clears it.
+**company_name:** `typing.Optional[str]` — Business the partner promotes through. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
@@ -1647,7 +1647,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**country_code:** `typing.Optional[str]` — Partner's country as a two-letter ISO code. Commission flows can match on it.
+**country_code:** `typing.Optional[str]` — Partner's country as a two-letter ISO code. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
