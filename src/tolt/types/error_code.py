@@ -18,6 +18,7 @@ ErrorCode = typing.Union[
         "transaction_refunded",
         "commission_exists",
         "rate_limited",
+        "short_link_unavailable",
         "payload_too_large",
         "internal_error",
     ],

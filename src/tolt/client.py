@@ -19,6 +19,7 @@ if typing.TYPE_CHECKING:
     from .links.client import AsyncLinksClient, LinksClient
     from .partner_tags.client import AsyncPartnerTagsClient, PartnerTagsClient
     from .partners.client import AsyncPartnersClient, PartnersClient
+    from .payouts.client import AsyncPayoutsClient, PayoutsClient
     from .programs.client import AsyncProgramsClient, ProgramsClient
     from .promotion_codes.client import AsyncPromotionCodesClient, PromotionCodesClient
     from .reports.client import AsyncReportsClient, ReportsClient
@@ -118,6 +119,7 @@ class ToltApi:
         self._programs: typing.Optional[ProgramsClient] = None
         self._customers: typing.Optional[CustomersClient] = None
         self._commissions: typing.Optional[CommissionsClient] = None
+        self._payouts: typing.Optional[PayoutsClient] = None
         self._transactions: typing.Optional[TransactionsClient] = None
         self._links: typing.Optional[LinksClient] = None
         self._promotion_codes: typing.Optional[PromotionCodesClient] = None
@@ -194,6 +196,14 @@ class ToltApi:
 
             self._commissions = CommissionsClient(client_wrapper=self._client_wrapper)
         return self._commissions
+
+    @property
+    def payouts(self):
+        if self._payouts is None:
+            from .payouts.client import PayoutsClient  # noqa: E402
+
+            self._payouts = PayoutsClient(client_wrapper=self._client_wrapper)
+        return self._payouts
 
     @property
     def transactions(self):
@@ -342,6 +352,7 @@ class AsyncToltApi:
         self._programs: typing.Optional[AsyncProgramsClient] = None
         self._customers: typing.Optional[AsyncCustomersClient] = None
         self._commissions: typing.Optional[AsyncCommissionsClient] = None
+        self._payouts: typing.Optional[AsyncPayoutsClient] = None
         self._transactions: typing.Optional[AsyncTransactionsClient] = None
         self._links: typing.Optional[AsyncLinksClient] = None
         self._promotion_codes: typing.Optional[AsyncPromotionCodesClient] = None
@@ -418,6 +429,14 @@ class AsyncToltApi:
 
             self._commissions = AsyncCommissionsClient(client_wrapper=self._client_wrapper)
         return self._commissions
+
+    @property
+    def payouts(self):
+        if self._payouts is None:
+            from .payouts.client import AsyncPayoutsClient  # noqa: E402
+
+            self._payouts = AsyncPayoutsClient(client_wrapper=self._client_wrapper)
+        return self._payouts
 
     @property
     def transactions(self):

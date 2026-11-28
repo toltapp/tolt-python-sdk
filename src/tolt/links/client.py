@@ -265,7 +265,7 @@ class LinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> UpdateLinkResponse:
         """
-        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+        Updates an ordinary link. Its short links move to the new value. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------
@@ -303,7 +303,7 @@ class LinksClient:
 
     def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinkResponse:
         """
-        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+        Deletes an ordinary link and its short links, which stop working. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------
@@ -609,7 +609,7 @@ class AsyncLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> UpdateLinkResponse:
         """
-        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+        Updates an ordinary link. Its short links move to the new value. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------
@@ -655,7 +655,7 @@ class AsyncLinksClient:
 
     async def delete(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> DeleteLinkResponse:
         """
-        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+        Deletes an ordinary link and its short links, which stop working. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------

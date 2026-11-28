@@ -13,6 +13,7 @@ from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.bad_gateway_error import BadGatewayError
 from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.content_too_large_error import ContentTooLargeError
@@ -535,7 +536,7 @@ class RawLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[UpdateLinkResponse]:
         """
-        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+        Updates an ordinary link. Its short links move to the new value. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------
@@ -633,6 +634,17 @@ class RawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -646,7 +658,7 @@ class RawLinksClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[DeleteLinkResponse]:
         """
-        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+        Deletes an ordinary link and its short links, which stop working. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------
@@ -721,6 +733,17 @@ class RawLinksClient:
                 )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
@@ -1245,7 +1268,7 @@ class AsyncRawLinksClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[UpdateLinkResponse]:
         """
-        Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+        Updates an ordinary link. Its short links move to the new value. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------
@@ -1343,6 +1366,17 @@ class AsyncRawLinksClient:
                         ),
                     ),
                 )
+            if _response.status_code == 502:
+                raise BadGatewayError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1356,7 +1390,7 @@ class AsyncRawLinksClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[DeleteLinkResponse]:
         """
-        Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+        Deletes an ordinary link and its short links, which stop working. Campaign-managed links must be changed through campaigns.
 
         Parameters
         ----------
@@ -1431,6 +1465,17 @@ class AsyncRawLinksClient:
                 )
             if _response.status_code == 429:
                 raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 502:
+                raise BadGatewayError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         ErrorResponse,
