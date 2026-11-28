@@ -1623,7 +1623,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**first_name:** `typing.Optional[str]` — Partner's first name, part of the name shown for them unless they have a display name; null clears it.
+**first_name:** `typing.Optional[str]` — Partner's first name. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
@@ -1631,7 +1631,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**last_name:** `typing.Optional[str]` — Partner's family name, shown with first_name in the dashboard and partner portal; null clears it.
+**last_name:** `typing.Optional[str]` — Partner's family name. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
@@ -1639,7 +1639,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**company_name:** `typing.Optional[str]` — Business the partner promotes through; null clears it.
+**company_name:** `typing.Optional[str]` — Business the partner promotes through. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
@@ -1647,7 +1647,7 @@ client.partners.update(
 <dl>
 <dd>
 
-**country_code:** `typing.Optional[str]` — Partner's country as a two-letter ISO code. Commission flows can match on it.
+**country_code:** `typing.Optional[str]` — Partner's country as a two-letter ISO code. Partners manage it from their account: a request that changes it returns 400, sending the current value is accepted.
     
 </dd>
 </dl>
@@ -4373,6 +4373,493 @@ client.commissions.decline(
 </dl>
 </details>
 
+## Payouts
+<details><summary><code>client.payouts.<a href="src/tolt/payouts/client.py">bulk_mark_payouts_as_paid</a>(...) -> BulkMarkPayoutsAsPaidResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Marks up to 100 payouts as paid and reports the outcome per id, with the same rules as marking one payout as paid. Successful changes commit together.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.payouts.bulk_mark_payouts_as_paid(
+    ids=[
+        "pout_Hq4XcN8rTb2VmK7sWp3LdYf9",
+        "pout_6TzR2kWq9NcB4vXm8JpLs3Dh"
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**ids:** `typing.List[str]` — Ids of the payouts to act on, as returned when listing payouts. Each one succeeds or fails on its own and gets its own entry in results.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.payouts.<a href="src/tolt/payouts/client.py">list_payouts</a>(...) -> ListPayoutsResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lists payouts with what each one owes its partner. Filter by program, partner, status, period, invoice or paid date, and page with cursors. Use status=pending to find the payouts left to pay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.payouts.list_payouts()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — How many rows to return in one page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**order:** `typing.Optional[ListPayoutsRequestOrder]` — Ranking direction: desc puts the most recently created or updated rows first.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sort:** `typing.Optional[ListPayoutsRequestSort]` — Timestamp to order and page by: created_at follows creation order, updated_at follows each item's most recent change.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**starting_after:** `typing.Optional[str]` — Continue after a position: the next_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with ending_before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ending_before:** `typing.Optional[str]` — Page backward from a position: the prev_cursor of a previous page, or an item id when sorting by created_at. Cannot be combined with starting_after.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Start of a window on when items were created: items created at this time or later are included, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — End of a window on when items were created: only items created before this time are included. Leave it out for no upper bound.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_after:** `typing.Optional[datetime.datetime]` — Only items last changed at or after this moment; with sort=updated_at, use it to fetch what changed since a previous sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**updated_before:** `typing.Optional[datetime.datetime]` — Only items last changed before this moment; pair it with updated_after to fetch what changed in a period.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**partner_id:** `typing.Optional[str]` — Limit to one partner, by its id (part_...) as returned when listing partners.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**program_id:** `typing.Optional[str]` — Limit to one program, by its id (prg_...) as returned when listing programs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[str]` — Only payouts in this status, matched exactly against the stored value, such as paid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**period:** `typing.Optional[str]` — Commission period a payout covers, written as start and end dates like 2026-08-01 - 2026-08-31 and matched exactly; read it from a payout first.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**invoice_id:** `typing.Optional[str]` — Only payouts on this invoice, by its id (inv_...) as shown in a payout's invoice_id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**paid_after:** `typing.Optional[datetime.datetime]` — Start of a window on when payouts were paid: only payouts paid at this time or later, for example 2026-01-01T00:00:00Z. Leave it out for no lower bound.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**paid_before:** `typing.Optional[datetime.datetime]` — End of a window on when payouts were paid: only payouts paid before this time. Leave it out for no upper bound.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.payouts.<a href="src/tolt/payouts/client.py">get_payout</a>(...) -> GetPayoutResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gets a payout by ID, with its status, period, amount and the partner and program it belongs to.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.payouts.get_payout(
+    id="pout_Hq4XcN8rTb2VmK7sWp3LdYf9",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.payouts.<a href="src/tolt/payouts/client.py">delete_payout</a>(...) -> DeletePayoutResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a pending payout that is not on an invoice. Its commissions are taken off it and stay approved, so a later payout can include them.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.payouts.delete_payout(
+    id="pout_Hq4XcN8rTb2VmK7sWp3LdYf9",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.payouts.<a href="src/tolt/payouts/client.py">mark_payout_as_paid</a>(...) -> MarkPayoutAsPaidResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Records that you paid the partner yourself. The payout's approved commissions become paid and each one sends commission.updated, commissions in any other status are taken off the payout, and the partner gets the payout paid email when it is on for the program and the partner. Works on pending and failed payouts, and fails while the payout is on an unpaid invoice. A payout that is already paid is returned unchanged.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from tolt import ToltApi
+from tolt.environment import ToltApiEnvironment
+
+client = ToltApi(
+    token="<token>",
+    environment=ToltApiEnvironment.DEFAULT,
+)
+
+client.payouts.mark_payout_as_paid(
+    id="pout_Hq4XcN8rTb2VmK7sWp3LdYf9",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Transactions
 <details><summary><code>client.transactions.<a href="src/tolt/transactions/client.py">list</a>(...) -> ListTransactionsResponse</code></summary>
 <dl>
@@ -5581,7 +6068,7 @@ client.links.get(
 <dl>
 <dd>
 
-Updates an ordinary link. Campaign-managed links must be changed through campaigns.
+Updates an ordinary link. Its short links move to the new value. Campaign-managed links must be changed through campaigns.
 </dd>
 </dl>
 </dd>
@@ -5672,7 +6159,7 @@ client.links.update(
 <dl>
 <dd>
 
-Deletes an ordinary link. Campaign-managed links must be changed through campaigns.
+Deletes an ordinary link and its short links, which stop working. Campaign-managed links must be changed through campaigns.
 </dd>
 </dl>
 </dd>
